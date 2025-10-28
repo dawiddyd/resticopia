@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Restic</string>
+    <string name="app_name">Resticopia</string>
     <string name="text_folders">Folders</string>
     <string name="text_folder">Folder</string>
     <string name="text_repos">Repositories</string>
@@ -41,8 +41,8 @@
         here: "%s" ?
     </string>
     <string name="alert_download_file_no_dest_dir">Before proceeding, ensure that you have chosen a valid download folder in the settings.</string>
-    <string name="notification_channel_backup">Restic Backup</string>
-    <string name="notification_backup_title">Restic Backup</string>
+    <string name="notification_channel_backup">Resticopia Backup</string>
+    <string name="notification_backup_title">Resticopia Backup</string>
     <string name="notification_backup_progress_message">Backup in Progress…</string>
     <string name="notification_backup_done_message">Backup Finished!</string>
     <string name="notification_backup_failed_message">Backup Failed!</string>
@@ -77,7 +77,7 @@
     <string name="ntfy_url_empty">Not configured</string>
     <string name="button_ntfy_edit">Edit</string>
     <string name="button_ntfy_test">Send Test Notification</string>
-    <string name="ntfy_test_message">🔔 Test notification from Restic app - Your ntfy configuration is working!</string>
+    <string name="ntfy_test_message">🔔 Test notification from Resticopia - Your ntfy configuration is working!</string>
     <string name="repo_edit_local_path_title">Local Repository Path</string>
     <string name="repo_edit_local_path_hint">/storage/emulated/0/restic-repo</string>
     <string name="repo_edit_local_path_error_mandatory">Local repository path needed</string>
