@@ -189,8 +189,49 @@ class SettingsFragment : Fragment() {
         val folder: FolderConfig,
         val waitingForCharging: Boolean,
         val waitingForWiFi: Boolean,
-        val repoName: String
+        val repoName: String,
+        val overdueDuration: String
     )
+
+    /**
+     * Calculates and formats how long a backup is overdue.
+     * Returns a human-readable string like "23 hours" or "2 days 5 hours"
+     */
+    private fun calculateOverdueDuration(folder: FolderConfig, now: ZonedDateTime): String {
+        val scheduleMinutes = FolderEditFragment.schedules.find { it.first == folder.schedule }?.second
+            ?: return "Unknown"
+        
+        val lastBackup = folder.lastBackup(filterScheduled = true)?.timestamp
+        if (lastBackup == null) {
+            return "Never backed up"
+        }
+        
+        // Calculate when the next backup should have occurred
+        var quantized = lastBackup.withMinute(0).withSecond(0).withNano(0)
+        if (scheduleMinutes >= 24 * 60) {
+            quantized = quantized.withHour(0)
+        }
+        val nextBackupShouldHave = quantized.plusMinutes(scheduleMinutes.toLong())
+        
+        // Calculate how long overdue
+        val overdueDuration = java.time.Duration.between(nextBackupShouldHave, now)
+        
+        if (overdueDuration.isNegative || overdueDuration.isZero) {
+            return "Due now"
+        }
+        
+        val days = overdueDuration.toDays()
+        val hours = overdueDuration.toHours() % 24
+        val minutes = overdueDuration.toMinutes() % 60
+        
+        return when {
+            days > 0 && hours > 0 -> "$days day${if (days > 1) "s" else ""} $hours hour${if (hours > 1) "s" else ""}"
+            days > 0 -> "$days day${if (days > 1) "s" else ""}"
+            hours > 0 -> "$hours hour${if (hours > 1) "s" else ""}"
+            minutes > 0 -> "$minutes minute${if (minutes > 1) "s" else ""}"
+            else -> "Less than a minute"
+        }
+    }
 
     /**
      * Shows a dialog with all backups that are queued/waiting for constraints to be met.
@@ -224,11 +265,13 @@ class SettingsFragment : Fragment() {
                 
                 // Only add if at least one constraint is not met
                 if (waitingForCharging || waitingForWiFi) {
+                    val overdueDuration = calculateOverdueDuration(folder, now)
                     queuedBackups.add(QueuedBackupInfo(
                         folder = folder,
                         waitingForCharging = waitingForCharging,
                         waitingForWiFi = waitingForWiFi,
-                        repoName = repoName
+                        repoName = repoName,
+                        overdueDuration = overdueDuration
                     ))
                 }
             }
@@ -264,6 +307,9 @@ class SettingsFragment : Fragment() {
                 } else {
                     messageBuilder.append("   Last Backup: Never\n")
                 }
+                
+                // Show overdue duration
+                messageBuilder.append("   ${getString(R.string.backup_overdue_by, queuedBackup.overdueDuration)}\n")
                 
                 // Show which constraints are blocking
                 messageBuilder.append("   Status:\n")
