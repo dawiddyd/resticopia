@@ -81,4 +81,19 @@
     <string name="repo_edit_local_path_title">Local Repository Path</string>
     <string name="repo_edit_local_path_hint">/storage/emulated/0/restic-repo</string>
     <string name="repo_edit_local_path_error_mandatory">Local repository path needed</string>
+    <string name="settings_backup_constraints_title">Backup Constraints</string>
+    <string name="settings_backup_require_charging">Require charging for scheduled backups</string>
+    <string name="settings_backup_require_charging_description">Backups will only run when device is connected to power</string>
+    <string name="settings_backup_allow_cellular">Allow backups over cellular data</string>
+    <string name="settings_backup_allow_cellular_description">When disabled, backups will only run on WiFi</string>
+    <string name="settings_view_queued_backups">View Queued Backups</string>
+    <string name="dialog_queued_backups_title">Queued Backups</string>
+    <string name="dialog_no_queued_backups">No backups are currently waiting. All scheduled backups are either up to date or constraints are satisfied.</string>
+    <string name="dialog_queued_backups_message">The following backups are waiting for constraints to be met:</string>
+    <string name="constraint_waiting_charging">⚡ Waiting for device to be charging</string>
+    <string name="constraint_waiting_wifi">📶 Waiting for WiFi connection</string>
+    <string name="constraint_ready">✓ Ready to run</string>
+    <string name="backup_overdue_by">⏰ Overdue by: %s</string>
+    <string name="settings_utilities_collapsed">Utilities ▸</string>
+    <string name="settings_utilities_expanded">Utilities ▾</string>
 </resources>
