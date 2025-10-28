@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow cleartext (HTTP) traffic for all domains -->
+    <!-- This is needed for self-hosted ntfy servers that may not have HTTPS configured -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <!-- Trust system certificates -->
+            <certificates src="system" />
+            <!-- Trust user-installed certificates (for self-signed HTTPS) -->
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
+

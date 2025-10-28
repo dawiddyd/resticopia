@@ -8,7 +8,8 @@ data class Config(
     val repos: List<RepoConfig>,
     val folders: List<FolderConfig>,
     val hostname: String?,
-    val nameServers: List<String>?
+    val nameServers: List<String>?,
+    val ntfyUrl: String? = null
 ) {
     companion object {
         val format = Json {
