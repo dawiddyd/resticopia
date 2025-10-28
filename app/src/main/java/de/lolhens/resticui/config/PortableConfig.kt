@@ -24,14 +24,15 @@ import javax.crypto.spec.SecretKeySpec
 @Serializable
 data class PortableConfig(
     val version: Int = 2, // Version 2 = portable format
-    val repos: List<PortableRepoConfig>,
-    val folders: List<PortableFolderConfig>,
-    val hostname: String?,
-    val nameServers: List<String>?,
+    val repos: List<PortableRepoConfig> = emptyList(),
+    val folders: List<PortableFolderConfig> = emptyList(),
+    val hostname: String? = null,
+    val nameServers: List<String>? = null,
     val ntfyUrl: String? = null,
     val requiresCharging: Boolean = false,
     val allowsCellular: Boolean = false,
     val encrypted: Boolean = false,
+    val encryptedData: String? = null, // Encrypted config data (when encrypted = true)
     val passwordHash: String? = null // SHA-256 hash to verify password
 ) {
     companion object {
@@ -41,6 +42,7 @@ data class PortableConfig(
         val format = Json {
             prettyPrint = true
             ignoreUnknownKeys = true
+            encodeDefaults = false // Don't encode fields with default values
         }
 
         /**
@@ -184,29 +186,15 @@ data class PortableConfig(
      * Encrypt this config with a user password
      */
     fun encrypt(password: String): PortableConfig {
-        val json = this.copy(encrypted = false, passwordHash = null).toJsonString()
+        val json = this.copy(encrypted = false, encryptedData = null, passwordHash = null).toJsonString()
         val encrypted = encryptString(json, password)
         val hash = hashPassword(password)
         
-        // Return a minimal config with encrypted data embedded
+        // Return a minimal config with only encrypted data
         return PortableConfig(
             version = 2,
-            repos = listOf(
-                PortableRepoConfig(
-                    id = "encrypted",
-                    name = "ENCRYPTED_DATA",
-                    type = "ENCRYPTED",
-                    password = encrypted,
-                    params = PortableRepoParams.Rest("")
-                )
-            ),
-            folders = emptyList(),
-            hostname = null,
-            nameServers = null,
-            ntfyUrl = null,
-            requiresCharging = false,
-            allowsCellular = false,
             encrypted = true,
+            encryptedData = encrypted,
             passwordHash = hash
         )
     }
@@ -222,10 +210,9 @@ data class PortableConfig(
             throw IllegalArgumentException("Invalid password")
         }
 
-        val encryptedData = repos.firstOrNull()?.password
-            ?: throw IllegalArgumentException("No encrypted data found")
+        val data = encryptedData ?: throw IllegalArgumentException("No encrypted data found")
         
-        val json = decryptString(encryptedData, password)
+        val json = decryptString(data, password)
         return fromJsonString(json)
     }
 
