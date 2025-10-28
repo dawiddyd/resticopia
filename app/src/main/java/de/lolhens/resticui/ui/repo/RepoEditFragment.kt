@@ -13,6 +13,7 @@ import de.lolhens.resticui.BackupManager
 import de.lolhens.resticui.R
 import de.lolhens.resticui.config.*
 import de.lolhens.resticui.databinding.FragmentRepoEditBinding
+import de.lolhens.resticui.util.DirectoryChooser
 import java.net.URI
 import java.util.concurrent.CompletionException
 
@@ -29,6 +30,8 @@ class RepoEditFragment : Fragment() {
 
     private lateinit var _repoId: RepoConfigId
     private val repoId: RepoConfigId get() = _repoId
+
+    private val directoryChooser = DirectoryChooser.newInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,6 +60,7 @@ class RepoEditFragment : Fragment() {
                         RepoType.S3 -> binding.editRepoS3Parameters
                         RepoType.Rest -> binding.editRepoRestParameters
                         RepoType.B2 -> binding.editRepoB2Parameters
+                        RepoType.Local -> binding.editRepoLocalParameters
                     }
                 }
 
@@ -96,8 +100,22 @@ class RepoEditFragment : Fragment() {
                     binding.editRepoB2Parameters.editB2AccountId.setText(b2RepoParams.b2AccountId)
                     binding.editRepoB2Parameters.editB2AccountKey.setText(b2RepoParams.b2AccountKey.secret)
                 }
+                RepoType.Local -> {
+                    val localRepoParams = repo.params as LocalRepoParams
+                    binding.editRepoLocalParameters.editLocalPath.setText(localRepoParams.localPath)
+                }
 
             }.apply {} // do not remove - throws a compiler error if any of the repo types cases is not covered by the when
+        }
+
+        // Setup directory chooser for local repository
+        directoryChooser.register(this, requireContext()) { path ->
+            binding.editRepoLocalParameters.editLocalPath.setText(path)
+        }
+
+        // Setup browse button click listener
+        binding.editRepoLocalParameters.buttonBrowseLocalPath.setOnClickListener {
+            directoryChooser.openDialog()
         }
 
         return root
@@ -245,6 +263,14 @@ class RepoEditFragment : Fragment() {
                     )
                 )
             }
+            RepoType.Local -> {
+                RepoConfig(
+                    baseConfig,
+                    LocalRepoParams(
+                        localPath = binding.editRepoLocalParameters.editLocalPath.text.toString()
+                    )
+                )
+            }
         }
     }
 
@@ -310,6 +336,16 @@ class RepoEditFragment : Fragment() {
                         ),
 
                         )
+                )
+            }
+            RepoType.Local -> {
+                baseValidatorResults.plus(
+                    listOf(
+                        checkFieldMandatory(
+                            binding.editRepoLocalParameters.editLocalPath,
+                            getString(R.string.repo_edit_local_path_error_mandatory)
+                        )
+                    )
                 )
             }
         }

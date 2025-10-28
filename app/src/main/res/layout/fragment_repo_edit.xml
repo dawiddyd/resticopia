@@ -127,6 +127,18 @@
             app:layout_constraintTop_toBottomOf="@+id/spinner_repo_type"
             tools:visibility="gone" />
 
+        <include
+            android:id="@+id/edit_repo_local_parameters"
+            layout="@layout/fragment_repo_edit_local"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/spinner_repo_type"
+            tools:visibility="gone" />
+
         <ProgressBar
             android:id="@+id/progress_repo_save"
             style="?android:attr/progressBarStyle"
