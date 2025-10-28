@@ -4,12 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import de.lolhens.resticui.BackupManager
+import de.lolhens.resticui.R
 import de.lolhens.resticui.BackupPreferences
 import de.lolhens.resticui.BackupService
 import de.lolhens.resticui.R
 import de.lolhens.resticui.databinding.FragmentSettingsBinding
+import de.lolhens.resticui.notification.NtfyNotifier
 import de.lolhens.resticui.ui.InputDialogUtil
 import de.lolhens.resticui.util.DirectoryChooser
 import de.lolhens.resticui.util.HostnameUtil
@@ -125,6 +128,75 @@ class SettingsFragment : Fragment() {
         }
 
         binding.textDns.text = restic.nameServers.nameServers().joinToString(", ")
+
+        binding.buttonNtfyUrlEdit.setOnClickListener {
+            InputDialogUtil.showInputTextDialog(
+                requireContext(),
+                requireView(),
+                requireContext().resources.getString(de.lolhens.resticui.R.string.ntfy_url_title),
+                backupManager.config.ntfyUrl ?: ""
+            ) { ntfyUrl ->
+                backupManager.configure { config ->
+                    config.copy(ntfyUrl = if (ntfyUrl.isBlank()) null else ntfyUrl.trim())
+                }.thenAccept {
+                    requireActivity().runOnUiThread {
+                        val displayText = if (backupManager.config.ntfyUrl.isNullOrBlank()) {
+                            requireContext().resources.getString(de.lolhens.resticui.R.string.ntfy_url_empty)
+                        } else {
+                            backupManager.config.ntfyUrl
+                        }
+                        binding.textNtfyUrl.text = displayText
+                    }
+                }
+            }
+        }
+
+        binding.textNtfyUrl.text = if (backupManager.config.ntfyUrl.isNullOrBlank()) {
+            requireContext().resources.getString(de.lolhens.resticui.R.string.ntfy_url_empty)
+        } else {
+            backupManager.config.ntfyUrl
+        }
+
+        binding.buttonNtfyTest.setOnClickListener {
+            val ntfyUrl = backupManager.config.ntfyUrl
+            
+            if (ntfyUrl.isNullOrBlank()) {
+                Toast.makeText(
+                    requireContext(),
+                    "Please configure ntfy URL first",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            // Disable button while sending
+            binding.buttonNtfyTest.isEnabled = false
+            
+            val testMessage = requireContext().resources.getString(R.string.ntfy_test_message)
+            
+            NtfyNotifier.sendNotification(ntfyUrl, testMessage)
+                .thenAccept {
+                    requireActivity().runOnUiThread {
+                        binding.buttonNtfyTest.isEnabled = true
+                        Toast.makeText(
+                            requireContext(),
+                            "Test notification sent!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+                .exceptionally { throwable ->
+                    requireActivity().runOnUiThread {
+                        binding.buttonNtfyTest.isEnabled = true
+                        Toast.makeText(
+                            requireContext(),
+                            "Failed to send notification: ${throwable.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    null
+                }
+        }
 
         // Initialize backup constraint checkboxes
         binding.checkboxRequireCharging.isChecked = BackupPreferences.requiresCharging(context)

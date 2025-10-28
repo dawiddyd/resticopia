@@ -1,0 +1,31 @@
+# Dockerfile for downloading native binaries for Restic Android
+FROM ubuntu:22.04
+
+# Install required tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    binutils \
+    xz-utils \
+    tar \
+    bzip2 \
+    sed \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /build
+
+# Copy the download script
+COPY download-binaries.sh /build/
+
+# Make the script executable
+RUN chmod +x /build/download-binaries.sh
+
+# Create the directory structure expected by the script
+RUN mkdir -p /build/app/src/main/jniLibs
+
+# Run the download script
+RUN /build/download-binaries.sh
+
+# The downloaded binaries will be in /build/app/src/main/jniLibs/
+CMD ["echo", "Binaries downloaded successfully!"]
+
