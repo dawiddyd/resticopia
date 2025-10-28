@@ -297,7 +297,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/group_dl">
+            app:layout_constraintTop_toBottomOf="@+id/group_backup_constraints">
 
             <TextView
                 android:id="@+id/text_export_import_description"
@@ -346,7 +346,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/group_backup_constraints">
+            app:layout_constraintTop_toBottomOf="@+id/group_export_import">
 
             <TextView
                 android:id="@+id/text_utils_description"
