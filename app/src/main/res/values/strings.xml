@@ -71,4 +71,16 @@
     <string name="repo_edit_s3_secret_access_key_title">SECRET_ACCESS_KEY</string>
     <string name="repo_edit_s3_secret_access_key_error_mandatory">S3 Secret Access Key needed</string>
     <string name="repo_edit_s3_default_region_title">AWS_DEFAULT_REGION</string>
+    <string name="settings_backup_constraints_title">Backup Constraints</string>
+    <string name="settings_backup_require_charging">Require charging for scheduled backups</string>
+    <string name="settings_backup_require_charging_description">Backups will only run when device is connected to power</string>
+    <string name="settings_backup_allow_cellular">Allow backups over cellular data</string>
+    <string name="settings_backup_allow_cellular_description">When disabled, backups will only run on WiFi</string>
+    <string name="settings_view_queued_backups">View Queued Backups</string>
+    <string name="dialog_queued_backups_title">Queued Backups</string>
+    <string name="dialog_no_queued_backups">No backups are currently waiting. All scheduled backups are either up to date or constraints are satisfied.</string>
+    <string name="dialog_queued_backups_message">The following backups are waiting for constraints to be met:</string>
+    <string name="constraint_waiting_charging">⚡ Waiting for device to be charging</string>
+    <string name="constraint_waiting_wifi">📶 Waiting for WiFi connection</string>
+    <string name="constraint_ready">✓ Ready to run</string>
 </resources>
