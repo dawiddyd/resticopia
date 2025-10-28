@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import de.lolhens.resticui.BackupManager
 import de.lolhens.resticui.config.FolderConfigId
@@ -32,10 +31,10 @@ class FoldersFragment : Fragment() {
         _backupManager = BackupManager.instance(requireContext())
 
         backupManager.observeConfig(viewLifecycleOwner) { config ->
-            binding.listFolders.adapter = ArrayAdapter(
+            binding.listFolders.adapter = FolderListAdapter(
                 requireContext(),
-                android.R.layout.simple_list_item_1,
-                config.folders.map { "${it.repo(config)?.base?.name} ${it.path.path}" }
+                config.folders,
+                config
             )
         }
 

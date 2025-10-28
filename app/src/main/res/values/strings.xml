@@ -78,4 +78,7 @@
     <string name="button_ntfy_edit">Edit</string>
     <string name="button_ntfy_test">Send Test Notification</string>
     <string name="ntfy_test_message">🔔 Test notification from Restic app - Your ntfy configuration is working!</string>
+    <string name="repo_edit_local_path_title">Local Repository Path</string>
+    <string name="repo_edit_local_path_hint">/storage/emulated/0/restic-repo</string>
+    <string name="repo_edit_local_path_error_mandatory">Local repository path needed</string>
 </resources>

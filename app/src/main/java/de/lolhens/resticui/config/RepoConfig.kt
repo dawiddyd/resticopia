@@ -10,6 +10,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonObject
+import java.io.File
 import java.net.URI
 import java.util.*
 
@@ -93,6 +94,14 @@ enum class RepoType(type: String) {
         override fun deserializeParams(json: JsonObject): B2RepoParams =
             Config.format.decodeFromString(Config.format.encodeToString(json))
 
+    },
+    Local("local") {
+        override fun serializeParams(value: RepoParams): JsonObject =
+            Config.format.decodeFromString(Config.format.encodeToString(value as LocalRepoParams))
+
+        override fun deserializeParams(json: JsonObject): LocalRepoParams =
+            Config.format.decodeFromString(Config.format.encodeToString(json))
+
     };
 
     abstract fun serializeParams(value: RepoParams): JsonObject
@@ -144,5 +153,16 @@ data class B2RepoParams(
         b2Url,
         b2AccountId,
         b2AccountKey.secret
+    )
+}
+
+@Serializable
+data class LocalRepoParams(
+    val localPath: String
+) : RepoParams() {
+    override fun repo(baseConfig: RepoBaseConfig, restic: Restic): ResticRepo = ResticRepoLocal(
+        restic,
+        baseConfig.password.secret,
+        File(localPath)
     )
 }
