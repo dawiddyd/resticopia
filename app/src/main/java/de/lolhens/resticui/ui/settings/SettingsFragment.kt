@@ -10,7 +10,6 @@ import de.lolhens.resticui.BackupManager
 import de.lolhens.resticui.R
 import de.lolhens.resticui.BackupPreferences
 import de.lolhens.resticui.BackupService
-import de.lolhens.resticui.R
 import de.lolhens.resticui.databinding.FragmentSettingsBinding
 import de.lolhens.resticui.notification.NtfyNotifier
 import de.lolhens.resticui.ui.InputDialogUtil
