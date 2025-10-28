@@ -149,6 +149,17 @@ class SettingsFragment : Fragment() {
             showQueuedBackupsDialog()
         }
 
+        // Handle utilities expand/collapse
+        var utilitiesExpanded = false
+        binding.textUtilsDescription.setOnClickListener {
+            utilitiesExpanded = !utilitiesExpanded
+            binding.utilsButtonsContainer.visibility = if (utilitiesExpanded) View.VISIBLE else View.GONE
+            binding.textUtilsDescription.text = getString(
+                if (utilitiesExpanded) R.string.settings_utilities_expanded
+                else R.string.settings_utilities_collapsed
+            )
+        }
+
         return root
     }
 

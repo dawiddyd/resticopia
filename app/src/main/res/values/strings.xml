@@ -84,4 +84,6 @@
     <string name="constraint_waiting_wifi">📶 Waiting for WiFi connection</string>
     <string name="constraint_ready">✓ Ready to run</string>
     <string name="backup_overdue_by">⏰ Overdue by: %s</string>
+    <string name="settings_utilities_collapsed">Utilities ▸</string>
+    <string name="settings_utilities_expanded">Utilities ▾</string>
 </resources>
