@@ -7,13 +7,13 @@
 
     <fragment
         android:id="@+id/navigation_repo"
-        android:name="de.lolhens.resticui.ui.repo.RepoFragment"
+        android:name="org.dydlakcloud.resticopia.ui.repo.RepoFragment"
         android:label="@string/text_repository"
         tools:layout="@layout/fragment_repo" />
 
     <fragment
         android:id="@+id/navigation_repo_edit"
-        android:name="de.lolhens.resticui.ui.repo.RepoEditFragment"
+        android:name="org.dydlakcloud.resticopia.ui.repo.RepoEditFragment"
         android:label="@string/text_repository"
         tools:layout="@layout/fragment_repo_edit" />
 </navigation>

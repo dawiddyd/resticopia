@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/navigation_snapshot"
-        android:name="de.lolhens.resticui.ui.snapshot.SnapshotFragment"
+        android:name="org.dydlakcloud.resticopia.ui.snapshot.SnapshotFragment"
         android:label="@string/text_repository"
         tools:layout="@layout/fragment_snapshot" />
 </navigation>

@@ -7,25 +7,25 @@
 
     <fragment
         android:id="@+id/navigation_folders"
-        android:name="de.lolhens.resticui.ui.folders.FoldersFragment"
+        android:name="org.dydlakcloud.resticopia.ui.folders.FoldersFragment"
         android:label="@string/text_folders"
         tools:layout="@layout/fragment_repos" />
 
     <fragment
         android:id="@+id/navigation_repos"
-        android:name="de.lolhens.resticui.ui.repos.ReposFragment"
+        android:name="org.dydlakcloud.resticopia.ui.repos.ReposFragment"
         android:label="@string/text_repos"
         tools:layout="@layout/fragment_folders" />
 
     <fragment
         android:id="@+id/navigation_settings"
-        android:name="de.lolhens.resticui.ui.settings.SettingsFragment"
+        android:name="org.dydlakcloud.resticopia.ui.settings.SettingsFragment"
         android:label="@string/text_settings"
         tools:layout="@layout/fragment_settings" />
 
     <fragment
         android:id="@+id/navigation_about"
-        android:name="de.lolhens.resticui.ui.about.AboutFragment"
+        android:name="org.dydlakcloud.resticopia.ui.about.AboutFragment"
         android:label="@string/text_about"
         tools:layout="@layout/fragment_about" />
 </navigation>

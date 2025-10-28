@@ -11,22 +11,38 @@ def getVersionCodeOrNull = { ->
 }
 
 def getVersionOrNull = { ->
+    // First try CI_VERSION environment variable
     def matcher = System.getenv('CI_VERSION') =~ /refs\/tags\/(.*)/
-    if (matcher.find()) matcher.group(1)
-    else null
+    if (matcher.find()) return matcher.group(1)
+    
+    // If not in CI, try to get version from git describe
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'describe', '--tags', '--exact-match'
+            standardOutput = stdout
+            ignoreExitValue = true
+        }
+        def version = stdout.toString().trim()
+        if (version && !version.isEmpty()) return version
+    } catch (Exception e) {
+        // Ignore and fall through
+    }
+    
+    return null
 }
 
 android {
     compileSdkVersion 33
     defaultConfig {
-        applicationId "de.lolhens.resticui"
+        applicationId "org.dydlakcloud.resticopia"
         minSdkVersion 24
         targetSdkVersion 33
         versionCode getVersionCodeOrNull() ?: 1
         versionName getVersionOrNull() ?: "0.0.1-SNAPSHOT"
         setProperty('archivesBaseName', [
-                "restic-android",
-                getVersionOrNull()?.toString()
+                "resticopia",
+                versionName
         ].findAll({ it != null }).join("-"))
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -68,7 +84,7 @@ android {
             universalApk true
         }
     }
-    namespace 'de.lolhens.resticui'
+    namespace 'org.dydlakcloud.resticopia'
 }
 
 dependencies {
