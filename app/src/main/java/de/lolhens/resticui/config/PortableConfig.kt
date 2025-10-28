@@ -28,6 +28,9 @@ data class PortableConfig(
     val folders: List<PortableFolderConfig>,
     val hostname: String?,
     val nameServers: List<String>?,
+    val ntfyUrl: String? = null,
+    val requiresCharging: Boolean = false,
+    val allowsCellular: Boolean = false,
     val encrypted: Boolean = false,
     val passwordHash: String? = null // SHA-256 hash to verify password
 ) {
@@ -43,8 +46,14 @@ data class PortableConfig(
         /**
          * Convert device-specific Config to PortableConfig
          * Password is required for security
+         * Note: Backup constraints must be passed separately as they're stored in SharedPreferences
          */
-        fun fromConfig(config: Config, exportPassword: String): PortableConfig {
+        fun fromConfig(
+            config: Config, 
+            exportPassword: String, 
+            requiresCharging: Boolean = false, 
+            allowsCellular: Boolean = false
+        ): PortableConfig {
             require(exportPassword.isNotEmpty()) { "Export password is required" }
             val portableRepos = config.repos.map { repo ->
                 PortableRepoConfig(
@@ -67,7 +76,10 @@ data class PortableConfig(
                             b2AccountId = repo.params.b2AccountId,
                             b2AccountKey = repo.params.b2AccountKey.secret
                         )
-                        else -> throw IllegalArgumentException("Unknown repo type")
+                        is LocalRepoParams -> PortableRepoParams.Local(
+                            localPath = repo.params.localPath
+                        )
+                        else -> throw IllegalArgumentException("Unknown repo type: ${repo.params::class.simpleName}")
                     }
                 )
             }
@@ -89,6 +101,9 @@ data class PortableConfig(
                 folders = portableFolders,
                 hostname = config.hostname,
                 nameServers = config.nameServers,
+                ntfyUrl = config.ntfyUrl,
+                requiresCharging = requiresCharging,
+                allowsCellular = allowsCellular,
                 encrypted = false,
                 passwordHash = null
             )
@@ -107,6 +122,7 @@ data class PortableConfig(
 
     /**
      * Convert PortableConfig to device-specific Config
+     * Note: Backup constraints must be applied separately to SharedPreferences
      */
     fun toConfig(): Config {
         val repos = this.repos.map { portableRepo ->
@@ -125,6 +141,9 @@ data class PortableConfig(
                     b2Url = URI(portableRepo.params.b2Url),
                     b2AccountId = portableRepo.params.b2AccountId,
                     b2AccountKey = Secret(portableRepo.params.b2AccountKey)
+                )
+                is PortableRepoParams.Local -> LocalRepoParams(
+                    localPath = portableRepo.params.localPath
                 )
             }
 
@@ -154,7 +173,8 @@ data class PortableConfig(
             repos = repos,
             folders = folders,
             hostname = hostname,
-            nameServers = nameServers
+            nameServers = nameServers,
+            ntfyUrl = ntfyUrl
         )
     }
 
@@ -183,6 +203,9 @@ data class PortableConfig(
             folders = emptyList(),
             hostname = null,
             nameServers = null,
+            ntfyUrl = null,
+            requiresCharging = false,
+            allowsCellular = false,
             encrypted = true,
             passwordHash = hash
         )
@@ -277,6 +300,11 @@ sealed class PortableRepoParams {
         val b2Url: String,
         val b2AccountId: String,
         val b2AccountKey: String // Plain text
+    ) : PortableRepoParams()
+
+    @Serializable
+    data class Local(
+        val localPath: String
     ) : PortableRepoParams()
 }
 

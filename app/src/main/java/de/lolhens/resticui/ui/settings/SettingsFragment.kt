@@ -525,7 +525,17 @@ class SettingsFragment : Fragment() {
                 ?: throw Exception("Password not provided")
             
             val config = backupManager.config
-            val portableConfig = PortableConfig.fromConfig(config, password)
+            
+            // Read backup constraints from SharedPreferences
+            val requiresCharging = BackupPreferences.requiresCharging(requireContext())
+            val allowsCellular = BackupPreferences.allowsCellular(requireContext())
+            
+            val portableConfig = PortableConfig.fromConfig(
+                config, 
+                password, 
+                requiresCharging, 
+                allowsCellular
+            )
             val jsonString = portableConfig.toJsonString()
             
             requireContext().contentResolver.openOutputStream(uri)?.use { outputStream ->
@@ -629,9 +639,9 @@ class SettingsFragment : Fragment() {
             val validationResult = validateConfig(config)
             
             if (validationResult.hasErrors()) {
-                showValidationDialog(validationResult, config)
+                showValidationDialog(validationResult, config, portableConfig)
             } else {
-                performImport(config)
+                performImport(config, portableConfig)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -692,7 +702,7 @@ class SettingsFragment : Fragment() {
         return ValidationResult(issues)
     }
 
-    private fun showValidationDialog(validationResult: ValidationResult, config: Config) {
+    private fun showValidationDialog(validationResult: ValidationResult, config: Config, portableConfig: PortableConfig) {
         val message = buildString {
             validationResult.issues.forEach { issue ->
                 append(issue.summary)
@@ -718,13 +728,13 @@ class SettingsFragment : Fragment() {
             .setTitle(R.string.alert_import_validation_title)
             .setMessage(getString(R.string.alert_import_validation_message, message))
             .setPositiveButton(R.string.button_ok) { _, _ ->
-                performImport(config)
+                performImport(config, portableConfig)
             }
             .setNegativeButton(R.string.button_cancel, null)
             .show()
     }
 
-    private fun performImport(config: Config) {
+    private fun performImport(config: Config, portableConfig: PortableConfig) {
         // Create backup of current config before import
         try {
             val backupConfig = backupManager.config
@@ -735,6 +745,19 @@ class SettingsFragment : Fragment() {
             e.printStackTrace()
             // Continue even if backup fails
         }
+        
+        // Apply backup constraints to SharedPreferences
+        BackupPreferences.setRequiresCharging(requireContext(), portableConfig.requiresCharging)
+        BackupPreferences.setAllowsCellular(requireContext(), portableConfig.allowsCellular)
+        
+        // Update checkbox UI immediately
+        activity?.runOnUiThread {
+            binding.checkboxRequireCharging.isChecked = portableConfig.requiresCharging
+            binding.checkboxAllowCellular.isChecked = portableConfig.allowsCellular
+        }
+        
+        // Reschedule backup service to apply the new constraints
+        BackupService.reschedule(requireContext())
         
         // Update the config using BackupManager
         backupManager.configure { _ ->
