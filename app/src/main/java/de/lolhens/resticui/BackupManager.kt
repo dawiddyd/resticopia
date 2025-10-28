@@ -8,6 +8,7 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import de.lolhens.resticui.config.*
+import de.lolhens.resticui.notification.NtfyNotifier
 import de.lolhens.resticui.restic.Restic
 import de.lolhens.resticui.restic.ResticException
 import de.lolhens.resticui.restic.ResticNameServers
@@ -291,6 +292,16 @@ class BackupManager private constructor(context: Context) {
             val finishedActiveBackup = activeBackupLiveData.value!!.finish(summary, errorMessage)
             activeBackupLiveData.postValue(finishedActiveBackup)
             updateNotification(context, folder.id, finishedActiveBackup)
+
+            // Send ntfy notification
+            val ntfyUrl = config.ntfyUrl
+            if (!cancelled && ntfyUrl != null) {
+                if (errorMessage != null) {
+                    NtfyNotifier.sendBackupFailureNotification(ntfyUrl, folder.path.absolutePath, errorMessage)
+                } else if (summary != null) {
+                    NtfyNotifier.sendBackupSuccessNotification(ntfyUrl, folder.path.absolutePath)
+                }
+            }
 
             fun removeOldBackups(callback: () -> Unit) {
                 if (removeOld && throwable == null && (folder.keepLast != null || folder.keepWithin != null)) {

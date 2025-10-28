@@ -12,32 +12,60 @@ import java.time.ZonedDateTime
 
 class BackupService : JobService() {
     companion object {
+        private const val BACKUP_JOB_ID = 0
+
+        /**
+         * Reschedules the backup job with current preferences.
+         * Cancels existing job and creates a new one with updated constraints.
+         */
+        fun reschedule(context: Context) {
+            val jobScheduler = context.getSystemService(JobScheduler::class.java)
+            jobScheduler.cancel(BACKUP_JOB_ID)
+            scheduleInternal(context, jobScheduler)
+        }
+
+        /**
+         * Schedules the backup job if not already scheduled.
+         */
         fun schedule(context: Context) {
             val jobScheduler = context.getSystemService(JobScheduler::class.java)
-            //jobScheduler.cancel(0)
-            println("LIST JOBS:")
-            //jobScheduler.
+            
+            // Check if job already exists
             val contains = jobScheduler.allPendingJobs.any { job ->
-                val name = job.service.className
-                println(name)
-                name == BackupService::class.java.name
+                job.id == BACKUP_JOB_ID && job.service.className == BackupService::class.java.name
             }
-            println(contains)
+            
             if (!contains) {
-                val serviceComponent = ComponentName(context, BackupService::class.java)
-                val builder = JobInfo.Builder(0, serviceComponent)
-                //builder.setMinimumLatency(2 * 60 * 1000L)
-                //builder.setOverrideDeadline(3 * 60 * 1000L)
-                builder.setPersisted(true)
-                builder.setPeriodic(60 * 60 * 1000L, 30 * 1000L)
+                scheduleInternal(context, jobScheduler)
+            }
+        }
 
+        /**
+         * Internal method to actually schedule the job with current preferences.
+         */
+        private fun scheduleInternal(context: Context, jobScheduler: JobScheduler) {
+            val serviceComponent = ComponentName(context, BackupService::class.java)
+            val builder = JobInfo.Builder(BACKUP_JOB_ID, serviceComponent)
+            
+            // Set periodic execution: every hour with 30 second flex window
+            builder.setPersisted(true)
+            builder.setPeriodic(60 * 60 * 1000L, 30 * 1000L)
+
+            // Apply network constraint based on cellular preference
+            val allowCellular = BackupPreferences.allowsCellular(context)
+            if (allowCellular) {
+                // Allow any network (WiFi or cellular)
+                builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+            } else {
+                // WiFi only (unmetered network)
                 builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
-                //builder.setRequiresCharging(true)
-                jobScheduler.schedule(builder.build())
             }
-            jobScheduler.allPendingJobs.forEach { job ->
-                println(job.service.className)
-            }
+
+            // Apply charging constraint
+            val requireCharging = BackupPreferences.requiresCharging(context)
+            builder.setRequiresCharging(requireCharging)
+
+            jobScheduler.schedule(builder.build())
         }
 
         fun startBackup(context: Context, callback: (() -> Unit)? = null) {

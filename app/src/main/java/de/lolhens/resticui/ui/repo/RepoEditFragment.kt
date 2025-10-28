@@ -13,6 +13,7 @@ import de.lolhens.resticui.BackupManager
 import de.lolhens.resticui.R
 import de.lolhens.resticui.config.*
 import de.lolhens.resticui.databinding.FragmentRepoEditBinding
+import de.lolhens.resticui.util.DirectoryChooser
 import java.net.URI
 import java.util.concurrent.CompletionException
 
@@ -30,6 +31,8 @@ class RepoEditFragment : Fragment() {
     private lateinit var _repoId: RepoConfigId
     private val repoId: RepoConfigId get() = _repoId
 
+    private val directoryChooser = DirectoryChooser.newInstance()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -45,6 +48,13 @@ class RepoEditFragment : Fragment() {
         _repoId = (requireActivity() as RepoActivity).repoId
         val repo = backupManager.config.repos.find { it.base.id == repoId }
 
+        // Setup spinner with custom adapter that includes icons
+        val repoTypeAdapter = RepoTypeSpinnerAdapter(
+            requireContext(),
+            RepoType.values()
+        )
+        binding.spinnerRepoType.adapter = repoTypeAdapter
+
         // define a listener to change the repo param view based on which repo type is selected in the drop down
         binding.spinnerRepoType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
 
@@ -57,10 +67,11 @@ class RepoEditFragment : Fragment() {
                         RepoType.S3 -> binding.editRepoS3Parameters
                         RepoType.Rest -> binding.editRepoRestParameters
                         RepoType.B2 -> binding.editRepoB2Parameters
+                        RepoType.Local -> binding.editRepoLocalParameters
                     }
                 }
 
-                val newRepoType = RepoType.valueOf(parent!!.getItemAtPosition(position).toString())
+                val newRepoType = parent!!.getItemAtPosition(position) as RepoType
                 RepoType.values().forEach { repoType ->
                     getRepoTypeBinding(repoType).root.visibility =
                         if (repoType == newRepoType) VISIBLE else GONE
@@ -77,7 +88,7 @@ class RepoEditFragment : Fragment() {
             // prefill the view if the repo already exists and is going to be edited instead of created.
             binding.editRepoName.setText(repo.base.name)
             binding.editRepoPassword.setText(repo.base.password.secret)
-            binding.spinnerRepoType.setSelection(RepoType.values().indexOf(repo.base.type))
+            binding.spinnerRepoType.setSelection(repoTypeAdapter.getPosition(repo.base.type))
             when (repo.base.type) {
                 RepoType.S3 -> {
                     val s3RepoParams = repo.params as S3RepoParams
@@ -96,8 +107,22 @@ class RepoEditFragment : Fragment() {
                     binding.editRepoB2Parameters.editB2AccountId.setText(b2RepoParams.b2AccountId)
                     binding.editRepoB2Parameters.editB2AccountKey.setText(b2RepoParams.b2AccountKey.secret)
                 }
+                RepoType.Local -> {
+                    val localRepoParams = repo.params as LocalRepoParams
+                    binding.editRepoLocalParameters.editLocalPath.setText(localRepoParams.localPath)
+                }
 
             }.apply {} // do not remove - throws a compiler error if any of the repo types cases is not covered by the when
+        }
+
+        // Setup directory chooser for local repository
+        directoryChooser.register(this, requireContext()) { path ->
+            binding.editRepoLocalParameters.editLocalPath.setText(path)
+        }
+
+        // Setup browse button click listener
+        binding.editRepoLocalParameters.buttonBrowseLocalPath.setOnClickListener {
+            directoryChooser.openDialog()
         }
 
         return root
@@ -201,7 +226,7 @@ class RepoEditFragment : Fragment() {
         }
 
     private fun parseRepo(): Pair<Boolean, RepoConfig?> {
-        val repoType = RepoType.valueOf(binding.spinnerRepoType.selectedItem as String)
+        val repoType = binding.spinnerRepoType.selectedItem as RepoType
         val valid = validateRepo(repoType)
 
         if (!valid) {
@@ -242,6 +267,14 @@ class RepoEditFragment : Fragment() {
                         b2Url = URI(binding.editRepoB2Parameters.editB2Uri.text.toString()),
                         b2AccountId = binding.editRepoB2Parameters.editB2AccountId.text.toString(),
                         b2AccountKey = Secret(binding.editRepoB2Parameters.editB2AccountKey.text.toString()),
+                    )
+                )
+            }
+            RepoType.Local -> {
+                RepoConfig(
+                    baseConfig,
+                    LocalRepoParams(
+                        localPath = binding.editRepoLocalParameters.editLocalPath.text.toString()
                     )
                 )
             }
@@ -310,6 +343,16 @@ class RepoEditFragment : Fragment() {
                         ),
 
                         )
+                )
+            }
+            RepoType.Local -> {
+                baseValidatorResults.plus(
+                    listOf(
+                        checkFieldMandatory(
+                            binding.editRepoLocalParameters.editLocalPath,
+                            getString(R.string.repo_edit_local_path_error_mandatory)
+                        )
+                    )
                 )
             }
         }

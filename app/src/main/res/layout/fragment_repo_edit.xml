@@ -79,11 +79,10 @@
         <Spinner
             android:id="@+id/spinner_repo_type"
             android:layout_width="0dp"
-            android:layout_height="32dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
             android:layout_marginTop="4dp"
             android:layout_marginEnd="32dp"
-            android:entries="@array/repo_types"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
@@ -129,6 +128,18 @@
         <include
             android:id="@+id/edit_repo_b2_parameters"
             layout="@layout/fragment_repo_edit_b2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/spinner_repo_type"
+            tools:visibility="gone" />
+
+        <include
+            android:id="@+id/edit_repo_local_parameters"
+            layout="@layout/fragment_repo_edit_local"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
