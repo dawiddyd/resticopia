@@ -8,7 +8,7 @@
     <androidx.constraintlayout.widget.Group
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="text_b2_uri, edit_b2_uri, text_b2_account_id, edit_b2_account_id, text_b2_account_key, edit_b2_account_key"
+        app:constraint_referenced_ids="text_b2_uri, edit_b2_uri, text_b2_account_id, text_input_b2_account_id, text_b2_account_key, text_input_b2_account_key"
         android:id="@+id/repo_edit_b2_group" />
 
     <TextView
@@ -49,18 +49,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edit_b2_uri" />
 
-    <EditText
-        android:id="@+id/edit_b2_account_id"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/text_input_b2_account_id"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:ems="10"
-        android:inputType="textPassword"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_b2_account_id" />
+        app:layout_constraintTop_toBottomOf="@+id/text_b2_account_id"
+        app:boxBackgroundMode="none"
+        app:endIconMode="password_toggle">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_b2_account_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:ems="10"
+            android:inputType="textPassword" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
         android:id="@+id/text_b2_account_key"
@@ -73,19 +83,30 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edit_b2_account_id" />
+        app:layout_constraintTop_toBottomOf="@+id/text_input_b2_account_id" />
 
-    <EditText
-        android:id="@+id/edit_b2_account_key"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/text_input_b2_account_key"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="16dp"
-        android:ems="10"
-        android:inputType="textPassword"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_b2_account_key" />
+        app:layout_constraintTop_toBottomOf="@+id/text_b2_account_key"
+        app:boxBackgroundMode="none"
+        app:endIconMode="password_toggle">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_b2_account_key"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:ems="10"
+            android:inputType="textPassword" />
+    </com.google.android.material.textfield.TextInputLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
