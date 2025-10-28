@@ -48,6 +48,13 @@ class RepoEditFragment : Fragment() {
         _repoId = (requireActivity() as RepoActivity).repoId
         val repo = backupManager.config.repos.find { it.base.id == repoId }
 
+        // Setup spinner with custom adapter that includes icons
+        val repoTypeAdapter = RepoTypeSpinnerAdapter(
+            requireContext(),
+            RepoType.values()
+        )
+        binding.spinnerRepoType.adapter = repoTypeAdapter
+
         // define a listener to change the repo param view based on which repo type is selected in the drop down
         binding.spinnerRepoType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
 
@@ -64,7 +71,7 @@ class RepoEditFragment : Fragment() {
                     }
                 }
 
-                val newRepoType = RepoType.valueOf(parent!!.getItemAtPosition(position).toString())
+                val newRepoType = parent!!.getItemAtPosition(position) as RepoType
                 RepoType.values().forEach { repoType ->
                     getRepoTypeBinding(repoType).root.visibility =
                         if (repoType == newRepoType) VISIBLE else GONE
@@ -81,7 +88,7 @@ class RepoEditFragment : Fragment() {
             // prefill the view if the repo already exists and is going to be edited instead of created.
             binding.editRepoName.setText(repo.base.name)
             binding.editRepoPassword.setText(repo.base.password.secret)
-            binding.spinnerRepoType.setSelection(RepoType.values().indexOf(repo.base.type))
+            binding.spinnerRepoType.setSelection(repoTypeAdapter.getPosition(repo.base.type))
             when (repo.base.type) {
                 RepoType.S3 -> {
                     val s3RepoParams = repo.params as S3RepoParams
@@ -219,7 +226,7 @@ class RepoEditFragment : Fragment() {
         }
 
     private fun parseRepo(): Pair<Boolean, RepoConfig?> {
-        val repoType = RepoType.valueOf(binding.spinnerRepoType.selectedItem as String)
+        val repoType = binding.spinnerRepoType.selectedItem as RepoType
         val valid = validateRepo(repoType)
 
         if (!valid) {
