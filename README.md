@@ -1,47 +1,39 @@
-# restic-android (Unofficial)
+# Resticopia
 
-[![build](https://github.com/lhns/restic-android/actions/workflows/build.yml/badge.svg)](https://github.com/lhns/restic-android/actions/workflows/build.yml)
-[![Release Notes](https://img.shields.io/github/release/lhns/restic-android.svg?maxAge=3600)](https://github.com/lhns/restic-android/releases/latest)
-[![Restic@IoD](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/de.lolhens.resticui)](https://apt.izzysoft.de/fdroid/index/apk/de.lolhens.resticui)
+> **Note**: This is a fork of [restic-android by lhns](https://github.com/lhns/restic-android).
+> All modifications are documented in the git commit history.
+
 [![GNU General Public License, Version 2](https://img.shields.io/github/license/lhns/restic-android.svg?maxAge=3600)](https://www.gnu.org/licenses/gpl-2.0.html)
 
-![Icon](https://raw.githubusercontent.com/lhns/restic-android/main/screenshots/icon.png)
+ <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://codeberg.org/dawdyd/resticopia">
+    <img src="docs/badges/obtainium.png" alt="Obtainium" width="160"/>
+  </a>
 
-This project aims to make Backups on Android easy and fast using [Restic](https://restic.net).
 
-It also makes use of [termux/proot](https://github.com/termux/proot) to run the Restic linux binaries on android.
+A mobile Android application that enables efficient and straightforward data backups powered by [Restic](https://restic.net) backup software.
 
-This project is still in a very early state and contributions are welcome!
+The application leverages [termux/proot](https://github.com/termux/proot) technology to execute native Restic Linux binaries directly on Android devices.
 
 ### Disclaimer
-This project is **not** an official app made by the restic team.
+This is an **unofficial** application and is not developed or endorsed by the official Restic project team.
 
-Please report any issues on the [restic-android issue tracker](https://github.com/lhns/restic-android/issues).
+## Key Capabilities
+- Repository Management: Create and configure Restic repositories (supports S3, B2, and Rest protocols)
+- Snapshot Control: Browse and manage your backup snapshots
+- Folder Selection: Choose which directories to include in backups
+- Automated Scheduling: Set up recurring backup tasks
+- Retention Policies: Define cleanup rules for individual folders
+- Live Progress: Monitor backup operations through system notifications
 
-## Features
-- Manage Restic Repositories (S3, B2, Rest are currently the only supported protocols)
-- Manage Restic Snapshots
-- Manage Folders for Backup
-- Configure Schedules for automatic Backups
-- Configure Cleanup Policies for Folders
-- Progress Notification
+## Attribution
 
-## Roadmap
-- Clean up WIP Code
-- Support more protocols
-- More granular Backup Schedules and Cleanup Policies
-- Improve Error messages
-- Backup Rules (only backup when charging or only use wifi etc.)
+### Original Work
+- **Original Project**: [restic-android](https://github.com/lhns/restic-android) by [lhns](https://github.com/lhns)
+- **Original License**: GNU General Public License v2.0
 
-## Screenshots
-![](https://raw.githubusercontent.com/lhns/restic-android/main/screenshots/repos.png)
-![](https://raw.githubusercontent.com/lhns/restic-android/main/screenshots/repo-edit.png)
-![](https://raw.githubusercontent.com/lhns/restic-android/main/screenshots/repo.png)
-![](https://raw.githubusercontent.com/lhns/restic-android/main/screenshots/folders.png)
-![](https://raw.githubusercontent.com/lhns/restic-android/main/screenshots/folder-edit.png)
-![](https://raw.githubusercontent.com/lhns/restic-android/main/screenshots/folder.png)
-![](https://raw.githubusercontent.com/lhns/restic-android/main/screenshots/snapshot.png)
-![](https://raw.githubusercontent.com/lhns/restic-android/main/screenshots/about.png)
+### This Fork
+- All modifications and additions are also licensed under GNU General Public License v2.0
+- See git commit history for detailed changes
 
 ## Notice
 See the file called NOTICE.
