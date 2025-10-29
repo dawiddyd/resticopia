@@ -4,9 +4,12 @@ import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.InputType
+import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
+import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import org.dydlakcloud.resticopia.R
@@ -28,9 +31,24 @@ class RcloneConfigEditorActivity : AppCompatActivity() {
             setHorizontallyScrolling(true)
             setPadding(32, 32, 32, 32)
             textSize = 14f
+            gravity = Gravity.TOP or Gravity.START
         }
         
-        setContentView(editor)
+        // Wrap in FrameLayout to ensure top alignment
+        val container = FrameLayout(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            addView(editor, FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            ).apply {
+                gravity = Gravity.TOP or Gravity.START
+            })
+        }
+        
+        setContentView(container)
         
         // Setup action bar
         supportActionBar?.apply {
