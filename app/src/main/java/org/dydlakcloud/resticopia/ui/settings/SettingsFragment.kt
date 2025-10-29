@@ -79,6 +79,8 @@ class SettingsFragment : Fragment() {
                 backupManager.configure { config ->
                     config.copy(rcloneConfig = configContent)
                 }
+                // Reinitialize Restic with the new config so rcloneConfig is available
+                backupManager.initRestic(requireContext())
                 updateRcloneStatus()
                 Toast.makeText(
                     requireContext(), 
