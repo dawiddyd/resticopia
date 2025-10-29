@@ -58,7 +58,8 @@ class BackupManager private constructor(context: Context) {
         _restic = Restic(
             ResticStorage.fromContext(context),
             hostname = config.hostname ?: HostnameUtil.detectHostname(context),
-            nameServers = resticNameServers
+            nameServers = resticNameServers,
+            rcloneConfig = config.rcloneConfig
         )
     }
 

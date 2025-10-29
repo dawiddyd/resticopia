@@ -68,6 +68,27 @@ class SettingsFragment : Fragment() {
         }
     }
 
+    // Activity result launcher for rclone config editor
+    private val rcloneConfigEditorLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val newConfig = result.data?.getStringExtra("config")
+            newConfig?.let { configContent ->
+                // Validate and save
+                backupManager.configure { config ->
+                    config.copy(rcloneConfig = configContent)
+                }
+                updateRcloneStatus()
+                Toast.makeText(
+                    requireContext(), 
+                    R.string.rclone_config_saved, 
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -250,6 +271,16 @@ class SettingsFragment : Fragment() {
         // Handle view queued backups button
         binding.buttonViewQueuedBackups.setOnClickListener {
             showQueuedBackupsDialog()
+        }
+
+        // Initialize rclone status
+        updateRcloneStatus()
+        
+        // Handle rclone configure button
+        binding.buttonRcloneConfigure.setOnClickListener {
+            val intent = Intent(requireContext(), RcloneConfigEditorActivity::class.java)
+            intent.putExtra("config", backupManager.config.rcloneConfig ?: "")
+            rcloneConfigEditorLauncher.launch(intent)
         }
 
         // Handle utilities expand/collapse
@@ -797,6 +828,23 @@ class SettingsFragment : Fragment() {
 
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+    }
+
+    private fun updateRcloneStatus() {
+        val rcloneConfig = backupManager.config.rcloneConfig
+        if (rcloneConfig.isNullOrBlank()) {
+            binding.textRcloneStatus.text = getString(R.string.settings_rclone_summary_not_configured)
+        } else {
+            try {
+                val remotes = org.dydlakcloud.resticopia.util.RcloneConfigParser.parseConfigContent(rcloneConfig)
+                binding.textRcloneStatus.text = getString(
+                    R.string.settings_rclone_summary_configured, 
+                    remotes.size
+                )
+            } catch (e: Exception) {
+                binding.textRcloneStatus.text = getString(R.string.settings_rclone_summary_not_configured)
+            }
+        }
     }
 
     override fun onDestroyView() {

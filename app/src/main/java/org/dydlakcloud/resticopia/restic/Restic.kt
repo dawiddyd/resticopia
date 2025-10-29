@@ -15,13 +15,14 @@ import java.util.concurrent.CompletableFuture
 class Restic(
     val storage: ResticStorage,
     val hostname: String,
-    val nameServers: ResticNameServers
+    val nameServers: ResticNameServers,
+    val rcloneConfig: String? = null // Global rclone configuration
 ) {
     fun withHostname(hostname: String): Restic =
-        Restic(storage, hostname, nameServers)
+        Restic(storage, hostname, nameServers, rcloneConfig)
 
     fun withNameServers(nameServers: ResticNameServers): Restic =
-        Restic(storage, hostname, nameServers)
+        Restic(storage, hostname, nameServers, rcloneConfig)
 
     private fun executable(name: String) =
         storage.lib().resolve("libdata_$name.so")

@@ -184,6 +184,7 @@ data class RcloneRepoParams(
         restic,
         baseConfig.password.secret,
         rcloneRemote,
-        rclonePath
+        rclonePath,
+        restic.rcloneConfig ?: "" // Get global config from Restic
     )
 }

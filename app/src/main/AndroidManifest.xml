@@ -38,6 +38,10 @@
         <activity
             android:name=".ui.snapshot.SnapshotActivity"
             android:label="@string/text_snapshot" />
+        <activity
+            android:name=".ui.settings.RcloneConfigEditorActivity"
+            android:label="@string/rclone_editor_title"
+            android:theme="@style/Theme.ResticUI" />
 
         <service
             android:name=".BackupService"

@@ -41,23 +41,6 @@ class RepoEditFragment : Fragment() {
     
     // Rclone configuration
     private var rcloneRemotes: List<RcloneConfigParser.RcloneRemote> = emptyList()
-    private var rcloneConfigFile: File? = null
-    
-    private val rcloneConfigPicker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == RESULT_OK) {
-            result.data?.data?.let { uri ->
-                try {
-                    val content = requireContext().contentResolver.openInputStream(uri)?.bufferedReader()?.readText()
-                    if (content != null) {
-                        handleRcloneConfig(content)
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(context, R.string.toast_rclone_config_error, Toast.LENGTH_SHORT).show()
-                    e.printStackTrace()
-                }
-            }
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -141,25 +124,7 @@ class RepoEditFragment : Fragment() {
                 RepoType.Rclone -> {
                     val rcloneRepoParams = repo.params as RcloneRepoParams
                     binding.editRepoRcloneParameters.editRclonePath.setText(rcloneRepoParams.rclonePath)
-                    
-                    // Try to load existing config file
-                    val existingConfigFile = File(requireContext().cacheDir, ".config/rclone/rclone.conf")
-                    if (existingConfigFile.exists()) {
-                        try {
-                            handleRcloneConfig(existingConfigFile.readText())
-                            // Select the remote that was previously saved
-                            val remoteIndex = rcloneRemotes.indexOfFirst { it.name == rcloneRepoParams.rcloneRemote }
-                            if (remoteIndex >= 0) {
-                                binding.editRepoRcloneParameters.spinnerRcloneRemote.setSelection(remoteIndex)
-                            } else {
-                                // Remote not found in config
-                            }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    } else {
-                        // Config file doesn't exist
-                    }
+                    // Remotes will be loaded in loadRcloneRemotes() after layout is set up
                 }
 
             }.apply {} // do not remove - throws a compiler error if any of the repo types cases is not covered by the when
@@ -175,42 +140,46 @@ class RepoEditFragment : Fragment() {
             directoryChooser.openDialog()
         }
         
-        // Setup rclone config file picker
-        binding.editRepoRcloneParameters.buttonBrowseRcloneConfig.setOnClickListener {
-            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                addCategory(Intent.CATEGORY_OPENABLE)
-                type = "*/*"
-            }
-            rcloneConfigPicker.launch(intent)
-        }
+        // Load rclone remotes from global config
+        loadRcloneRemotes()
 
         return root
     }
     
-    private fun handleRcloneConfig(configContent: String) {
-        // Parse the config file
-        rcloneRemotes = RcloneConfigParser.parseConfigContent(configContent)
+    /**
+     * Load rclone remotes from global config and populate the remote selector
+     */
+    private fun loadRcloneRemotes() {
+        val globalConfig = backupManager.config.rcloneConfig
+        
+        if (globalConfig.isNullOrBlank()) {
+            // No global config - show warning
+            binding.editRepoRcloneParameters.textRcloneConfigStatus.text = 
+                getString(R.string.repo_edit_rclone_config_not_configured)
+            binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = false
+            return
+        }
+        
+        // Parse the global config
+        try {
+            rcloneRemotes = RcloneConfigParser.parseConfigContent(globalConfig)
+        } catch (e: Exception) {
+            binding.editRepoRcloneParameters.textRcloneConfigStatus.text = 
+                getString(R.string.repo_edit_rclone_config_invalid)
+            binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = false
+            return
+        }
         
         if (rcloneRemotes.isEmpty()) {
-            Toast.makeText(context, R.string.toast_rclone_config_no_remotes, Toast.LENGTH_SHORT).show()
+            binding.editRepoRcloneParameters.textRcloneConfigStatus.text = 
+                getString(R.string.repo_edit_rclone_config_invalid)
+            binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = false
             return
         }
         
-        // Save config to app's private storage
-        try {
-            rcloneConfigFile = File(requireContext().cacheDir, ".config/rclone/rclone.conf").apply {
-                parentFile?.mkdirs()
-                writeText(configContent)
-            }
-        } catch (e: Exception) {
-            Toast.makeText(context, R.string.toast_rclone_config_error, Toast.LENGTH_SHORT).show()
-            e.printStackTrace()
-            return
-        }
-        
-        // Update UI
+        // Update UI with available remotes
         binding.editRepoRcloneParameters.textRcloneConfigStatus.text = 
-            getString(R.string.repo_edit_rclone_config_loaded, rcloneRemotes.size)
+            getString(R.string.repo_edit_rclone_config_available, rcloneRemotes.size)
         
         // Populate spinner with remotes
         val adapter = ArrayAdapter(
@@ -223,11 +192,15 @@ class RepoEditFragment : Fragment() {
         binding.editRepoRcloneParameters.spinnerRcloneRemote.adapter = adapter
         binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = true
         
-        Toast.makeText(
-            context, 
-            getString(R.string.toast_rclone_config_loaded, rcloneRemotes.size),
-            Toast.LENGTH_SHORT
-        ).show()
+        // If editing an existing repo, try to find and select the remote from config
+        val existingRepo = backupManager.config.repos.find { it.base.id == repoId }
+        if (existingRepo?.params is RcloneRepoParams) {
+            val remoteToSelect = (existingRepo.params as RcloneRepoParams).rcloneRemote
+            val index = rcloneRemotes.indexOfFirst { it.name == remoteToSelect }
+            if (index >= 0) {
+                binding.editRepoRcloneParameters.spinnerRcloneRemote.setSelection(index)
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
