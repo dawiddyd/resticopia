@@ -81,6 +81,10 @@ data class PortableConfig(
                         is LocalRepoParams -> PortableRepoParams.Local(
                             localPath = repo.params.localPath
                         )
+                        is RcloneRepoParams -> PortableRepoParams.Rclone(
+                            rcloneRemote = repo.params.rcloneRemote,
+                            rclonePath = repo.params.rclonePath
+                        )
                         else -> throw IllegalArgumentException("Unknown repo type: ${repo.params::class.simpleName}")
                     }
                 )
@@ -146,6 +150,10 @@ data class PortableConfig(
                 )
                 is PortableRepoParams.Local -> LocalRepoParams(
                     localPath = portableRepo.params.localPath
+                )
+                is PortableRepoParams.Rclone -> RcloneRepoParams(
+                    rcloneRemote = portableRepo.params.rcloneRemote,
+                    rclonePath = portableRepo.params.rclonePath
                 )
             }
 
@@ -292,6 +300,12 @@ sealed class PortableRepoParams {
     @Serializable
     data class Local(
         val localPath: String
+    ) : PortableRepoParams()
+
+    @Serializable
+    data class Rclone(
+        val rcloneRemote: String,
+        val rclonePath: String
     ) : PortableRepoParams()
 }
 

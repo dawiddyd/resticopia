@@ -1,12 +1,16 @@
 package org.dydlakcloud.resticopia.ui.repo
 
+import android.app.Activity.RESULT_OK
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.view.View.*
 import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 import org.dydlakcloud.resticopia.BackupManager
@@ -14,6 +18,8 @@ import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.config.*
 import org.dydlakcloud.resticopia.databinding.FragmentRepoEditBinding
 import org.dydlakcloud.resticopia.util.DirectoryChooser
+import org.dydlakcloud.resticopia.util.RcloneConfigParser
+import java.io.File
 import java.net.URI
 import java.util.concurrent.CompletionException
 
@@ -32,6 +38,26 @@ class RepoEditFragment : Fragment() {
     private val repoId: RepoConfigId get() = _repoId
 
     private val directoryChooser = DirectoryChooser.newInstance()
+    
+    // Rclone configuration
+    private var rcloneRemotes: List<RcloneConfigParser.RcloneRemote> = emptyList()
+    private var rcloneConfigFile: File? = null
+    
+    private val rcloneConfigPicker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            result.data?.data?.let { uri ->
+                try {
+                    val content = requireContext().contentResolver.openInputStream(uri)?.bufferedReader()?.readText()
+                    if (content != null) {
+                        handleRcloneConfig(content)
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(context, R.string.toast_rclone_config_error, Toast.LENGTH_SHORT).show()
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,6 +94,7 @@ class RepoEditFragment : Fragment() {
                         RepoType.Rest -> binding.editRepoRestParameters
                         RepoType.B2 -> binding.editRepoB2Parameters
                         RepoType.Local -> binding.editRepoLocalParameters
+                        RepoType.Rclone -> binding.editRepoRcloneParameters
                     }
                 }
 
@@ -111,6 +138,29 @@ class RepoEditFragment : Fragment() {
                     val localRepoParams = repo.params as LocalRepoParams
                     binding.editRepoLocalParameters.editLocalPath.setText(localRepoParams.localPath)
                 }
+                RepoType.Rclone -> {
+                    val rcloneRepoParams = repo.params as RcloneRepoParams
+                    binding.editRepoRcloneParameters.editRclonePath.setText(rcloneRepoParams.rclonePath)
+                    
+                    // Try to load existing config file
+                    val existingConfigFile = File(requireContext().cacheDir, ".config/rclone/rclone.conf")
+                    if (existingConfigFile.exists()) {
+                        try {
+                            handleRcloneConfig(existingConfigFile.readText())
+                            // Select the remote that was previously saved
+                            val remoteIndex = rcloneRemotes.indexOfFirst { it.name == rcloneRepoParams.rcloneRemote }
+                            if (remoteIndex >= 0) {
+                                binding.editRepoRcloneParameters.spinnerRcloneRemote.setSelection(remoteIndex)
+                            } else {
+                                // Remote not found in config
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    } else {
+                        // Config file doesn't exist
+                    }
+                }
 
             }.apply {} // do not remove - throws a compiler error if any of the repo types cases is not covered by the when
         }
@@ -124,8 +174,60 @@ class RepoEditFragment : Fragment() {
         binding.editRepoLocalParameters.buttonBrowseLocalPath.setOnClickListener {
             directoryChooser.openDialog()
         }
+        
+        // Setup rclone config file picker
+        binding.editRepoRcloneParameters.buttonBrowseRcloneConfig.setOnClickListener {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "*/*"
+            }
+            rcloneConfigPicker.launch(intent)
+        }
 
         return root
+    }
+    
+    private fun handleRcloneConfig(configContent: String) {
+        // Parse the config file
+        rcloneRemotes = RcloneConfigParser.parseConfigContent(configContent)
+        
+        if (rcloneRemotes.isEmpty()) {
+            Toast.makeText(context, R.string.toast_rclone_config_no_remotes, Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        // Save config to app's private storage
+        try {
+            rcloneConfigFile = File(requireContext().cacheDir, ".config/rclone/rclone.conf").apply {
+                parentFile?.mkdirs()
+                writeText(configContent)
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, R.string.toast_rclone_config_error, Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+            return
+        }
+        
+        // Update UI
+        binding.editRepoRcloneParameters.textRcloneConfigStatus.text = 
+            getString(R.string.repo_edit_rclone_config_loaded, rcloneRemotes.size)
+        
+        // Populate spinner with remotes
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            rcloneRemotes
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        binding.editRepoRcloneParameters.spinnerRcloneRemote.adapter = adapter
+        binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = true
+        
+        Toast.makeText(
+            context, 
+            getString(R.string.toast_rclone_config_loaded, rcloneRemotes.size),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -278,6 +380,16 @@ class RepoEditFragment : Fragment() {
                     )
                 )
             }
+            RepoType.Rclone -> {
+                val selectedRemote = binding.editRepoRcloneParameters.spinnerRcloneRemote.selectedItem as? RcloneConfigParser.RcloneRemote
+                RepoConfig(
+                    baseConfig,
+                    RcloneRepoParams(
+                        rcloneRemote = selectedRemote?.name ?: "",
+                        rclonePath = binding.editRepoRcloneParameters.editRclonePath.text.toString()
+                    )
+                )
+            }
         }
     }
 
@@ -351,6 +463,21 @@ class RepoEditFragment : Fragment() {
                         checkFieldMandatory(
                             binding.editRepoLocalParameters.editLocalPath,
                             getString(R.string.repo_edit_local_path_error_mandatory)
+                        )
+                    )
+                )
+            }
+            RepoType.Rclone -> {
+                val hasRemote = binding.editRepoRcloneParameters.spinnerRcloneRemote.selectedItem != null
+                if (!hasRemote) {
+                    Toast.makeText(context, R.string.repo_edit_rclone_remote_error_mandatory, Toast.LENGTH_SHORT).show()
+                }
+                baseValidatorResults.plus(
+                    listOf(
+                        hasRemote,
+                        checkFieldMandatory(
+                            binding.editRepoRcloneParameters.editRclonePath,
+                            getString(R.string.repo_edit_rclone_path_error_mandatory)
                         )
                     )
                 )

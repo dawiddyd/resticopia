@@ -43,6 +43,7 @@ class RepoListAdapter(
             RepoType.S3 -> R.drawable.ic_repo_s3
             RepoType.B2 -> R.drawable.ic_repo_b2
             RepoType.Rest -> R.drawable.ic_repo_rest
+            RepoType.Rclone -> R.drawable.ic_repo_rclone
         }
         iconView.setImageResource(iconResource)
 

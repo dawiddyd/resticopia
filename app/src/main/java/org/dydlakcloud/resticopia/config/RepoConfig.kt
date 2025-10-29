@@ -102,6 +102,14 @@ enum class RepoType(type: String) {
         override fun deserializeParams(json: JsonObject): LocalRepoParams =
             Config.format.decodeFromString(Config.format.encodeToString(json))
 
+    },
+    Rclone("rclone") {
+        override fun serializeParams(value: RepoParams): JsonObject =
+            Config.format.decodeFromString(Config.format.encodeToString(value as RcloneRepoParams))
+
+        override fun deserializeParams(json: JsonObject): RcloneRepoParams =
+            Config.format.decodeFromString(Config.format.encodeToString(json))
+
     };
 
     abstract fun serializeParams(value: RepoParams): JsonObject
@@ -164,5 +172,18 @@ data class LocalRepoParams(
         restic,
         baseConfig.password.secret,
         File(localPath)
+    )
+}
+
+@Serializable
+data class RcloneRepoParams(
+    val rcloneRemote: String,
+    val rclonePath: String
+) : RepoParams() {
+    override fun repo(baseConfig: RepoBaseConfig, restic: Restic): ResticRepo = ResticRepoRclone(
+        restic,
+        baseConfig.password.secret,
+        rcloneRemote,
+        rclonePath
     )
 }
