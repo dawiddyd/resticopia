@@ -460,6 +460,14 @@ class RepoEditFragment : Fragment() {
         return validatorResults.all { result -> result }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Reload rclone remotes in case config was updated in Settings
+        if (_binding != null) {
+            loadRcloneRemotes()
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _backupManager = null
