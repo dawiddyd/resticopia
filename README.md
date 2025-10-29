@@ -12,18 +12,19 @@
 
 A mobile Android application that enables efficient and straightforward data backups powered by [Restic](https://restic.net) backup software.
 
-The application leverages [termux/proot](https://github.com/termux/proot) technology to execute native Restic Linux binaries directly on Android devices.
+The application leverages [termux/proot](https://github.com/termux/proot) technology to execute native Restic and [Rclone](https://rclone.org) Linux binaries directly on Android devices.
 
 ### Disclaimer
 This is an **unofficial** application and is not developed or endorsed by the official Restic project team.
 
 ## Key Capabilities
-- Repository Management: Create and configure Restic repositories (supports S3, B2, and Rest protocols)
+- Repository Management: Create and configure Restic repositories (supports S3, B2, Rest, Local, and Rclone protocols)
 - Snapshot Control: Browse and manage your backup snapshots
 - Folder Selection: Choose which directories to include in backups
 - Automated Scheduling: Set up recurring backup tasks
 - Retention Policies: Define cleanup rules for individual folders
 - Live Progress: Monitor backup operations through system notifications
+- Rclone Integration: Access 40+ cloud storage providers via Rclone backend
 
 ## Attribution
 
