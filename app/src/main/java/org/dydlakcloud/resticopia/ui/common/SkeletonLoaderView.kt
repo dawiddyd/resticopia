@@ -69,14 +69,7 @@ class SkeletonLoaderView @JvmOverloads constructor(
                     layoutParams = LayoutParams(
                         LayoutParams.MATCH_PARENT,
                         1
-                    ).apply {
-                        setMargins(
-                            resources.getDimensionPixelSize(R.dimen.list_divider_padding),
-                            0,
-                            resources.getDimensionPixelSize(R.dimen.list_divider_padding),
-                            0
-                        )
-                    }
+                    )
                     setBackgroundResource(R.drawable.list_divider)
                 }
                 addView(divider)
