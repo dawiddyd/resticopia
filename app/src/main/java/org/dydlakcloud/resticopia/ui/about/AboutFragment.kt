@@ -4,9 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import org.dydlakcloud.resticopia.BackupManager
+import org.dydlakcloud.resticopia.BuildConfig
 import org.dydlakcloud.resticopia.databinding.FragmentAboutBinding
 
 class AboutFragment : Fragment() {
@@ -19,8 +19,6 @@ class AboutFragment : Fragment() {
     private var _backupManager: BackupManager? = null
     private val backupManager get() = _backupManager!!
 
-    private fun aboutText(resticVersion: String? = null) = resticVersion ?: ""
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -31,20 +29,8 @@ class AboutFragment : Fragment() {
 
         _backupManager = BackupManager.instance(requireContext())
 
-        val restic = backupManager.restic
-
-        val textView: TextView = binding.textResticVersion
-        textView.text = aboutText()
-        restic.version()
-            .thenAccept { resticVersion ->
-                requireActivity().runOnUiThread {
-                    textView.text = aboutText(resticVersion)
-                }
-            }
-            .exceptionally {
-                it.printStackTrace()
-                null
-            }
+        // Set app version
+        binding.textAppVersion.text = "Version ${BuildConfig.VERSION_NAME}"
 
         return root
     }
