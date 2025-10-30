@@ -56,7 +56,7 @@ class RepoFragment : Fragment() {
             backupManager.observeConfig(viewLifecycleOwner) { _ ->
                 resticRepo.snapshots().handle { snapshots, throwable ->
                     requireActivity().runOnUiThread {
-                        binding.progressRepoSnapshots.visibility = GONE
+                        binding.skeletonRepoSnapshots.visibility = GONE
 
                         val snapshots = snapshots?.reversed() ?: emptyList()
 

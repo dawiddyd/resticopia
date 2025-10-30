@@ -99,7 +99,7 @@ class FolderFragment : Fragment() {
 
                 resticRepo.snapshots(resticRepo.restic.hostname).handle { snapshots, throwable ->
                     requireActivity().runOnUiThread {
-                        binding.progressFolderSnapshots.visibility = GONE
+                        binding.skeletonFolderSnapshots.visibility = GONE
 
                         val snapshots =
                             if (folder != null)

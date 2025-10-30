@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Custom attributes for SkeletonLoaderView -->
+    <declare-styleable name="SkeletonLoaderView">
+        <attr name="itemLayout" format="reference" />
+        <attr name="itemCount" format="integer" />
+    </declare-styleable>
+</resources>
+
