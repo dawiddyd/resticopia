@@ -149,7 +149,9 @@ class BackupManager private constructor(context: Context) {
                 var contentTitle = ""
                 for (folder in config.folders) {
                     if (folder.id == folderConfigId) {
-                        contentTitle = "${folder.path}"
+                        val repo = folder.repo(config)
+                        val repoName = repo?.base?.name ?: "Unknown"
+                        contentTitle = "$repoName: ${folder.path}"
                         break
                     }
                 }

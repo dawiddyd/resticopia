@@ -75,18 +75,22 @@ class SettingsFragment : Fragment() {
         if (result.resultCode == Activity.RESULT_OK) {
             val newConfig = result.data?.getStringExtra("config")
             newConfig?.let { configContent ->
-                // Validate and save
+                // Validate and save - wait for completion before updating UI
                 backupManager.configure { config ->
                     config.copy(rcloneConfig = configContent)
+                }.thenRun {
+                    // Reinitialize Restic with the new config so rcloneConfig is available
+                    backupManager.initRestic(requireContext())
+                    // Update UI on main thread
+                    requireActivity().runOnUiThread {
+                        updateRcloneStatus()
+                        Toast.makeText(
+                            requireContext(), 
+                            R.string.rclone_config_saved, 
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
-                // Reinitialize Restic with the new config so rcloneConfig is available
-                backupManager.initRestic(requireContext())
-                updateRcloneStatus()
-                Toast.makeText(
-                    requireContext(), 
-                    R.string.rclone_config_saved, 
-                    Toast.LENGTH_SHORT
-                ).show()
             }
         }
     }
