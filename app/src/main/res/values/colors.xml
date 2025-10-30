@@ -14,6 +14,10 @@
     <!-- Backup status color -->
     <color name="backup_status_color">#938AA5</color>
     
+    <!-- Settings tile colors -->
+    <color name="settings_tile_background">#E8E5EF</color>
+    <color name="settings_tile_text">#35283C</color>
+    
     <!-- Caption text color - Black with 40% opacity -->
     <color name="caption_text_color">#66000000</color>
 </resources>

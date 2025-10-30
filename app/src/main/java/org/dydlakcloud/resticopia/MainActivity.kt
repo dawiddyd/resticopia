@@ -61,6 +61,11 @@ class MainActivity : AppCompatActivity() {
         BackupService.schedule(applicationContext)
     }
 
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment_activity_main)
+        return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,

@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp">
+
+        <!-- Network Settings Tile -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tile_network"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="@color/settings_tile_background"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:rippleColor="#33000000">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="64dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:text="@string/settings_network"
+                android:textColor="@color/settings_tile_text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Notifications Settings Tile -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tile_notifications"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="@color/settings_tile_background"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tile_network"
+            app:rippleColor="#33000000">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="64dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:text="@string/settings_notifications"
+                android:textColor="@color/settings_tile_text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Backup Rules Settings Tile -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tile_backup_rules"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="@color/settings_tile_background"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tile_notifications"
+            app:rippleColor="#33000000">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="64dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:text="@string/settings_backup_rules"
+                android:textColor="@color/settings_tile_text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Rclone Configuration Tile -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tile_rclone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="@color/settings_tile_background"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tile_backup_rules"
+            app:rippleColor="#33000000">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="64dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:text="@string/settings_rclone"
+                android:textColor="@color/settings_tile_text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Import/Export Settings Tile -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tile_import_export"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="@color/settings_tile_background"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tile_rclone"
+            app:rippleColor="#33000000">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="64dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:text="@string/settings_import_export"
+                android:textColor="@color/settings_tile_text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Utilities Tile -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/tile_utilities"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="@color/settings_tile_background"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tile_import_export"
+            app:rippleColor="#33000000">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="64dp"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:text="@string/settings_utilities"
+                android:textColor="@color/settings_tile_text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Logo and Version -->
+        <ImageView
+            android:id="@+id/logo_resticopia"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="32dp"
+            android:paddingBottom="0dp"
+            android:scaleType="fitStart"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/logo_resticopia"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tile_utilities"
+            app:tint="?android:attr/textColorPrimary" />
+
+        <TextView
+            android:id="@+id/text_app_version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginBottom="16dp"
+            android:textAppearance="@style/TextAppearance.App.CaptionReg"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>
+
