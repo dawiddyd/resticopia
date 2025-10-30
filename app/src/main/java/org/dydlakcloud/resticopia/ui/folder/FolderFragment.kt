@@ -135,79 +135,99 @@ class FolderFragment : Fragment() {
 
             val activeBackup = backupManager.activeBackup(folderId)
             activeBackup.observe(viewLifecycleOwner) { backup ->
-                binding.progressBackupDetails.visibility =
-                    if (backup.isStarting()) VISIBLE else GONE
-
-                binding.textBackupDetails.visibility =
-                    if (!backup.isStarting() && backup.error == null) VISIBLE else GONE
-
-                binding.textBackupError.visibility =
-                    if (backup.error != null) VISIBLE else GONE
-
-                binding.buttonBackup.visibility =
-                    if (!backup.inProgress) VISIBLE else GONE
-
-                binding.buttonBackupCancel.visibility =
-                    if (backup.inProgress) VISIBLE else GONE
-
-                if (backup.inProgress) {
-                    if (backup.progress != null) {
+                when {
+                    backup.isStarting() -> {
+                        // Starting state: show loading indicator, disable button
+                        binding.progressBackupStarting.visibility = VISIBLE
+                        binding.backupStatusContainer.visibility = GONE
+                        binding.buttonBackup.isEnabled = false
+                        binding.progressBackup.setProgress(0, true)
+                    }
+                    backup.inProgress && backup.progress != null -> {
+                        // In progress state: show upload icon + progress info, disable button
+                        binding.progressBackupStarting.visibility = GONE
+                        binding.backupStatusContainer.visibility = VISIBLE
+                        binding.backupStatusIcon.setImageResource(R.drawable.ic_backup_upload)
+                        binding.buttonBackup.isEnabled = false
+                        
+                        // Update progress bar
                         binding.progressBackup.setProgress(
                             (backup.progress.percentDone100()).roundToInt(),
                             true
                         )
-
-                        val details =
-                            """
-                            ${backup.progress.percentDoneString()} done / ${backup.progress.timeElapsedString()} elapsed
-                            ${backup.progress.files_done}${if (backup.progress.total_files != null) " / ${backup.progress.total_files}" else ""} Files
-                            ${backup.progress.bytesDoneString()}${if (backup.progress.total_bytes != null) " / ${backup.progress.totalBytesString()}" else ""}
-                            """.trimIndent()
-
-                        binding.textBackupDetails.text = details
-                        binding.textBackupDetails.setOnClickListener {
+                        
+                        // Update files count: "13 / 25 Files"
+                        val filesText = if (backup.progress.total_files != null) {
+                            "${backup.progress.files_done} / ${backup.progress.total_files} Files"
+                        } else {
+                            "${backup.progress.files_done} Files"
+                        }
+                        binding.textBackupFiles.text = filesText
+                        
+                        // Update data size: "7.83MB / 56.23MB"
+                        val sizeText = if (backup.progress.total_bytes != null) {
+                            "${backup.progress.bytesDoneString()} / ${backup.progress.totalBytesString()}"
+                        } else {
+                            backup.progress.bytesDoneString()
+                        }
+                        binding.textBackupSize.text = sizeText
+                        
+                        binding.textBackupError.visibility = GONE
+                    }
+                    backup.error != null -> {
+                        // Error state: show error message, enable button, hide status, reset progress
+                        binding.progressBackupStarting.visibility = GONE
+                        binding.backupStatusContainer.visibility = GONE
+                        binding.buttonBackup.isEnabled = true
+                        binding.progressBackup.setProgress(0, true)
+                        
+                        binding.textBackupError.text = backup.error
+                        binding.textBackupError.visibility = VISIBLE
+                        binding.textBackupError.setOnClickListener {
                             AlertDialog.Builder(context)
-                                .setTitle("Backup Progress")
-                                .setMessage(details)
+                                .setTitle("Backup Error")
+                                .setMessage(backup.error)
                                 .setPositiveButton("OK") { dialog, _ ->
                                     dialog.cancel()
                                 }
                                 .show()
                         }
                     }
-                } else {
-                    binding.progressBackup.setProgress(0, true)
-
-                    when {
-                        backup.error != null -> {
-                            System.err.println(backup.error)
-                            binding.textBackupError.text = backup.error
-                            binding.textBackupError.setOnClickListener {
-                                AlertDialog.Builder(context)
-                                    .setTitle("Backup Error")
-                                    .setMessage(backup.error)
-                                    .setPositiveButton("OK") { dialog, _ ->
-                                        dialog.cancel()
-                                    }
-                                    .show()
-                            }
+                    backup.summary != null && backup.progress != null -> {
+                        // Completed state: show checkmark icon + final counts, enable button
+                        binding.progressBackupStarting.visibility = GONE
+                        binding.backupStatusContainer.visibility = VISIBLE
+                        binding.backupStatusIcon.setImageResource(R.drawable.ic_backup_complete)
+                        binding.buttonBackup.isEnabled = true
+                        
+                        // Set progress to 100%
+                        binding.progressBackup.setProgress(100, true)
+                        
+                        // Show final counts (e.g., "15 / 15 Files")
+                        val filesText = if (backup.progress.total_files != null) {
+                            "${backup.progress.total_files} / ${backup.progress.total_files} Files"
+                        } else {
+                            "${backup.progress.files_done} Files"
                         }
-                        backup.summary != null -> {
-                            val details =
-                                if (backup.progress == null) null
-                                else {
-                                    """
-                                    Backup finished after ${backup.progress.timeElapsedString()}!
-                                    ${backup.progress.files_done}${if (backup.progress.total_files != null) " / ${backup.progress.total_files}" else ""} Files
-                                    ${backup.progress.bytesDoneString()}${if (backup.progress.total_bytes != null) " / ${backup.progress.totalBytesString()}" else ""}
-                                    """.trimIndent()
-                                }
-
-                            binding.textBackupDetails.text = details ?: "Backup finished!"
+                        binding.textBackupFiles.text = filesText
+                        
+                        // Show final size (e.g., "56.23MB / 56.23MB")
+                        val sizeText = if (backup.progress.total_bytes != null) {
+                            "${backup.progress.totalBytesString()} / ${backup.progress.totalBytesString()}"
+                        } else {
+                            backup.progress.bytesDoneString()
                         }
-                        else -> {
-                            // cancelled
-                        }
+                        binding.textBackupSize.text = sizeText
+                        
+                        binding.textBackupError.visibility = GONE
+                    }
+                    else -> {
+                        // Idle state: hide status info, enable button, reset progress
+                        binding.progressBackupStarting.visibility = GONE
+                        binding.backupStatusContainer.visibility = GONE
+                        binding.buttonBackup.isEnabled = true
+                        binding.progressBackup.setProgress(0, true)
+                        binding.textBackupError.visibility = GONE
                     }
                 }
             }
@@ -226,15 +246,21 @@ class FolderFragment : Fragment() {
                 )
             }
 
-            binding.buttonBackupCancel.setOnClickListener { _ ->
-                AlertDialog.Builder(requireContext())
-                    .setTitle(R.string.alert_backup_cancel_title)
-                    .setMessage(R.string.alert_backup_cancel_message)
-                    .setPositiveButton(android.R.string.ok) { _, _ ->
-                        activeBackup.value?.cancel()
-                    }
-                    .setNegativeButton(android.R.string.cancel) { _, _ -> }
-                    .show()
+            // Cancel functionality moved to long press on button
+            binding.buttonBackup.setOnLongClickListener { _ ->
+                if (activeBackup.value?.inProgress == true) {
+                    AlertDialog.Builder(requireContext())
+                        .setTitle(R.string.alert_backup_cancel_title)
+                        .setMessage(R.string.alert_backup_cancel_message)
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                            activeBackup.value?.cancel()
+                        }
+                        .setNegativeButton(android.R.string.cancel) { _, _ -> }
+                        .show()
+                    true
+                } else {
+                    false
+                }
             }
         }
 

@@ -114,4 +114,13 @@
         <item name="android:textSize">13sp</item>
         <item name="android:textColor">@color/caption_text_color</item>
     </style>
+
+    <!-- Body15 Style - Semibold, 15sp, 130% line height -->
+    <style name="TextAppearance.App.Body15" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="fontFamily">@font/plus_jakarta_sans</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">15sp</item>
+        <item name="lineHeight" tools:targetApi="p">19.5sp</item>
+        <item name="android:textColor">@color/backup_status_color</item>
+    </style>
 </resources>

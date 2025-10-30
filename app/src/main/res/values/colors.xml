@@ -11,6 +11,9 @@
     <!-- Main purple color for FABs and accents -->
     <color name="purple_main">#9322C8</color>
     
+    <!-- Backup status color -->
+    <color name="backup_status_color">#938AA5</color>
+    
     <!-- Caption text color - Black with 40% opacity -->
     <color name="caption_text_color">#66000000</color>
 </resources>
