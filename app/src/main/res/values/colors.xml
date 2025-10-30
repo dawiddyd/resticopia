@@ -8,6 +8,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
+    <!-- Main purple color for FABs and accents -->
+    <color name="purple_main">#9322C8</color>
+    
     <!-- Caption text color - Black with 40% opacity -->
     <color name="caption_text_color">#66000000</color>
 </resources>
