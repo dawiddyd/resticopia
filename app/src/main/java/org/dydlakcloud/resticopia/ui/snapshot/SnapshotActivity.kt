@@ -31,10 +31,12 @@ class SnapshotActivity : AppCompatActivity() {
         _repoId = RepoConfigId.fromString(intent.extras!!.getString("repoId")!!)
         _snapshotId = ResticSnapshotId.fromString(intent.extras!!.getString("snapshotId")!!)
 
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-
         val binding = ActivitySnapshotBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Setup Toolbar
+        setSupportActionBar(binding.toolbar)
+        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =

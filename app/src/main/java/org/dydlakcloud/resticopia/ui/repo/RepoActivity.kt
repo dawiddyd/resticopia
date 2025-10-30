@@ -29,10 +29,12 @@ class RepoActivity : AppCompatActivity() {
         val edit = intent.extras!!.getBoolean("edit")
         _repoId = RepoConfigId.fromString(intent.extras!!.getString("id")!!)
 
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-
         val binding = ActivityRepoBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Setup Toolbar
+        setSupportActionBar(binding.toolbar)
+        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
         if (edit) {
             val navController = findNavController(R.id.nav_host_fragment_activity_repo)
