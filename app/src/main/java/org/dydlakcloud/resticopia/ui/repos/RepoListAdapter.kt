@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import android.widget.ImageView
 import android.widget.TextView
 import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.config.RepoConfig
@@ -31,18 +30,21 @@ class RepoListAdapter(
 
         val repo = getItem(position)
         
-        val iconView = view.findViewById<ImageView>(R.id.repo_icon)
         val nameView = view.findViewById<TextView>(R.id.repo_name)
+        val typeView = view.findViewById<TextView>(R.id.repo_type)
 
         // Set repository name
         nameView.text = repo.base.name
 
-        // Set icon based on repository type (cloud for remote, folder for local)
-        val iconResource = when (repo.base.type) {
-            RepoType.Local -> R.drawable.ic_repo_local
-            RepoType.S3, RepoType.B2, RepoType.Rest, RepoType.Rclone -> R.drawable.outline_cloud_24
+        // Set repository type text
+        val typeText = when (repo.base.type) {
+            RepoType.Local -> "Local"
+            RepoType.S3 -> "Amazon S3"
+            RepoType.B2 -> "Backblaze B2"
+            RepoType.Rest -> "REST Server"
+            RepoType.Rclone -> "Rclone"
         }
-        iconView.setImageResource(iconResource)
+        typeView.text = typeText
 
         return view
     }
