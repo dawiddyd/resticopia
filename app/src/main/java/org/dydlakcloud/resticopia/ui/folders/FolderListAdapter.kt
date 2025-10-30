@@ -9,6 +9,7 @@ import android.widget.TextView
 import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.config.Config
 import org.dydlakcloud.resticopia.config.FolderConfig
+import java.time.format.DateTimeFormatter
 
 /**
  * Custom adapter for displaying folder list items with consistent sizing.
@@ -18,6 +19,8 @@ class FolderListAdapter(
     private val folders: List<FolderConfig>,
     private val config: Config
 ) : BaseAdapter() {
+
+    private val dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
 
     override fun getCount(): Int = folders.size
 
@@ -32,10 +35,23 @@ class FolderListAdapter(
         val folder = getItem(position)
         
         val nameView = view.findViewById<TextView>(R.id.folder_name)
+        val detailsView = view.findViewById<TextView>(R.id.folder_details)
 
-        // Set folder name with repository info
+        // Set folder name (just the name, not full path)
+        nameView.text = folder.path.name
+
+        // Build details line: "Repository name, last backup Mar 25, 2023"
         val repoName = folder.repo(config)?.base?.name ?: "Unknown"
-        nameView.text = "$repoName ${folder.path.path}"
+        val lastBackup = folder.lastBackup(filterSuccessful = true)
+        
+        val detailsText = if (lastBackup != null) {
+            val formattedDate = lastBackup.timestamp.format(dateFormatter)
+            "$repoName, last backup $formattedDate"
+        } else {
+            "$repoName, no backups yet"
+        }
+        
+        detailsView.text = detailsText
 
         return view
     }

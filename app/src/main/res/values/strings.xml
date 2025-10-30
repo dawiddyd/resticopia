@@ -2,6 +2,7 @@
     <string name="app_name">Resticopia</string>
     <string name="text_folders">Folders</string>
     <string name="text_folder">Folder</string>
+    <string name="folder_icon_description">Folder icon</string>
     <string name="text_repos">Repositories</string>
     <string name="text_repository">Repository</string>
     <string name="text_settings">Settings</string>

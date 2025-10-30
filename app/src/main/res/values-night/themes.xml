@@ -78,4 +78,20 @@
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textStyle">bold</item>
     </style>
+
+    <!-- Body17 Style - Semibold, 17sp -->
+    <style name="TextAppearance.App.Body17" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="fontFamily">@font/plus_jakarta_sans</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
+
+    <!-- CaptionReg Style - Medium, 13sp -->
+    <style name="TextAppearance.App.CaptionReg" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="fontFamily">@font/plus_jakarta_sans</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/caption_text_color</item>
+    </style>
 </resources>
