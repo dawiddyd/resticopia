@@ -64,10 +64,11 @@ class FolderFragment : Fragment() {
         }
 
         if (folder != null && repo != null) {
-            binding.textRepo.text = repo.base.name
-            binding.textFolder.text = folder.path.path
-            binding.textSchedule.text = folder.schedule
-            binding.textRetain.text = listOf(
+            binding.textFolderName.text = folder.path.name
+            binding.textFolderPath.text = folder.path.path
+            
+            // Combine schedule and retain info into one line
+            val retainText = listOf(
                 "Everything",
                 listOf(
                     if (folder.keepLast == null) "" else "in last ${folder.keepLast}",
@@ -78,6 +79,8 @@ class FolderFragment : Fragment() {
                     }"
                 ).filter { it.isNotEmpty() }.joinToString(" and ")
             ).filter { it.isNotEmpty() }.joinToString(" ")
+            
+            binding.textScheduleRetain.text = "Schedule: ${folder.schedule} Retain: $retainText"
 
             val resticRepo = repo.repo(backupManager.restic)
 
@@ -88,7 +91,11 @@ class FolderFragment : Fragment() {
 
                 binding.textLastBackup.text =
                     if (lastSuccessfulBackup == null) ""
-                    else "Last Backup on ${Formatters.dateTime(lastSuccessfulBackup.timestamp)}"
+                    else {
+                        val dateFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm MMM dd, yyyy")
+                        val formattedDate = lastSuccessfulBackup.timestamp.format(dateFormatter)
+                        "Last Backup on $formattedDate"
+                    }
 
                 resticRepo.snapshots(resticRepo.restic.hostname).handle { snapshots, throwable ->
                     requireActivity().runOnUiThread {
