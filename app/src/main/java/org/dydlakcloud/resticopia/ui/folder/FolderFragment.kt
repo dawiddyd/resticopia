@@ -109,11 +109,17 @@ class FolderFragment : Fragment() {
                                 emptyList()
 
                         snapshotIds = snapshots.map { it.id }
-                        binding.listFolderSnapshots.adapter = ArrayAdapter(
+                        binding.listFolderSnapshots.adapter = SnapshotListAdapter(
                             requireContext(),
-                            android.R.layout.simple_list_item_1,
-                            snapshots.map { "${Formatters.dateTime(it.time)} ${it.id.short}" }
+                            snapshots,
+                            repo.base.name
                         )
+                        
+                        // Hide divider if there's only one snapshot
+                        if (snapshots.size <= 1) {
+                            binding.listFolderSnapshots.divider = null
+                            binding.listFolderSnapshots.dividerHeight = 0
+                        }
 
                         if (throwable != null) {
                             val throwable =

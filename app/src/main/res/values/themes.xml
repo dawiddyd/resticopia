@@ -89,6 +89,16 @@
         <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
 
+    <!-- Title2 Style - Bold, 22sp, Line Height 28sp, Letter Spacing 0px -->
+    <style name="TextAppearance.App.Title2" parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="fontFamily">@font/plus_jakarta_sans</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:lineHeight">28sp</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
+
     <!-- Body17 Style - Semibold, 17sp -->
     <style name="TextAppearance.App.Body17" parent="TextAppearance.MaterialComponents.Body1">
         <item name="fontFamily">@font/plus_jakarta_sans</item>
