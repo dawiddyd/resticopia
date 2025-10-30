@@ -56,18 +56,21 @@ class RepoFragment : Fragment() {
             backupManager.observeConfig(viewLifecycleOwner) { _ ->
                 resticRepo.snapshots().handle { snapshots, throwable ->
                     requireActivity().runOnUiThread {
-                        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-
                         binding.progressRepoSnapshots.visibility = GONE
 
                         val snapshots = snapshots?.reversed() ?: emptyList()
 
                         snapshotIds = snapshots.map { it.id }
-                        binding.listRepoSnapshots.adapter = ArrayAdapter(
+                        binding.listRepoSnapshots.adapter = RepoSnapshotListAdapter(
                             requireContext(),
-                            android.R.layout.simple_list_item_1,
-                            snapshots.map { "${it.time.format(formatter)} ${it.id.short}\n${it.hostname} ${it.paths[0]}" }
+                            snapshots
                         )
+                        
+                        // Hide divider if there's only one snapshot
+                        if (snapshots.size <= 1) {
+                            binding.listRepoSnapshots.divider = null
+                            binding.listRepoSnapshots.dividerHeight = 0
+                        }
 
                         if (throwable != null) {
                             val throwable =
