@@ -15,13 +15,14 @@ import java.util.concurrent.CompletableFuture
 class Restic(
     val storage: ResticStorage,
     val hostname: String,
-    val nameServers: ResticNameServers
+    val nameServers: ResticNameServers,
+    val rcloneConfig: String? = null // Global rclone configuration
 ) {
     fun withHostname(hostname: String): Restic =
-        Restic(storage, hostname, nameServers)
+        Restic(storage, hostname, nameServers, rcloneConfig)
 
     fun withNameServers(nameServers: ResticNameServers): Restic =
-        Restic(storage, hostname, nameServers)
+        Restic(storage, hostname, nameServers, rcloneConfig)
 
     private fun executable(name: String) =
         storage.lib().resolve("libdata_$name.so")
@@ -37,10 +38,16 @@ class Restic(
 
     init {
         initLib("libtalloc.so.2")
+        // Create symlink for rclone so it can be found as "rclone" in PATH
+        lib.mkdirs()
+        val rcloneLink = lib.resolve("rclone")
+        rcloneLink.delete()
+        Os.symlink(executable("rclone").absolutePath, rcloneLink.absolutePath)
     }
 
     private val proot = executable("proot")
     private val restic = executable("restic")
+    private val rclone = lib.resolve("rclone")  // Use the symlink in lib directory
     private val loader = executable("loader")
     private val loader32 = executable("loader32")
 
@@ -66,13 +73,15 @@ class Restic(
         )
 
     private fun vars(): List<Pair<String, String>> = listOf(
-        Pair("PATH", "/system/bin"),
+        Pair("PATH", "${lib.absolutePath}:/system/bin"),
+        Pair("HOME", storage.cache().absolutePath),
         Pair("TMPDIR", storage.cache().absolutePath),
         Pair("LD_LIBRARY_PATH", lib.absolutePath),
         Pair("PROOT_LOADER", loader.absolutePath),
         Pair("PROOT_LOADER_32", loader32.absolutePath),
         Pair("PROOT_TMP_DIR", storage.cache().absolutePath),
-        Pair("RESTIC_CACHE_DIR", storage.cache().resolve("restic").absolutePath)
+        Pair("RESTIC_CACHE_DIR", storage.cache().resolve("restic").absolutePath),
+        Pair("RCLONE_CONFIG", storage.cache().resolve(".config/rclone/rclone.conf").absolutePath)
     )
 
     private fun binds(): List<Pair<String, String>> = listOf(

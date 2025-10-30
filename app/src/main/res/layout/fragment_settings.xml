@@ -290,6 +290,50 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/group_rclone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/group_backup_constraints">
+
+            <TextView
+                android:id="@+id/text_rclone_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:text="@string/settings_rclone_title"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/text_rclone_status"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="8dp"
+                android:text="@string/settings_rclone_summary_not_configured"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="@+id/button_rclone_configure"
+                app:layout_constraintEnd_toStartOf="@+id/button_rclone_configure"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/text_rclone_title" />
+
+            <Button
+                android:id="@+id/button_rclone_configure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="32dp"
+                android:text="@string/settings_rclone_button"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/text_rclone_title" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/group_export_import"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -297,7 +341,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/group_backup_constraints">
+            app:layout_constraintTop_toBottomOf="@+id/group_rclone">
 
             <TextView
                 android:id="@+id/text_export_import_description"

@@ -38,12 +38,10 @@ class RepoTypeSpinnerAdapter(
         // Set repository type name
         nameView.text = repoType.name
 
-        // Set icon based on repository type
+        // Set icon based on repository type (cloud for remote, folder for local)
         val iconResource = when (repoType) {
             RepoType.Local -> R.drawable.ic_repo_local
-            RepoType.S3 -> R.drawable.ic_repo_s3
-            RepoType.B2 -> R.drawable.ic_repo_b2
-            RepoType.Rest -> R.drawable.ic_repo_rest
+            RepoType.S3, RepoType.B2, RepoType.Rest, RepoType.Rclone -> R.drawable.outline_cloud_24
         }
         iconView.setImageResource(iconResource)
 

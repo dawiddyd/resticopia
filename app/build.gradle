@@ -98,7 +98,19 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.6.0'
     implementation 'androidx.navigation:navigation-ui-ktx:2.6.0'
     implementation "androidx.security:security-crypto:1.1.0-alpha06"
+    
+    // Unit Testing Dependencies
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'io.mockk:mockk:1.13.8'
+    testImplementation 'io.mockk:mockk-android:1.13.8'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
+    testImplementation 'app.cash.turbine:turbine:1.0.0'
+    testImplementation 'com.google.truth:truth:1.1.5'
+    testImplementation 'androidx.arch.core:core-testing:2.2.0'
+    testImplementation 'org.robolectric:robolectric:4.11.1'
+    
+    // Android Testing Dependencies
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'io.mockk:mockk-android:1.13.8'
 }

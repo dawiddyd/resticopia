@@ -67,7 +67,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="16dp"
             android:autoLink="web"
-            android:text="Using OpenSource Software\nhttps://github.com/restic/restic\nhttps://github.com/termux/proot"
+            android:text="Using OpenSource Software\nhttps://github.com/restic/restic\nhttps://github.com/rclone/rclone\nhttps://github.com/termux/proot"
             android:textAlignment="center"
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="parent"

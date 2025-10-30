@@ -31,6 +31,7 @@ data class PortableConfig(
     val ntfyUrl: String? = null,
     val requiresCharging: Boolean = false,
     val allowsCellular: Boolean = false,
+    val rcloneConfig: String? = null, // Global rclone configuration
     val encrypted: Boolean = false,
     val encryptedData: String? = null, // Encrypted config data (when encrypted = true)
     val passwordHash: String? = null // SHA-256 hash to verify password
@@ -81,6 +82,10 @@ data class PortableConfig(
                         is LocalRepoParams -> PortableRepoParams.Local(
                             localPath = repo.params.localPath
                         )
+                        is RcloneRepoParams -> PortableRepoParams.Rclone(
+                            rcloneRemote = repo.params.rcloneRemote,
+                            rclonePath = repo.params.rclonePath
+                        )
                         else -> throw IllegalArgumentException("Unknown repo type: ${repo.params::class.simpleName}")
                     }
                 )
@@ -106,6 +111,7 @@ data class PortableConfig(
                 ntfyUrl = config.ntfyUrl,
                 requiresCharging = requiresCharging,
                 allowsCellular = allowsCellular,
+                rcloneConfig = config.rcloneConfig, // Include global rclone config
                 encrypted = false,
                 passwordHash = null
             )
@@ -147,6 +153,10 @@ data class PortableConfig(
                 is PortableRepoParams.Local -> LocalRepoParams(
                     localPath = portableRepo.params.localPath
                 )
+                is PortableRepoParams.Rclone -> RcloneRepoParams(
+                    rcloneRemote = portableRepo.params.rcloneRemote,
+                    rclonePath = portableRepo.params.rclonePath
+                )
             }
 
             val baseConfig = RepoBaseConfig(
@@ -176,7 +186,8 @@ data class PortableConfig(
             folders = folders,
             hostname = hostname,
             nameServers = nameServers,
-            ntfyUrl = ntfyUrl
+            ntfyUrl = ntfyUrl,
+            rcloneConfig = this.rcloneConfig // Restore global rclone config
         )
     }
 
@@ -292,6 +303,12 @@ sealed class PortableRepoParams {
     @Serializable
     data class Local(
         val localPath: String
+    ) : PortableRepoParams()
+
+    @Serializable
+    data class Rclone(
+        val rcloneRemote: String,
+        val rclonePath: String
     ) : PortableRepoParams()
 }
 

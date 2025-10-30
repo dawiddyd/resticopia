@@ -81,6 +81,35 @@
     <string name="repo_edit_local_path_title">Local Repository Path</string>
     <string name="repo_edit_local_path_hint">/storage/emulated/0/restic-repo</string>
     <string name="repo_edit_local_path_error_mandatory">Local repository path needed</string>
+    <string name="repo_edit_rclone_config_title">Rclone Configuration</string>
+    <string name="repo_edit_rclone_config_not_configured">⚠️ Configure rclone in Settings first</string>
+    <string name="repo_edit_rclone_config_available">✅ %1$d remote(s) available</string>
+    <string name="repo_edit_rclone_config_invalid">⚠️ No valid remotes in config</string>
+    <string name="repo_edit_rclone_remote_title">Select Remote</string>
+    <string name="repo_edit_rclone_remote_hint">Choose a remote from your config</string>
+    <string name="repo_edit_rclone_remote_error_mandatory">Please select a remote</string>
+    <string name="repo_edit_rclone_no_remotes">No remotes available</string>
+    <string name="repo_edit_rclone_path_title">Repository Path</string>
+    <string name="repo_edit_rclone_path_hint">backups/restic</string>
+    <string name="repo_edit_rclone_path_error_mandatory">Repository path needed</string>
+    <string name="toast_rclone_not_configured">Rclone not configured. Please configure it in Settings first.</string>
+    <string name="toast_rclone_config_error">Error loading rclone config</string>
+    <string name="toast_rclone_repo_type_disabled">Configure rclone in Settings to use this repository type</string>
+    
+    <!-- Rclone Settings -->
+    <string name="settings_rclone_title">Rclone Configuration</string>
+    <string name="settings_rclone_summary_configured">%1$d remote(s) configured</string>
+    <string name="settings_rclone_summary_not_configured">Not configured</string>
+    <string name="settings_rclone_button">Configure Rclone</string>
+    
+    <!-- Rclone Editor -->
+    <string name="rclone_editor_title">Edit Rclone Config</string>
+    <string name="rclone_editor_hint">Enter rclone.conf content:\n\n[remote1]\ntype = drive\nclient_id = ...\n\n[remote2]\ntype = s3\n...</string>
+    <string name="rclone_config_invalid_title">Invalid Configuration</string>
+    <string name="rclone_config_invalid_message">No valid remotes found in the configuration. Save anyway?</string>
+    <string name="rclone_config_saved">Rclone configuration saved successfully</string>
+    <string name="rclone_config_validation_failed">Configuration contains errors</string>
+    <string name="action_save">Save</string>
     <string name="settings_backup_constraints_title">Backup Constraints</string>
     <string name="settings_backup_require_charging">Require charging for scheduled backups</string>
     <string name="settings_backup_require_charging_description">Backups will only run when device is connected to power</string>

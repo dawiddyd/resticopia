@@ -1,12 +1,16 @@
 package org.dydlakcloud.resticopia.ui.repo
 
+import android.app.Activity.RESULT_OK
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.view.View.*
 import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 import org.dydlakcloud.resticopia.BackupManager
@@ -14,6 +18,8 @@ import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.config.*
 import org.dydlakcloud.resticopia.databinding.FragmentRepoEditBinding
 import org.dydlakcloud.resticopia.util.DirectoryChooser
+import org.dydlakcloud.resticopia.util.RcloneConfigParser
+import java.io.File
 import java.net.URI
 import java.util.concurrent.CompletionException
 
@@ -32,6 +38,9 @@ class RepoEditFragment : Fragment() {
     private val repoId: RepoConfigId get() = _repoId
 
     private val directoryChooser = DirectoryChooser.newInstance()
+    
+    // Rclone configuration
+    private var rcloneRemotes: List<RcloneConfigParser.RcloneRemote> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,6 +77,7 @@ class RepoEditFragment : Fragment() {
                         RepoType.Rest -> binding.editRepoRestParameters
                         RepoType.B2 -> binding.editRepoB2Parameters
                         RepoType.Local -> binding.editRepoLocalParameters
+                        RepoType.Rclone -> binding.editRepoRcloneParameters
                     }
                 }
 
@@ -111,6 +121,11 @@ class RepoEditFragment : Fragment() {
                     val localRepoParams = repo.params as LocalRepoParams
                     binding.editRepoLocalParameters.editLocalPath.setText(localRepoParams.localPath)
                 }
+                RepoType.Rclone -> {
+                    val rcloneRepoParams = repo.params as RcloneRepoParams
+                    binding.editRepoRcloneParameters.editRclonePath.setText(rcloneRepoParams.rclonePath)
+                    // Remotes will be loaded in loadRcloneRemotes() after layout is set up
+                }
 
             }.apply {} // do not remove - throws a compiler error if any of the repo types cases is not covered by the when
         }
@@ -124,8 +139,68 @@ class RepoEditFragment : Fragment() {
         binding.editRepoLocalParameters.buttonBrowseLocalPath.setOnClickListener {
             directoryChooser.openDialog()
         }
+        
+        // Load rclone remotes from global config
+        loadRcloneRemotes()
 
         return root
+    }
+    
+    /**
+     * Load rclone remotes from global config and populate the remote selector
+     */
+    private fun loadRcloneRemotes() {
+        val globalConfig = backupManager.config.rcloneConfig
+        
+        if (globalConfig.isNullOrBlank()) {
+            // No global config - show warning
+            binding.editRepoRcloneParameters.textRcloneConfigStatus.text = 
+                getString(R.string.repo_edit_rclone_config_not_configured)
+            binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = false
+            return
+        }
+        
+        // Parse the global config
+        try {
+            rcloneRemotes = RcloneConfigParser.parseConfigContent(globalConfig)
+        } catch (e: Exception) {
+            binding.editRepoRcloneParameters.textRcloneConfigStatus.text = 
+                getString(R.string.repo_edit_rclone_config_invalid)
+            binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = false
+            return
+        }
+        
+        if (rcloneRemotes.isEmpty()) {
+            binding.editRepoRcloneParameters.textRcloneConfigStatus.text = 
+                getString(R.string.repo_edit_rclone_config_invalid)
+            binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = false
+            return
+        }
+        
+        // Update UI with available remotes
+        binding.editRepoRcloneParameters.textRcloneConfigStatus.text = 
+            getString(R.string.repo_edit_rclone_config_available, rcloneRemotes.size)
+        
+        // Populate spinner with remotes
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            rcloneRemotes
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        binding.editRepoRcloneParameters.spinnerRcloneRemote.adapter = adapter
+        binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = true
+        
+        // If editing an existing repo, try to find and select the remote from config
+        val existingRepo = backupManager.config.repos.find { it.base.id == repoId }
+        if (existingRepo?.params is RcloneRepoParams) {
+            val remoteToSelect = (existingRepo.params as RcloneRepoParams).rcloneRemote
+            val index = rcloneRemotes.indexOfFirst { it.name == remoteToSelect }
+            if (index >= 0) {
+                binding.editRepoRcloneParameters.spinnerRcloneRemote.setSelection(index)
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -278,6 +353,16 @@ class RepoEditFragment : Fragment() {
                     )
                 )
             }
+            RepoType.Rclone -> {
+                val selectedRemote = binding.editRepoRcloneParameters.spinnerRcloneRemote.selectedItem as? RcloneConfigParser.RcloneRemote
+                RepoConfig(
+                    baseConfig,
+                    RcloneRepoParams(
+                        rcloneRemote = selectedRemote?.name ?: "",
+                        rclonePath = binding.editRepoRcloneParameters.editRclonePath.text.toString()
+                    )
+                )
+            }
         }
     }
 
@@ -355,9 +440,32 @@ class RepoEditFragment : Fragment() {
                     )
                 )
             }
+            RepoType.Rclone -> {
+                val hasRemote = binding.editRepoRcloneParameters.spinnerRcloneRemote.selectedItem != null
+                if (!hasRemote) {
+                    Toast.makeText(context, R.string.repo_edit_rclone_remote_error_mandatory, Toast.LENGTH_SHORT).show()
+                }
+                baseValidatorResults.plus(
+                    listOf(
+                        hasRemote,
+                        checkFieldMandatory(
+                            binding.editRepoRcloneParameters.editRclonePath,
+                            getString(R.string.repo_edit_rclone_path_error_mandatory)
+                        )
+                    )
+                )
+            }
         }
 
         return validatorResults.all { result -> result }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Reload rclone remotes in case config was updated in Settings
+        if (_binding != null) {
+            loadRcloneRemotes()
+        }
     }
 
     override fun onDestroyView() {
