@@ -1,14 +1,14 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme - Light Mode -->
     <style name="Theme.ResticUI" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <!-- Primary brand color - Purple for buttons and checkboxes -->
+        <item name="colorPrimary">@color/purple_main</item>
+        <item name="colorPrimaryVariant">@color/purple_main</item>
         <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_700</item>
-        <item name="colorOnSecondary">@color/black</item>
+        <!-- Secondary brand color - Also purple for consistency -->
+        <item name="colorSecondary">@color/purple_main</item>
+        <item name="colorSecondaryVariant">@color/purple_main</item>
+        <item name="colorOnSecondary">@color/white</item>
         <!-- Surface colors -->
         <item name="colorSurface">@color/white</item>
         <item name="colorOnSurface">@color/black</item>
@@ -26,6 +26,11 @@
         <item name="textAppearanceHeadline4">@style/TextAppearance.App.Headline4</item>
         <item name="textAppearanceHeadline5">@style/TextAppearance.App.Headline5</item>
         <item name="textAppearanceHeadline6">@style/TextAppearance.App.Headline6</item>
+        <!-- Button and checkbox styles -->
+        <item name="materialButtonStyle">@style/Widget.App.Button</item>
+        <item name="checkboxStyle">@style/Widget.App.CheckBox</item>
+        <!-- Rounded corners for components -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.App.SmallComponent</item>
     </style>
 
     <!-- App Bar / Toolbar Style - Light Mode -->
@@ -122,5 +127,24 @@
         <item name="android:textSize">15sp</item>
         <item name="lineHeight" tools:targetApi="p">19.5sp</item>
         <item name="android:textColor">@color/backup_status_color</item>
+    </style>
+
+    <!-- Button Style - Purple and Rounded -->
+    <style name="Widget.App.Button" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/purple_main</item>
+        <item name="android:textStyle">bold</item>
+        <item name="fontFamily">@font/plus_jakarta_sans</item>
+        <item name="cornerRadius">24dp</item>
+    </style>
+
+    <!-- CheckBox Style - Purple -->
+    <style name="Widget.App.CheckBox" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
+        <item name="buttonTint">@color/purple_main</item>
+    </style>
+
+    <!-- Rounded corners for small components -->
+    <style name="ShapeAppearance.App.SmallComponent" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">24dp</item>
     </style>
 </resources>
