@@ -2,5 +2,6 @@
 <resources>
     <array name="preloaded_fonts" translatable="false">
         <item>@font/ubuntu_mono</item>
+        <item>@font/plus_jakarta_sans</item>
     </array>
 </resources>

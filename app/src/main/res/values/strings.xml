@@ -2,9 +2,16 @@
     <string name="app_name">Resticopia</string>
     <string name="text_folders">Folders</string>
     <string name="text_folder">Folder</string>
+    <string name="folder_icon_description">Folder icon</string>
     <string name="text_repos">Repositories</string>
     <string name="text_repository">Repository</string>
     <string name="text_settings">Settings</string>
+    <string name="settings_network">Network</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_backup_rules">Backup Rules</string>
+    <string name="settings_rclone">Rclone Configuration</string>
+    <string name="settings_import_export">Import/Export</string>
+    <string name="settings_utilities">Utilities</string>
     <string name="text_about">About</string>
     <string name="text_snapshots">Snapshots</string>
     <string name="text_snapshot">Snapshot</string>
@@ -19,6 +26,8 @@
     <string name="button_done">Done</string>
     <string name="button_browse">Browse</string>
     <string name="button_backup">Backup</string>
+    <string name="button_backup_now">Backup Now</string>
+    <string name="backup_status_icon_desc">Backup status icon</string>
     <string name="button_ok">OK</string>
     <string name="button_cancel">Cancel</string>
     <string name="button_refresh">Refresh</string>

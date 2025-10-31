@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generic skeleton loader for single-line list items -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:minHeight="56dp"
+    android:gravity="center_vertical">
+
+    <!-- Icon placeholder -->
+    <View
+        android:id="@+id/skeleton_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="@drawable/skeleton_shimmer" />
+
+    <!-- Text placeholder -->
+    <View
+        android:id="@+id/skeleton_line"
+        android:layout_width="180dp"
+        android:layout_height="17dp"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/skeleton_shimmer" />
+
+</LinearLayout>
+

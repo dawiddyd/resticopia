@@ -25,118 +25,56 @@
                 android:id="@+id/group_header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="24dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <TextView
-                    android:id="@+id/text_repo"
+                    android:id="@+id/text_folder_name"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
+                    android:textAppearance="@style/TextAppearance.App.Title1"
                     android:textAlignment="center"
-                    android:textSize="20sp"
+                    android:layout_marginBottom="8dp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/group_header"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
-                    android:id="@+id/text_folder"
-                    android:layout_width="match_parent"
+                    android:id="@+id/text_folder_path"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
+                    android:textAppearance="@style/TextAppearance.App.CaptionReg"
                     android:textAlignment="center"
-                    android:textSize="16sp"
+                    android:layout_marginTop="4dp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/text_repo" />
+                    app:layout_constraintTop_toBottomOf="@+id/text_folder_name" />
 
                 <TextView
                     android:id="@+id/text_last_backup"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
+                    android:textAppearance="@style/TextAppearance.App.CaptionReg"
                     android:textAlignment="center"
-                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/text_folder" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/group_schedule"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/group_header">
+                    app:layout_constraintTop_toBottomOf="@+id/text_folder_path" />
 
                 <TextView
-                    android:id="@+id/text_schedule_description"
+                    android:id="@+id/text_schedule_retain"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/text_schedule"
+                    android:textAppearance="@style/TextAppearance.App.CaptionReg"
+                    android:textAlignment="center"
+                    android:layout_marginTop="4dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/text_schedule"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginEnd="32dp"
-                    android:textSize="20sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/text_schedule_description" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/group_retain"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/group_schedule">
-
-                <TextView
-                    android:id="@+id/text_retain_description"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/text_retain"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/text_retain"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginEnd="32dp"
-                    android:textSize="20sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/text_retain_description" />
+                    app:layout_constraintTop_toBottomOf="@+id/text_last_backup" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -144,31 +82,33 @@
                 android:id="@+id/group_snapshots"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="40dp"
                 android:layout_marginBottom="16dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_min="100dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/group_retain">
+                app:layout_constraintTop_toBottomOf="@+id/group_header">
 
                 <TextView
                     android:id="@+id/text_snapshots"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
                     android:text="@string/text_snapshots"
+                    android:textAppearance="@style/TextAppearance.App.Title2"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <ProgressBar
-                    android:id="@+id/progress_folder_snapshots"
-                    style="?android:attr/progressBarStyle"
-                    android:layout_width="wrap_content"
+                <org.dydlakcloud.resticopia.ui.common.SkeletonLoaderView
+                    android:id="@+id/skeleton_folder_snapshots"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    app:itemCount="3"
+                    app:itemLayout="@layout/skeleton_item_snapshot"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/text_snapshots" />
@@ -183,12 +123,14 @@
                     android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/progress_folder_snapshots" />
+                    app:layout_constraintTop_toBottomOf="@+id/skeleton_folder_snapshots" />
 
                 <ListView
                     android:id="@+id/list_folder_snapshots"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
+                    android:divider="@drawable/list_divider"
+                    android:dividerHeight="1dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -204,89 +146,136 @@
         android:id="@+id/group_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
+        <!-- Progress Bar (14dp height, purple) -->
         <ProgressBar
             android:id="@+id/progress_backup"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            app:layout_constraintBottom_toTopOf="@+id/button_backup"
+            android:layout_height="14dp"
+            android:progressDrawable="@drawable/progress_bar_purple"
+            app:layout_constraintBottom_toTopOf="@+id/backup_content_container"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <Button
-            android:id="@+id/button_backup"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:text="@string/button_backup"
-            app:layout_constraintBottom_toTopOf="@+id/button_backup_cancel"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <Button
-            android:id="@+id/button_backup_cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:text="@string/button_cancel"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <TextView
-            android:id="@+id/text_backup_details"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="bottom"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/button_backup"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/progress_backup" />
+            app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Content Container (status info + button) -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/backup_content_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/progress_backup">
+
+            <!-- Left Side: Status Info Container -->
+            <LinearLayout
+                android:id="@+id/backup_status_container"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/button_backup"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <!-- Icon on the left -->
+                <ImageView
+                    android:id="@+id/backup_status_icon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="8dp"
+                    android:contentDescription="@string/backup_status_icon_desc"
+                    android:src="@drawable/ic_backup_upload" />
+
+                <!-- Text container (two lines stacked vertically) -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <!-- Line 1: Files Progress -->
+                    <TextView
+                        android:id="@+id/text_backup_files"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="13 / 25 Files"
+                        android:textAppearance="@style/TextAppearance.App.Body15" />
+
+                    <!-- Line 2: Data Size Progress -->
+                    <TextView
+                        android:id="@+id/text_backup_size"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="7.83MB / 56.23MB"
+                        android:textAppearance="@style/TextAppearance.App.Body15" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Right Side: Backup Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_backup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:paddingTop="14dp"
+                android:paddingBottom="14dp"
+                android:text="@string/button_backup_now"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:backgroundTint="@color/button_backup_background"
+                app:cornerRadius="24dp"
+                app:icon="@null"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Loading indicator (shown when starting) -->
+            <ProgressBar
+                android:id="@+id/progress_backup_starting"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="12dp"
+                android:indeterminateTint="@color/white"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/button_backup"
+                app:layout_constraintEnd_toStartOf="@+id/button_backup"
+                app:layout_constraintTop_toTopOf="@+id/button_backup" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Error Message (shown below everything when error occurs) -->
         <TextView
             android:id="@+id/text_backup_error"
             android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:clickable="true"
             android:focusable="true"
+            android:textAppearance="@style/TextAppearance.App.CaptionReg"
             android:textColor="@color/design_default_color_error"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/button_backup"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/progress_backup" />
-
-        <ProgressBar
-            android:id="@+id/progress_backup_details"
-            style="?android:attr/progressBarStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:visibility="gone"
-            app:layout_constraintEnd_toStartOf="@+id/button_backup"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/progress_backup" />
+            app:layout_constraintTop_toBottomOf="@+id/backup_content_container" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

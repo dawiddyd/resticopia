@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Bell icon (tinted by theme) -->
+    <item android:drawable="@drawable/ic_bell_notification" />
+    
+    <!-- Purple notification badge (not tinted) -->
+    <item>
+        <vector
+            android:width="32dp"
+            android:height="32dp"
+            android:viewportWidth="32"
+            android:viewportHeight="32">
+            <group>
+                <path
+                    android:fillColor="#9322C8"
+                    android:pathData="M24.5,15.5 a4,4 0 0,1 0,8 a4,4 0 0,1 0,-8z"
+                    android:strokeWidth="1"
+                    android:strokeColor="#FFFFFF"/>
+            </group>
+        </vector>
+    </item>
+</layer-list>
+

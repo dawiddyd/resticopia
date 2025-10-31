@@ -10,6 +10,8 @@
         android:id="@+id/list_folders"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:divider="@drawable/list_divider"
+        android:dividerHeight="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,6 +24,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         android:contentDescription="@string/button_add"
+        app:backgroundTint="@color/purple_main"
+        app:tint="@color/white"
         app:srcCompat="@drawable/outline_add_24" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

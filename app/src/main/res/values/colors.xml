@@ -7,4 +7,17 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Main purple color for FABs and accents -->
+    <color name="purple_main">#9322C8</color>
+    
+    <!-- Backup status color -->
+    <color name="backup_status_color">#938AA5</color>
+    
+    <!-- Settings tile colors -->
+    <color name="settings_tile_background">#E8E5EF</color>
+    <color name="settings_tile_text">#35283C</color>
+    
+    <!-- Caption text color - Black with 40% opacity -->
+    <color name="caption_text_color">#66000000</color>
 </resources>

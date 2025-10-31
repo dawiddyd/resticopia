@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Caption text color - White with 40% opacity for dark mode -->
+    <color name="caption_text_color">#66FFFFFF</color>
+    
+    <!-- Settings tile colors - Darker for dark mode -->
+    <color name="settings_tile_background">#2A2A2A</color>
+    <color name="settings_tile_text">#E8E5EF</color>
+</resources>
+

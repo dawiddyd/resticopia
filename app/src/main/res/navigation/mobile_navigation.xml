@@ -19,9 +19,70 @@
 
     <fragment
         android:id="@+id/navigation_settings"
-        android:name="org.dydlakcloud.resticopia.ui.settings.SettingsFragment"
+        android:name="org.dydlakcloud.resticopia.ui.settings.SettingsMainFragment"
         android:label="@string/text_settings"
-        tools:layout="@layout/fragment_settings" />
+        tools:layout="@layout/fragment_settings_main">
+        
+        <action
+            android:id="@+id/action_settings_main_to_network"
+            app:destination="@id/navigation_settings_network" />
+        
+        <action
+            android:id="@+id/action_settings_main_to_notifications"
+            app:destination="@id/navigation_settings_notifications" />
+        
+        <action
+            android:id="@+id/action_settings_main_to_backup_rules"
+            app:destination="@id/navigation_settings_backup_rules" />
+        
+        <action
+            android:id="@+id/action_settings_main_to_rclone"
+            app:destination="@id/navigation_settings_rclone" />
+        
+        <action
+            android:id="@+id/action_settings_main_to_import_export"
+            app:destination="@id/navigation_settings_import_export" />
+        
+        <action
+            android:id="@+id/action_settings_main_to_utilities"
+            app:destination="@id/navigation_settings_utilities" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_settings_network"
+        android:name="org.dydlakcloud.resticopia.ui.settings.SettingsNetworkFragment"
+        android:label="@string/settings_network"
+        tools:layout="@layout/fragment_settings_network" />
+
+    <fragment
+        android:id="@+id/navigation_settings_notifications"
+        android:name="org.dydlakcloud.resticopia.ui.settings.SettingsNotificationsFragment"
+        android:label="@string/settings_notifications"
+        tools:layout="@layout/fragment_settings_notifications" />
+
+    <fragment
+        android:id="@+id/navigation_settings_backup_rules"
+        android:name="org.dydlakcloud.resticopia.ui.settings.SettingsBackupRulesFragment"
+        android:label="@string/settings_backup_rules"
+        tools:layout="@layout/fragment_settings_backup_rules" />
+
+    <fragment
+        android:id="@+id/navigation_settings_rclone"
+        android:name="org.dydlakcloud.resticopia.ui.settings.SettingsRcloneFragment"
+        android:label="@string/settings_rclone"
+        tools:layout="@layout/fragment_settings_rclone" />
+
+    <fragment
+        android:id="@+id/navigation_settings_import_export"
+        android:name="org.dydlakcloud.resticopia.ui.settings.SettingsImportExportFragment"
+        android:label="@string/settings_import_export"
+        tools:layout="@layout/fragment_settings_import_export" />
+
+    <fragment
+        android:id="@+id/navigation_settings_utilities"
+        android:name="org.dydlakcloud.resticopia.ui.settings.SettingsUtilitiesFragment"
+        android:label="@string/settings_utilities"
+        tools:layout="@layout/fragment_settings_utilities" />
 
     <fragment
         android:id="@+id/navigation_about"

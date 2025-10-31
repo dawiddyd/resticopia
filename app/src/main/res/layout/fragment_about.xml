@@ -4,77 +4,145 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     tools:context=".ui.about.AboutFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        android:layout_height="wrap_content"
+        android:padding="24dp">
+
+        <!-- Logo -->
+        <ImageView
+            android:id="@+id/logo_about"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/logo_resticopia"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?android:attr/textColorPrimary" />
+
+        <!-- App Version -->
+        <TextView
+            android:id="@+id/text_app_version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textAppearance="@style/TextAppearance.App.CaptionReg"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/logo_about"
+            tools:text="Version 0.6.1" />
+
+        <!-- Developer Information -->
+        <TextView
+            android:id="@+id/text_fork_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:text="Developed by dawdyd"
+            android:textAppearance="@style/TextAppearance.App.Body17"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_app_version" />
 
         <TextView
-            android:id="@+id/text_restic_version"
-            android:layout_width="match_parent"
+            android:id="@+id/text_fork_link"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:autoLink="web"
+            android:text="https://codeberg.org/dawdyd/resticopia"
+            android:textAppearance="@style/TextAppearance.App.CaptionReg"
+            android:textColorLink="@color/purple_main"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_fork_label" />
+
+        <!-- Open Source Section -->
+        <TextView
+            android:id="@+id/text_opensource_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Using open source software"
+            android:textAppearance="@style/TextAppearance.App.Body17"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_fork_link" />
+
+        <!-- restic -->
+        <TextView
+            android:id="@+id/text_restic_link"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:layout_marginEnd="8dp"
             android:autoLink="web"
-            android:textAlignment="center"
-            android:textSize="16sp"
+            android:text="• https://github.com/restic/restic"
+            android:textAppearance="@style/TextAppearance.App.CaptionReg"
+            android:textColorLink="@color/purple_main"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_about3" />
+            app:layout_constraintTop_toBottomOf="@+id/text_opensource_title" />
+
+        <!-- rclone -->
+        <TextView
+            android:id="@+id/text_rclone_link"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:autoLink="web"
+            android:text="• https://github.com/rclone/rclone"
+            android:textAppearance="@style/TextAppearance.App.CaptionReg"
+            android:textColorLink="@color/purple_main"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_restic_link" />
+
+        <!-- proot -->
+        <TextView
+            android:id="@+id/text_proot_link"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:autoLink="web"
+            android:text="• https://github.com/termux/proot"
+            android:textAppearance="@style/TextAppearance.App.CaptionReg"
+            android:textColorLink="@color/purple_main"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_rclone_link" />
+
+        <!-- Original Project -->
+        <TextView
+            android:id="@+id/text_original_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Original restic-android by lhns"
+            android:textAppearance="@style/TextAppearance.App.Body17"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_proot_link" />
 
         <TextView
-            android:id="@+id/text_about2"
-            android:layout_width="match_parent"
+            android:id="@+id/text_original_link"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="32dp"
             android:autoLink="web"
-            android:text="Resticopia"
-            android:textAlignment="center"
-            android:textSize="24sp"
+            android:text="https://github.com/lhns/restic-android"
+            android:textAppearance="@style/TextAppearance.App.CaptionReg"
+            android:textColorLink="@color/purple_main"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/text_original_label" />
 
-        <TextView
-            android:id="@+id/text_about3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:autoLink="web"
-            android:text="Fork maintained by dawdyd\nhttps://codeberg.org/dawdyd/resticopia\n\nOriginal restic-android by lhns\nhttps://github.com/lhns/restic-android"
-            android:textAlignment="center"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_about2" />
-
-        <TextView
-            android:id="@+id/text_about4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
-            android:autoLink="web"
-            android:text="Using OpenSource Software\nhttps://github.com/restic/restic\nhttps://github.com/rclone/rclone\nhttps://github.com/termux/proot"
-            android:textAlignment="center"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_restic_version" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>

@@ -58,7 +58,6 @@ class SnapshotFragment : Fragment() {
         _snapshotId = activity.snapshotId
 
         binding.textSnapshotId.text = snapshotId.short
-        binding.textSnapshotIdLong.text = snapshotId.id
 
         val repo = backupManager.config.repos.find { it.base.id == repoId }
 
@@ -68,22 +67,22 @@ class SnapshotFragment : Fragment() {
             resticRepo.cat(snapshotId).handle { snapshot, throwable ->
                 requireActivity().runOnUiThread {
                     if (snapshot != null) {
-                        val timeString = "Created on ${Formatters.dateTime(snapshot.time)}"
                         val snapshotRootPath = snapshot.paths[0]
+                        
+                        // Format date as "Created on HH:mm MMM dd, yyyy"
+                        val dateFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm MMM dd, yyyy")
+                        val formattedDate = snapshot.time.format(dateFormatter)
+                        val timeString = "Created on $formattedDate"
 
-                        binding.textTime.visibility = VISIBLE
-                        binding.textHostname.visibility = VISIBLE
-                        binding.textPath.visibility = VISIBLE
-
+                        // Combine hostname and path on one line
+                        binding.textHostnamePath.text = "${snapshot.hostname} ${snapshotRootPath.path}"
                         binding.textTime.text = timeString
-                        binding.textHostname.text = snapshot.hostname
-                        binding.textPath.text = snapshotRootPath.path
 
                         resticRepo.ls(snapshotId).handle { lsResult, throwable ->
                             requireActivity().runOnUiThread {
                                 if (lsResult != null) {
                                     val (_, files) = lsResult
-                                    binding.progressSnapshot.visibility = GONE
+                                    binding.skeletonSnapshotFiles.visibility = GONE
 
                                     binding.listFilesSnapshot.adapter = SnapshotFilesListAdapter(
                                         requireContext(),
