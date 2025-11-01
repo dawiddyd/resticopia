@@ -103,6 +103,11 @@ android {
         }
     }
     namespace 'org.dydlakcloud.resticopia'
+    
+    dependenciesInfo {
+        includeInApk false
+        includeInBundle false
+    }
 }
 
 dependencies {
