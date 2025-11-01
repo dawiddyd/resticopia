@@ -49,15 +49,21 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file(System.env.RELEASE_STORE_FILE ?: "null")
-            storePassword System.env.RELEASE_STORE_PASSWORD
-            keyAlias System.env.RELEASE_KEY_ALIAS
-            keyPassword System.env.RELEASE_KEY_PASSWORD
+            // Only configure signing if environment variables are set
+            if (System.env.RELEASE_STORE_FILE) {
+                storeFile file(System.env.RELEASE_STORE_FILE)
+                storePassword System.env.RELEASE_STORE_PASSWORD
+                keyAlias System.env.RELEASE_KEY_ALIAS
+                keyPassword System.env.RELEASE_KEY_PASSWORD
+            }
         }
     }
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            // Only use custom signing config if RELEASE_STORE_FILE is set
+            if (System.env.RELEASE_STORE_FILE) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -88,7 +94,12 @@ android {
     splits {
         abi {
             enable true
-            universalApk true
+            reset()
+            // Only include architectures we actually have native libraries for
+            include 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
+            // Universal APK disabled by default to save build time and memory
+            // Enable only if you need it for distribution
+            universalApk false
         }
     }
     namespace 'org.dydlakcloud.resticopia'
