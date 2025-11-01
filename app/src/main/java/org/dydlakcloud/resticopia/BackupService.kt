@@ -6,7 +6,10 @@ import android.app.job.JobScheduler
 import android.app.job.JobService
 import android.content.ComponentName
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
+import android.os.Build
 import org.dydlakcloud.resticopia.config.FolderConfig
 import java.time.ZonedDateTime
 
@@ -100,19 +103,51 @@ class BackupService : JobService() {
     }
 
     override fun onStartJob(params: JobParameters?): Boolean {
-        val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE)
-                as? WifiManager
-            ?: throw IllegalStateException("Could not get system Context.WIFI_SERVICE")
-        val createWifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "restic")
-        createWifiLock.setReferenceCounted(false)
-        createWifiLock.acquire()
+        // Only acquire WiFi lock if device is on WiFi
+        // When on cellular, WiFi lock is not needed and may cause issues
+        val wifiLock = if (isConnectedToWiFi(applicationContext)) {
+            val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE)
+                    as? WifiManager
+                ?: throw IllegalStateException("Could not get system Context.WIFI_SERVICE")
+            val lock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "restic")
+            lock.setReferenceCounted(false)
+            lock.acquire()
+            lock
+        } else {
+            null
+        }
 
         startBackup(applicationContext) {
-            createWifiLock.release()
+            wifiLock?.release()
             jobFinished(params, false)
         }
 
         return true
+    }
+    
+    /**
+     * Checks if the device is currently connected to WiFi.
+     * This is used to determine whether to acquire a WiFi lock.
+     * 
+     * @param context The application context
+     * @return true if connected to WiFi, false otherwise (including cellular)
+     */
+    private fun isConnectedToWiFi(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+            ?: return false
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val network = connectivityManager.activeNetwork ?: return false
+            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+            
+            // Check if connected to WiFi transport
+            return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+        } else {
+            @Suppress("DEPRECATION")
+            val networkInfo = connectivityManager.activeNetworkInfo
+            @Suppress("DEPRECATION")
+            return networkInfo?.type == ConnectivityManager.TYPE_WIFI
+        }
     }
 
     override fun onStopJob(params: JobParameters?): Boolean {
