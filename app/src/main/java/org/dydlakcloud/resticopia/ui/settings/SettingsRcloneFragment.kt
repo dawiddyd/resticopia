@@ -65,6 +65,7 @@ class SettingsRcloneFragment : Fragment() {
             val intent = Intent(requireContext(), RcloneConfigEditorActivity::class.java)
             intent.putExtra("config", backupManager.config.rcloneConfig ?: "")
             rcloneConfigEditorLauncher.launch(intent)
+            requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
     }
 
