@@ -4,6 +4,8 @@
 > All modifications are documented in the git commit history.
 
 [![GNU General Public License, Version 2](https://img.shields.io/github/license/lhns/restic-android.svg?maxAge=3600)](https://www.gnu.org/licenses/gpl-2.0.html)
+[![Build Status](https://codeberg.org/dawdyd/resticopia/badges/workflows/build.yml/badge.svg)](https://codeberg.org/dawdyd/resticopia/actions)
+[![Code Quality](https://codeberg.org/dawdyd/resticopia/badges/workflows/code-quality.yml/badge.svg)](https://codeberg.org/dawdyd/resticopia/actions)
 
  <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://codeberg.org/dawdyd/resticopia">
     <img src="docs/badges/obtainium.png" alt="Obtainium" width="160"/>
