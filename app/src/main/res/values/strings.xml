@@ -110,6 +110,11 @@
     <string name="settings_rclone_summary_configured">%1$d remote(s) configured</string>
     <string name="settings_rclone_summary_not_configured">Not configured</string>
     <string name="settings_rclone_button">Configure Rclone</string>
+    <string name="settings_rclone_description">Rclone enables backups to cloud storage providers like Google Drive, OneDrive, Dropbox, and more. Configure rclone remotes to use them as repository backends.</string>
+    <string name="settings_rclone_instructions_title">How to Setup</string>
+    <string name="settings_rclone_instructions">1. Write your rclone.conf content manually or generate it using "rclone config" on your computer\n2. If generated, copy the config file content (usually at ~/.config/rclone/rclone.conf)\n3. Paste or write the configuration into the editor and save\n4. Use the configured remotes when creating repositories</string>
+    <string name="settings_rclone_docs_label">Official Documentation</string>
+    <string name="settings_rclone_docs_link">https://rclone.org/docs/</string>
     
     <!-- Rclone Editor -->
     <string name="rclone_editor_title">Edit Rclone Config</string>
