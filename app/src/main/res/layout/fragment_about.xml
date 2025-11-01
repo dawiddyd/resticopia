@@ -63,6 +63,22 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/text_fork_label" />
 
+        <!-- Buy Me a Coffee Button -->
+        <ImageButton
+            android:id="@+id/button_buy_me_coffee"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:maxWidth="180dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/buy_me_coffee"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:src="@drawable/bmc_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/text_fork_link" />
+
         <!-- Open Source Section -->
         <TextView
             android:id="@+id/text_opensource_title"
@@ -73,7 +89,7 @@
             android:textAppearance="@style/TextAppearance.App.Body17"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_fork_link" />
+            app:layout_constraintTop_toBottomOf="@+id/button_buy_me_coffee" />
 
         <!-- restic -->
         <TextView

@@ -1,5 +1,7 @@
 package org.dydlakcloud.resticopia.ui.about
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -31,6 +33,12 @@ class AboutFragment : Fragment() {
 
         // Set app version
         binding.textAppVersion.text = "Version ${BuildConfig.VERSION_NAME}"
+
+        // Set up Buy Me a Coffee button
+        binding.buttonBuyMeCoffee.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://buymeacoffee.com/dawdyd"))
+            startActivity(intent)
+        }
 
         return root
     }
