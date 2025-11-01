@@ -24,6 +24,10 @@ import org.dydlakcloud.resticopia.restic.ResticRepo
 import org.dydlakcloud.resticopia.restic.ResticSnapshotId
 import org.dydlakcloud.resticopia.ui.Formatters
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 class SnapshotFragment : Fragment() {
     private var _binding: FragmentSnapshotBinding? = null
@@ -40,6 +44,12 @@ class SnapshotFragment : Fragment() {
 
     private lateinit var _snapshotId: ResticSnapshotId
     private val snapshotId: ResticSnapshotId get() = _snapshotId
+
+    private var _snapshotRootPath: File? = null
+    private val snapshotRootPath: File? get() = _snapshotRootPath
+
+    private var _resticRepo: ResticRepo? = null
+    private val resticRepo: ResticRepo? get() = _resticRepo
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,11 +73,13 @@ class SnapshotFragment : Fragment() {
 
         if (repo != null) {
             val resticRepo = repo.repo(backupManager.restic)
+            _resticRepo = resticRepo
 
             resticRepo.cat(snapshotId).handle { snapshot, throwable ->
                 requireActivity().runOnUiThread {
                     if (snapshot != null) {
                         val snapshotRootPath = snapshot.paths[0]
+                        _snapshotRootPath = snapshotRootPath
                         
                         // Format date as "Created on HH:mm MMM dd, yyyy"
                         val dateFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm MMM dd, yyyy")
@@ -77,6 +89,9 @@ class SnapshotFragment : Fragment() {
                         // Combine hostname and path on one line
                         binding.textHostnamePath.text = "${snapshot.hostname} ${snapshotRootPath.path}"
                         binding.textTime.text = timeString
+
+                        // Setup Download All button
+                        setupDownloadAllButton()
 
                         resticRepo.ls(snapshotId).handle { lsResult, throwable ->
                             requireActivity().runOnUiThread {
@@ -161,6 +176,112 @@ class SnapshotFragment : Fragment() {
         super.onDestroyView()
         _backupManager = null
         _binding = null
+        _snapshotRootPath = null
+        _resticRepo = null
+    }
+
+    private fun setupDownloadAllButton() {
+        binding.buttonDownloadAll.setOnClickListener {
+            val sharedPref = requireContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+            val downloadPathString = sharedPref?.getString("dl_path", "") ?: ""
+            val downloadPath = File(downloadPathString)
+
+            if (!(downloadPath.exists() && downloadPath.isDirectory)) {
+                AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.alert_download_all_title)
+                    .setMessage(R.string.alert_download_file_no_dest_dir)
+                    .setNegativeButton(android.R.string.cancel) { _, _ -> }
+                    .show()
+            } else {
+                AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.alert_download_all_title)
+                    .setMessage(getString(R.string.alert_download_all_message, downloadPathString, snapshotId.short))
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        downloadAllFiles(downloadPath)
+                    }
+                    .setNegativeButton(android.R.string.cancel) { _, _ -> }
+                    .show()
+            }
+        }
+    }
+
+    private fun downloadAllFiles(downloadPath: File) {
+        val repo = resticRepo
+        val rootPath = snapshotRootPath
+
+        if (repo == null || rootPath == null) {
+            Toast.makeText(requireContext(), R.string.toast_download_all_failed, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        binding.progressDl.visibility = VISIBLE
+        binding.buttonDownloadAll.isEnabled = false
+
+        // Create a temporary directory for restoration
+        val tempDir = File(requireContext().cacheDir, "snapshot_restore_${System.currentTimeMillis()}")
+        tempDir.mkdirs()
+
+        repo.restoreAll(snapshotId, tempDir, rootPath)
+            .handle { content, throwable ->
+                if (content != null) {
+                    // Files restored successfully, now create ZIP
+                    try {
+                        val zipFileName = "snapshot_${snapshotId.short}.zip"
+                        val zipFile = File(downloadPath, zipFileName)
+                        
+                        // Create ZIP archive
+                        createZipFromDirectory(tempDir, zipFile)
+                        
+                        // Clean up temp directory
+                        tempDir.deleteRecursively()
+                        
+                        val handler = Handler(requireContext().mainLooper)
+                        handler.post {
+                            Toast.makeText(requireContext(), R.string.toast_download_all_success, Toast.LENGTH_LONG).show()
+                            binding.progressDl.visibility = GONE
+                            binding.buttonDownloadAll.isEnabled = true
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        tempDir.deleteRecursively()
+                        
+                        val handler = Handler(requireContext().mainLooper)
+                        handler.post {
+                            Toast.makeText(requireContext(), R.string.toast_download_all_failed, Toast.LENGTH_LONG).show()
+                            binding.progressDl.visibility = GONE
+                            binding.buttonDownloadAll.isEnabled = true
+                        }
+                    }
+                } else {
+                    throwable?.printStackTrace()
+                    tempDir.deleteRecursively()
+                    
+                    val handler = Handler(requireContext().mainLooper)
+                    handler.post {
+                        Toast.makeText(requireContext(), R.string.toast_download_all_failed, Toast.LENGTH_LONG).show()
+                        binding.progressDl.visibility = GONE
+                        binding.buttonDownloadAll.isEnabled = true
+                    }
+                }
+            }
+    }
+
+    private fun createZipFromDirectory(sourceDir: File, zipFile: File) {
+        ZipOutputStream(FileOutputStream(zipFile)).use { zipOut ->
+            sourceDir.walkTopDown().forEach { file ->
+                if (file.isFile) {
+                    val relativePath = file.relativeTo(sourceDir).path
+                    val entry = ZipEntry(relativePath)
+                    zipOut.putNextEntry(entry)
+                    
+                    FileInputStream(file).use { input ->
+                        input.copyTo(zipOut)
+                    }
+                    
+                    zipOut.closeEntry()
+                }
+            }
+        }
     }
 }
 

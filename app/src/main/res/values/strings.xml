@@ -50,6 +50,16 @@
         here: "%s" ?
     </string>
     <string name="alert_download_file_no_dest_dir">Before proceeding, ensure that you have chosen a valid download folder in the settings.</string>
+    <string name="button_download_all">Download All (ZIP)</string>
+    <string name="alert_download_all_title">Download All Files as ZIP</string>
+    <string name="alert_download_all_message">
+        Do you want to download all files from this snapshot as a ZIP archive to: "%s" ?
+        
+        A file named "snapshot_%s.zip" will be created.
+    </string>
+    <string name="toast_download_all_success">ZIP archive created successfully</string>
+    <string name="toast_download_all_failed">Failed to create ZIP archive</string>
+    <string name="toast_download_all_progress">Creating ZIP archive…</string>
     <string name="notification_channel_backup">Resticopia Backup</string>
     <string name="notification_backup_title">Resticopia Backup</string>
     <string name="notification_backup_progress_message">Backup in Progress…</string>

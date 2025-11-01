@@ -1,7 +1,10 @@
 package org.dydlakcloud.resticopia.fixtures
 
 import org.dydlakcloud.resticopia.config.*
+import org.dydlakcloud.resticopia.restic.ResticFile
+import org.dydlakcloud.resticopia.restic.ResticSnapshot
 import org.dydlakcloud.resticopia.restic.ResticSnapshotId
+import java.io.File
 import java.net.URI
 import java.time.Duration
 import java.time.ZonedDateTime
@@ -177,6 +180,67 @@ object TestFixtures {
         }
         config.appendLine()
         return config.toString()
+    }
+    
+    // Snapshot Fixtures
+    
+    fun createResticSnapshot(
+        id: String = "abc123def456789",
+        time: ZonedDateTime = ZonedDateTime.now(),
+        hostname: String = "test-device",
+        paths: List<File> = listOf(File("/storage/emulated/0/Documents")),
+        tree: String = "tree123abc456def",
+        parent: ResticSnapshotId? = null
+    ): ResticSnapshot {
+        return ResticSnapshot(
+            id = ResticSnapshotId(id),
+            time = time,
+            hostname = hostname,
+            paths = paths,
+            tree = tree,
+            parent = parent
+        )
+    }
+    
+    fun createResticFile(
+        name: String = "test-file.txt",
+        type: String = "file",
+        path: File = File("/backup/path/test-file.txt"),
+        mtime: ZonedDateTime = ZonedDateTime.now(),
+        atime: ZonedDateTime = ZonedDateTime.now(),
+        ctime: ZonedDateTime = ZonedDateTime.now()
+    ): ResticFile {
+        return ResticFile(
+            name = name,
+            type = type,
+            path = path,
+            mtime = mtime,
+            atime = atime,
+            ctime = ctime
+        )
+    }
+    
+    fun createResticDirectory(
+        name: String = "test-directory",
+        path: File = File("/backup/path/test-directory"),
+        mtime: ZonedDateTime = ZonedDateTime.now(),
+        atime: ZonedDateTime = ZonedDateTime.now(),
+        ctime: ZonedDateTime = ZonedDateTime.now()
+    ): ResticFile {
+        return ResticFile(
+            name = name,
+            type = "dir",
+            path = path,
+            mtime = mtime,
+            atime = atime,
+            ctime = ctime
+        )
+    }
+    
+    fun createResticSnapshotId(
+        id: String = "abc123def456"
+    ): ResticSnapshotId {
+        return ResticSnapshotId(id)
     }
 }
 
