@@ -10,29 +10,105 @@
         android:layout_height="wrap_content"
         android:padding="20dp">
 
+        <!-- Description -->
+        <TextView
+            android:id="@+id/text_rclone_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/settings_rclone_description"
+            android:textAppearance="@style/TextAppearance.App.CaptionReg"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <!-- Rclone Status -->
         <TextView
             android:id="@+id/text_rclone_status"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:textAppearance="@style/TextAppearance.App.Body17"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/text_rclone_description" />
 
         <!-- Configure Button -->
         <Button
             android:id="@+id/button_rclone_configure"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:text="@string/settings_rclone_button"
             android:textStyle="bold"
             app:backgroundTint="@color/purple_main"
             app:cornerRadius="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/text_rclone_status" />
+
+        <!-- Instructions Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_instructions"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            app:cardBackgroundColor="@color/settings_tile_background"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button_rclone_configure">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Instructions Title -->
+                <TextView
+                    android:id="@+id/text_instructions_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/settings_rclone_instructions_title"
+                    android:textAppearance="@style/TextAppearance.App.Body17"
+                    android:textColor="@color/settings_tile_text" />
+
+                <!-- Instructions Content -->
+                <TextView
+                    android:id="@+id/text_instructions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="@string/settings_rclone_instructions"
+                    android:textAppearance="@style/TextAppearance.App.CaptionReg"
+                    android:textColor="@color/settings_tile_text" />
+
+                <!-- Documentation Link -->
+                <TextView
+                    android:id="@+id/text_docs_label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/settings_rclone_docs_label"
+                    android:textAppearance="@style/TextAppearance.App.Body17"
+                    android:textColor="@color/settings_tile_text" />
+
+                <TextView
+                    android:id="@+id/text_docs_link"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:autoLink="web"
+                    android:text="@string/settings_rclone_docs_link"
+                    android:textAppearance="@style/TextAppearance.App.CaptionReg"
+                    android:textColorLink="@color/purple_main" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
