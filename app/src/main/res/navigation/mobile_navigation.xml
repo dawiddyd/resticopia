@@ -25,27 +25,51 @@
         
         <action
             android:id="@+id/action_settings_main_to_network"
-            app:destination="@id/navigation_settings_network" />
+            app:destination="@id/navigation_settings_network"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/no_anim"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/no_anim" />
         
         <action
             android:id="@+id/action_settings_main_to_notifications"
-            app:destination="@id/navigation_settings_notifications" />
+            app:destination="@id/navigation_settings_notifications"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/no_anim"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/no_anim" />
         
         <action
             android:id="@+id/action_settings_main_to_backup_rules"
-            app:destination="@id/navigation_settings_backup_rules" />
+            app:destination="@id/navigation_settings_backup_rules"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/no_anim"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/no_anim" />
         
         <action
             android:id="@+id/action_settings_main_to_rclone"
-            app:destination="@id/navigation_settings_rclone" />
+            app:destination="@id/navigation_settings_rclone"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/no_anim"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/no_anim" />
         
         <action
             android:id="@+id/action_settings_main_to_import_export"
-            app:destination="@id/navigation_settings_import_export" />
+            app:destination="@id/navigation_settings_import_export"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/no_anim"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/no_anim" />
         
         <action
             android:id="@+id/action_settings_main_to_utilities"
-            app:destination="@id/navigation_settings_utilities" />
+            app:destination="@id/navigation_settings_utilities"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/no_anim"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/no_anim" />
     </fragment>
 
     <fragment

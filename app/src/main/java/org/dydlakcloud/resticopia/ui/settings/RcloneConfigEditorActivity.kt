@@ -92,6 +92,7 @@ class RcloneConfigEditorActivity : AppCompatActivity() {
             android.R.id.home -> {
                 // Back button pressed
                 finish()
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                 true
             }
             R.id.action_save -> {
@@ -133,6 +134,7 @@ class RcloneConfigEditorActivity : AppCompatActivity() {
         val result = Intent().putExtra("config", content)
         setResult(RESULT_OK, result)
         finish()
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 }
 
