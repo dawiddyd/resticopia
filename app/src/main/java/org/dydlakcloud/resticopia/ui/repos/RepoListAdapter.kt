@@ -39,8 +39,8 @@ class RepoListAdapter(
         // Set repository type text
         val typeText = when (repo.base.type) {
             RepoType.Local -> "Local"
-            RepoType.S3 -> "Amazon S3"
-            RepoType.B2 -> "Backblaze B2"
+            RepoType.S3 -> "S3"
+            RepoType.B2 -> "B2"
             RepoType.Rest -> "REST Server"
             RepoType.Rclone -> "Rclone"
         }
