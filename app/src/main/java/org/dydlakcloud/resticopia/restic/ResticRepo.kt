@@ -172,4 +172,23 @@ abstract class ResticRepo(
             out.joinToString("\n")
         }
     }
+
+    fun restoreAll(
+        snapshotId: ResticSnapshotId,
+        downloadPath: File,
+        snapshotRootPath: File
+    ): CompletableFuture<String> {
+
+        val args = listOf(
+            "--json",
+            "restore",
+            "${snapshotId.id}:${snapshotRootPath.path}",
+            "--target",
+            downloadPath.path.toString()
+        )
+
+        return restic(args).thenApply { (out, _) ->
+            out.joinToString("\n")
+        }
+    }
 }
