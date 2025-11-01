@@ -9,9 +9,10 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.FrameLayout
+import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.util.RcloneConfigParser
 
@@ -20,6 +21,15 @@ class RcloneConfigEditorActivity : AppCompatActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Create toolbar with theme attributes for proper light/dark mode support
+        val toolbar = Toolbar(this).apply {
+            // Get background color from theme
+            val typedValue = android.util.TypedValue()
+            theme.resolveAttribute(com.google.android.material.R.attr.colorSurface, typedValue, true)
+            setBackgroundColor(typedValue.data)
+            elevation = 0f
+        }
         
         // Create full-screen editor
         editor = EditText(this).apply {
@@ -34,25 +44,40 @@ class RcloneConfigEditorActivity : AppCompatActivity() {
             gravity = Gravity.TOP or Gravity.START
         }
         
-        // Wrap in FrameLayout to ensure top alignment
-        val container = FrameLayout(this).apply {
-            layoutParams = FrameLayout.LayoutParams(
+        // Create root container with vertical layout
+        val rootContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
-            addView(editor, FrameLayout.LayoutParams(
+            
+            // Get background color from theme for root container
+            val typedValue = android.util.TypedValue()
+            theme.resolveAttribute(android.R.attr.colorBackground, typedValue, true)
+            setBackgroundColor(typedValue.data)
+            
+            // Add toolbar
+            addView(toolbar, LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            ).apply {
-                gravity = Gravity.TOP or Gravity.START
-            })
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ))
+            
+            // Add editor
+            addView(editor, LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f
+            ))
         }
         
-        setContentView(container)
+        setContentView(rootContainer)
         
-        // Setup action bar
+        // Setup toolbar as action bar
+        setSupportActionBar(toolbar)
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
+            setDisplayShowHomeEnabled(true)
             title = getString(R.string.rclone_editor_title)
         }
     }
