@@ -8,6 +8,17 @@
     <img src="docs/badges/obtainium.png" alt="Obtainium" width="160"/>
   </a>
 
+## Screenshots
+
+<p>
+  <img src="screenshots/2.png" width="175" alt="Repository Setup">
+  <img src="screenshots/3.png" width="175" alt="Encrypted Backups">
+  <img src="screenshots/4.png" width="175" alt="Folder Snapshots">
+  <img src="screenshots/5.png" width="175" alt="Scheduled Backups">
+  <img src="screenshots/6.png" width="175" alt="Browse & Restore">
+</p>
+
+## About
 
 A mobile Android application that enables efficient and straightforward data backups powered by [Restic](https://restic.net) backup software.
 
@@ -24,16 +35,23 @@ This is an **unofficial** application and is not developed or endorsed by the of
 - Retention Policies: Define cleanup rules for individual folders
 - Live Progress: Monitor backup operations through system notifications
 - Rclone Integration: Access 40+ cloud storage providers via Rclone backend
-
 ## Attribution
+
+### This Project
+- All modifications and additions are also licensed under GNU General Public License v2.0
+- See git commit history for detailed changes
 
 ### Original Work
 - **Original Project**: [restic-android](https://github.com/lhns/restic-android) by [lhns](https://github.com/lhns)
 - **Original License**: GNU General Public License v2.0
 
-### This Fork
-- All modifications and additions are also licensed under GNU General Public License v2.0
-- See git commit history for detailed changes
+
+## Donate
+
+<a href="https://buymeacoffee.com/dawdyd">
+  <img src="docs/badges/bmc_button.png" alt="Buy Me a Coffee" width="180"/>
+</a>
+
 
 ## Notice
 See the file called NOTICE.

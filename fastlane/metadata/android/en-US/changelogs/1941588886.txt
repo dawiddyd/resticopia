@@ -1,0 +1,5 @@
+Version 0.7.2
+
+• Bug fixes and stability improvements
+• Performance optimizations
+• Updated dependencies
