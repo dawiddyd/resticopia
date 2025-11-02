@@ -85,10 +85,11 @@ android {
         jniLibs {
             useLegacyPackaging true
         }
-        // Store TTF files uncompressed for reproducible builds
-        resources {
-            pickFirsts += ['**.ttf']
-        }
+    }
+    
+    // Store TTF/OTF files uncompressed for reproducible builds
+    androidResources {
+        noCompress 'ttf', 'otf'
     }
     splits {
         abi {
