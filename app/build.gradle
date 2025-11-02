@@ -6,6 +6,7 @@ plugins {
 
 android {
     compileSdkVersion 33
+    buildToolsVersion "33.0.1"
     defaultConfig {
         applicationId "org.dydlakcloud.resticopia"
         minSdkVersion 24
@@ -84,13 +85,17 @@ android {
         jniLibs {
             useLegacyPackaging true
         }
+        // Store TTF files uncompressed for reproducible builds
+        resources {
+            pickFirsts += ['**.ttf']
+        }
     }
     splits {
         abi {
             enable true
             reset()
             // Only include architectures we actually have native libraries for
-            include 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
+            include 'arm64-v8a'
             // Universal APK disabled by default to save build time and memory
             // Enable only if you need it for distribution
             universalApk false
