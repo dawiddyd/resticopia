@@ -10,7 +10,8 @@ data class Config(
     val hostname: String?,
     val nameServers: List<String>?,
     val ntfyUrl: String? = null,
-    val rcloneConfig: String? = null // Global rclone configuration content
+    val rcloneConfig: String? = null, // Global rclone configuration content
+    val ignorePatterns: String? = null // GitIgnore-style patterns for file exclusion
 ) {
     companion object {
         val format = Json {

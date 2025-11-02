@@ -104,7 +104,8 @@ class SnapshotFragment : Fragment() {
                                         ArrayList(
                                             files.filter {
                                                 it.path.startsWith(snapshotRootPath) &&
-                                                        it.path.relativeTo(snapshotRootPath).path.isNotEmpty()
+                                                        it.path.relativeTo(snapshotRootPath).path.isNotEmpty() &&
+                                                        it.type != "dir" // Exclude directories, show only files
                                             }
                                         ),
                                         resticRepo,
@@ -341,12 +342,18 @@ class SnapshotFilesListAdapter(
             }
 
         val file = sortedFiles[position]
-        val pathString = file.path.relativeTo(rootPath).toString() +
-                (if (file.type == "dir") "/" else "")
-        val dateString = Formatters.dateTimeShort(file.mtime)
+        val relativePath = file.path.relativeTo(rootPath).toString()
+        val fileName = file.path.name
 
-        holder.pathNameText.text = pathString
-        holder.fileDateText.text = dateString
+        holder.pathNameText.text = fileName
+        
+        // Hide path if it's the same as filename (file at root level)
+        if (relativePath == fileName) {
+            holder.fileDateText.visibility = GONE
+        } else {
+            holder.fileDateText.visibility = VISIBLE
+            holder.fileDateText.text = relativePath
+        }
 
         // Add a click listener to initiate download
         holder.itemView.setOnClickListener {

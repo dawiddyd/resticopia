@@ -42,6 +42,10 @@
             android:name=".ui.settings.RcloneConfigEditorActivity"
             android:label="@string/rclone_editor_title"
             android:theme="@style/Theme.ResticUI" />
+        <activity
+            android:name=".ui.settings.IgnorePatternsEditorActivity"
+            android:label="@string/ignore_patterns_editor_title"
+            android:theme="@style/Theme.ResticUI" />
 
         <service
             android:name=".BackupService"

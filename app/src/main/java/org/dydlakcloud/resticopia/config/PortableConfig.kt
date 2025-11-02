@@ -32,6 +32,7 @@ data class PortableConfig(
     val requiresCharging: Boolean = false,
     val allowsCellular: Boolean = false,
     val rcloneConfig: String? = null, // Global rclone configuration
+    val ignorePatterns: String? = null, // GitIgnore-style patterns for file exclusion
     val encrypted: Boolean = false,
     val encryptedData: String? = null, // Encrypted config data (when encrypted = true)
     val passwordHash: String? = null // SHA-256 hash to verify password
@@ -112,6 +113,7 @@ data class PortableConfig(
                 requiresCharging = requiresCharging,
                 allowsCellular = allowsCellular,
                 rcloneConfig = config.rcloneConfig, // Include global rclone config
+                ignorePatterns = config.ignorePatterns, // Include ignore patterns
                 encrypted = false,
                 passwordHash = null
             )
@@ -187,7 +189,8 @@ data class PortableConfig(
             hostname = hostname,
             nameServers = nameServers,
             ntfyUrl = ntfyUrl,
-            rcloneConfig = this.rcloneConfig // Restore global rclone config
+            rcloneConfig = this.rcloneConfig, // Restore global rclone config
+            ignorePatterns = this.ignorePatterns // Restore ignore patterns
         )
     }
 
