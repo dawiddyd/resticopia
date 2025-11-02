@@ -14,6 +14,12 @@ buildscript {
     }
 }
 
+// Enable reproducible builds
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
 allprojects {
     repositories {
         google()
