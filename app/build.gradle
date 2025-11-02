@@ -42,7 +42,25 @@ android {
             }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            
+            // Reproducible build configurations for F-Droid
+            // Disable PNG crunching as it's non-deterministic
+            crunchPngs false
+            
+            // R8 settings for deterministic builds (if minify is enabled)
+            // These ensure consistent output across different build environments
+            shrinkResources false
         }
+        debug {
+            // Also disable PNG crunching in debug builds for consistency
+            crunchPngs false
+        }
+    }
+    
+    // Additional reproducible build settings
+    aaptOptions {
+        // Disable PNG crunching globally for deterministic builds
+        cruncherEnabled = false
     }
     compileOptions {
         coreLibraryDesugaringEnabled true
