@@ -130,31 +130,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/text_ignore_patterns_status" />
 
-        <TextView
-            android:id="@+id/text_ignore_patterns_instructions_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/settings_ignore_patterns_instructions_title"
-            android:textAppearance="@style/TextAppearance.App.Body15"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button_configure_ignore_patterns" />
-
-        <TextView
-            android:id="@+id/text_ignore_patterns_instructions"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="20dp"
-            android:text="@string/settings_ignore_patterns_instructions"
-            android:textAppearance="@style/TextAppearance.App.CaptionReg"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_ignore_patterns_instructions_title" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>

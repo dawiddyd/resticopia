@@ -186,8 +186,6 @@
     <string name="settings_ignore_patterns_summary_not_configured">No patterns configured</string>
     <string name="settings_ignore_patterns_button">Configure Ignore Patterns</string>
     <string name="settings_ignore_patterns_description">Define patterns to exclude files and folders from backups using .gitignore syntax. Excluded files will not be included in any backup.</string>
-    <string name="settings_ignore_patterns_instructions_title">Pattern Syntax</string>
-    <string name="settings_ignore_patterns_instructions">• Use * to match any characters (except /)\n• Use ** to match any directories\n• Use ? to match a single character\n• End with / to match directories only\n• Start with / to anchor to backup root\n• Start with ! to negate a pattern\n• Start with # for comments\n\nExamples:\n• *.log - exclude all .log files\n• temp/ - exclude all temp directories\n• /cache - exclude cache folder at root\n• !important.log - keep this file even if excluded by other patterns</string>
     
     <!-- Ignore Patterns Editor -->
     <string name="ignore_patterns_editor_title">Edit Ignore Patterns</string>
