@@ -104,7 +104,8 @@ class SnapshotFragment : Fragment() {
                                         ArrayList(
                                             files.filter {
                                                 it.path.startsWith(snapshotRootPath) &&
-                                                        it.path.relativeTo(snapshotRootPath).path.isNotEmpty()
+                                                        it.path.relativeTo(snapshotRootPath).path.isNotEmpty() &&
+                                                        it.type != "dir" // Exclude directories, show only files
                                             }
                                         ),
                                         resticRepo,
@@ -341,8 +342,7 @@ class SnapshotFilesListAdapter(
             }
 
         val file = sortedFiles[position]
-        val pathString = file.path.relativeTo(rootPath).toString() +
-                (if (file.type == "dir") "/" else "")
+        val pathString = file.path.relativeTo(rootPath).toString()
         val dateString = Formatters.dateTimeShort(file.mtime)
 
         holder.pathNameText.text = pathString
