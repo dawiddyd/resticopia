@@ -259,7 +259,8 @@ class BackupManager private constructor(context: Context) {
                 activeBackupLiveData.postValue(activeBackupProgress)
                 updateNotification(context, folder.id, activeBackupProgress)
             },
-            activeBackup.cancelFuture
+            activeBackup.cancelFuture,
+            config.ignorePatterns // Pass ignore patterns from config
         ).handle { summary, throwable ->
             val throwable =
                 if (throwable == null) null

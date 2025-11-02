@@ -1,6 +1,8 @@
 package org.dydlakcloud.resticopia.ui.settings
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.BatteryManager
@@ -9,6 +11,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import org.dydlakcloud.resticopia.BackupManager
@@ -18,6 +21,7 @@ import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.config.FolderConfig
 import org.dydlakcloud.resticopia.databinding.FragmentSettingsBackupRulesBinding
 import org.dydlakcloud.resticopia.ui.folder.FolderEditFragment
+import org.dydlakcloud.resticopia.util.GitIgnorePatternMatcher
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -28,6 +32,7 @@ import java.time.format.DateTimeFormatter
  * - Require charging for backups
  * - Allow backups over cellular data
  * - View queued backups waiting for constraints
+ * - Configure ignore patterns for file exclusion
  */
 class SettingsBackupRulesFragment : Fragment() {
 
@@ -36,6 +41,25 @@ class SettingsBackupRulesFragment : Fragment() {
 
     private var _backupManager: BackupManager? = null
     private val backupManager get() = _backupManager!!
+
+    private val ignorePatternsEditorLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.getStringExtra("patterns")?.let { newPatterns ->
+                backupManager.configure { config ->
+                    config.copy(ignorePatterns = newPatterns.ifEmpty { null })
+                }.handle { _, throwable ->
+                    if (throwable != null) {
+                        throwable.printStackTrace()
+                    }
+                    activity?.runOnUiThread {
+                        updateIgnorePatternsStatus()
+                    }
+                }
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,8 +71,14 @@ class SettingsBackupRulesFragment : Fragment() {
 
         setupBackupConstraints()
         setupQueuedBackupsButton()
+        setupIgnorePatternsSection()
 
         return binding.root
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        updateIgnorePatternsStatus()
     }
 
     private fun setupBackupConstraints() {
@@ -74,6 +104,32 @@ class SettingsBackupRulesFragment : Fragment() {
     private fun setupQueuedBackupsButton() {
         binding.buttonViewQueuedBackups.setOnClickListener {
             showQueuedBackupsDialog()
+        }
+    }
+    
+    private fun setupIgnorePatternsSection() {
+        binding.buttonConfigureIgnorePatterns.setOnClickListener {
+            openIgnorePatternsEditor()
+        }
+        updateIgnorePatternsStatus()
+    }
+    
+    private fun openIgnorePatternsEditor() {
+        val currentPatterns = backupManager.config.ignorePatterns ?: ""
+        val intent = Intent(requireContext(), IgnorePatternsEditorActivity::class.java).apply {
+            putExtra("patterns", currentPatterns)
+        }
+        ignorePatternsEditorLauncher.launch(intent)
+    }
+    
+    private fun updateIgnorePatternsStatus() {
+        val patterns = backupManager.config.ignorePatterns
+        if (patterns.isNullOrEmpty()) {
+            binding.textIgnorePatternsStatus.text = getString(R.string.settings_ignore_patterns_summary_not_configured)
+        } else {
+            val patternList = GitIgnorePatternMatcher.parsePatterns(patterns)
+            val count = patternList.size
+            binding.textIgnorePatternsStatus.text = getString(R.string.settings_ignore_patterns_summary_configured, count)
         }
     }
 

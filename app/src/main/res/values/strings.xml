@@ -179,4 +179,23 @@
     <string name="button_import_merge">Merge</string>
     <string name="alert_import_mode_title">Choose Import Mode</string>
     <string name="alert_import_mode_message">Replace: Delete all current settings and import new ones\nMerge: Keep current settings and add imported ones (may create duplicates)</string>
+    
+    <!-- Ignore Patterns -->
+    <string name="settings_ignore_patterns_title">File Exclusion Patterns</string>
+    <string name="settings_ignore_patterns_summary_configured">%1$d pattern(s) configured</string>
+    <string name="settings_ignore_patterns_summary_not_configured">No patterns configured</string>
+    <string name="settings_ignore_patterns_button">Configure Ignore Patterns</string>
+    <string name="settings_ignore_patterns_description">Define patterns to exclude files and folders from backups using .gitignore syntax. Excluded files will not be included in any backup.</string>
+    <string name="settings_ignore_patterns_instructions_title">Pattern Syntax</string>
+    <string name="settings_ignore_patterns_instructions">• Use * to match any characters (except /)\n• Use ** to match any directories\n• Use ? to match a single character\n• End with / to match directories only\n• Start with / to anchor to backup root\n• Start with ! to negate a pattern\n• Start with # for comments\n\nExamples:\n• *.log - exclude all .log files\n• temp/ - exclude all temp directories\n• /cache - exclude cache folder at root\n• !important.log - keep this file even if excluded by other patterns</string>
+    
+    <!-- Ignore Patterns Editor -->
+    <string name="ignore_patterns_editor_title">Edit Ignore Patterns</string>
+    <string name="ignore_patterns_editor_hint">Enter ignore patterns (one per line):\n\n# Comments start with #\n*.log\ntemp/\n/cache\n!important.txt\n\n# Patterns follow .gitignore syntax</string>
+    <string name="ignore_patterns_discard_title">Discard Changes?</string>
+    <string name="ignore_patterns_discard_message">You have unsaved changes. Discard them?</string>
+    <string name="ignore_patterns_help_title">Pattern Help</string>
+    <string name="ignore_patterns_help_message">Ignore patterns use .gitignore syntax:\n\n• * matches any characters except /\n• ** matches any number of directories\n• ? matches a single character\n• Trailing / matches directories only\n• Leading / anchors to backup root\n• Leading ! negates the pattern\n• Leading # indicates a comment\n\nExamples:\n*.tmp - all .tmp files\nnode_modules/ - node_modules dirs\n/build - build folder at root\n!keep.txt - don\'t ignore this file</string>
+    <string name="action_help">Help</string>
+    <string name="action_discard">Discard</string>
 </resources>

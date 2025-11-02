@@ -125,18 +125,44 @@ abstract class ResticRepo(
     fun backup(
         paths: List<File>,
         onProgress: (ResticBackupProgress) -> Unit,
-        cancel: CompletableFuture<Unit>? = null
+        cancel: CompletableFuture<Unit>? = null,
+        ignorePatterns: String? = null
     ): CompletableFuture<ResticBackupSummary> {
         require(paths.isNotEmpty())
+        
+        // Create temporary exclude file if patterns are provided
+        val excludeFile = if (!ignorePatterns.isNullOrEmpty()) {
+            try {
+                File.createTempFile("restic_exclude_", ".txt").apply {
+                    writeText(ignorePatterns, Charsets.UTF_8)
+                    deleteOnExit()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        } else {
+            null
+        }
+        
+        val backupArgs = mutableListOf(
+            "--json",
+            "backup",
+            "--host",
+            restic.hostname
+        )
+        
+        // Add exclude file if available
+        if (excludeFile != null) {
+            backupArgs.add("--exclude-file")
+            backupArgs.add(excludeFile.absolutePath)
+        }
+        
+        // Add paths to backup
+        backupArgs.addAll(paths.map { it.absolutePath })
+        
         return restic(
-            listOf(
-                "--json",
-                "backup",
-                "--host",
-                restic.hostname
-            ).plus(
-                paths.map { it.absolutePath }
-            ),
+            backupArgs,
             filterOut = { line ->
                 val isStatus = line.contains("\"message_type\":\"status\"")
                 if (isStatus) {
@@ -147,8 +173,15 @@ abstract class ResticRepo(
             },
             cancel = cancel
         ).thenApply { (out, _) ->
+            // Clean up temporary file
+            excludeFile?.delete()
+            
             val json = out.joinToString("\n")
             format.decodeFromString<ResticBackupSummary>(json)
+        }.exceptionally { throwable ->
+            // Clean up temporary file on error
+            excludeFile?.delete()
+            throw throwable
         }
     }
 
