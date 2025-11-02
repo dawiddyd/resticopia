@@ -118,10 +118,6 @@ class IgnorePatternsEditorActivity : AppCompatActivity() {
                 saveAndFinish()
                 true
             }
-            R.id.action_help -> {
-                showHelpDialog()
-                true
-            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -160,14 +156,6 @@ class IgnorePatternsEditorActivity : AppCompatActivity() {
         setResult(RESULT_OK, resultIntent)
         finish()
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-    }
-    
-    private fun showHelpDialog() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.ignore_patterns_help_title)
-            .setMessage(R.string.ignore_patterns_help_message)
-            .setPositiveButton(android.R.string.ok, null)
-            .show()
     }
 }
 
