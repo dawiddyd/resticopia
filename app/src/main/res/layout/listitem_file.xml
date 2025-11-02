@@ -17,11 +17,13 @@
         android:maxLines="1"
         android:ellipsize="end" />
 
-    <!-- Keep filedate TextView for backward compatibility but hide it -->
     <TextView
         android:id="@+id/filedate"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone" />
+        android:layout_marginTop="4dp"
+        android:textAppearance="@style/TextAppearance.App.CaptionReg"
+        android:maxLines="1"
+        android:ellipsize="end" />
 
 </LinearLayout>
