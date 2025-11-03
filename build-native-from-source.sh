@@ -267,8 +267,8 @@ main() {
         build_go_binary "rclone" "$SOURCE_DIR/rclone" "libdata_rclone.so" "$arch"
         
         # Build C projects
-        build_proot "$arch"
         build_libtalloc "$arch"
+        build_proot "$arch"
         
         echo -e "${GREEN}✓ Completed $arch${NC}"
     done
