@@ -218,7 +218,7 @@ build_libtalloc() {
     ./configure --host="${ndk_arch}" --prefix="$BUILD_DIR/talloc-install/$android_arch" \
         CC="$CC" AR="$AR" \
         CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC" \
-        --disable-python --cross-compile --cross-execute
+        --disable-python --cross-compile
     
     make clean || true
     make
