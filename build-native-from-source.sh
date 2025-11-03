@@ -211,26 +211,37 @@ build_libtalloc() {
     export CC=$(eval echo $CC)
     export AR="$NDK/toolchains/llvm/prebuilt/$(uname -s | tr '[:upper:]' '[:lower:]')-*/bin/llvm-ar"
     export AR=$(eval echo $AR)
+    export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC"
     
     pushd "$talloc_source" > /dev/null
-    
-    # Configure and build
-    ./configure --host="${ndk_arch}" --prefix="$BUILD_DIR/talloc-install/$android_arch" \
-        CC="$CC" AR="$AR" \
-        CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC" \
-        --disable-python --cross-compile --cross-execute="qemu-aarch64-static"
-    
+
+    # ✅ Create cross answers for Waf
+    cat > cross-answers.txt <<'EOF'
+talloc_cv_HAVE_VA_COPY=yes
+talloc_cv_C99_VSNPRINTF=yes
+talloc_cv_HAVE_LIBREPLACE=no
+EOF
+
+    # ✅ Call ./configure, but pass Waf options through
+    ./configure \
+        --prefix="$BUILD_DIR/talloc-install/$android_arch" \
+        --disable-python \
+        --cross-compile \
+        --cross-answers=cross-answers.txt \
+        CC="$CC" AR="$AR" CFLAGS="$CFLAGS"
+
     make clean || true
     make
     make install
-    
-    # Copy the library
-    cp "$BUILD_DIR/talloc-install/$android_arch/lib/libtalloc.so.2" "$output_dir/libdata_libtalloc.so.2.so"
-    
+
+    # Copy built library
+    cp "$BUILD_DIR/talloc-install/$android_arch/lib/libtalloc.so"* \
+       "$output_dir/libdata_libtalloc.so.2.so"
+
     popd > /dev/null
-    
     echo -e "${GREEN}✓ Built libtalloc for $android_arch${NC}"
 }
+
 
 ###################
 # Main Build Process
