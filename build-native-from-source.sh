@@ -133,25 +133,27 @@ build_proot() {
 }
 
 build_libtalloc() {
-    local android_arch="$1"
-    local ndk_arch="${NDK_ARCH_ABI[$android_arch]}"
-    local output_dir="$OUTPUT_DIR/$android_arch"
-    
-    echo -e "${BLUE}Building libtalloc for $android_arch...${NC}"
-    
-    mkdir -p "$output_dir"
-    
-    local talloc_source="$SOURCE_DIR/talloc"
-    
-    # Set up NDK toolchain
+  local android_arch="$1"
+  local ndk_arch="${NDK_ARCH_ABI[$android_arch]}"
+  local output_dir="$OUTPUT_DIR/$android_arch"
+  local talloc_source="$SOURCE_DIR/talloc"
+
+  echo "Building libtalloc for $android_arch..."
+
+  mkdir -p "$output_dir"
+  pushd "$talloc_source" >/dev/null
+  
+
+  # enable bash tracing to see every command
+  set -x
+
+   # Set up NDK toolchain
     export CC="$NDK/toolchains/llvm/prebuilt/$(uname -s | tr '[:upper:]' '[:lower:]')-*/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
     export CC=$(eval echo $CC)
     export AR="$NDK/toolchains/llvm/prebuilt/$(uname -s | tr '[:upper:]' '[:lower:]')-*/bin/llvm-ar"
     export AR=$(eval echo $AR)
     export LFS_FLAGS="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_LARGE_FILES"
-    export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64 $LFS_FLAGS -D_LARGEFILE64_SOURCE -D_LARGE_FILES"
-    
-    pushd "$talloc_source" > /dev/null
+    export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64 $LFS_FLAGS -D_LARGEFILE64_SOURCE -D_LARGE_FILES"    
 
     # ✅ Create cross answers for Waf
     cat > cross-answers.txt <<'EOF'
@@ -162,30 +164,54 @@ talloc_cv_SIZEOF_OFF_T=8
 talloc_cv_LARGEFILE_SUPPORT=yes
 EOF
 
+  # run configure and capture exit code
+  ./configure \
+      --prefix="$BUILD_DIR/talloc-install/$android_arch" \
+      --disable-python \
+      --cross-compile \
+      --cross-answers=cross-answers.txt \
+      CC="$CC" AR="$AR" \
+      CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" \
+      TALLOC_CFLAGS="$CFLAGS" TALLOC_LDFLAGS="$LDFLAGS" \
+      > configure.log 2>&1
+  rc=$?
 
+  set +x
+  echo "==== configure exit code: $rc ===="
 
-# ✅ Explicitly tell waf where the cross answers file is and pass flags inline
-./configure \
-    --prefix="$BUILD_DIR/talloc-install/$android_arch" \
-    --disable-python \
-    --cross-compile \
-    --cross-answers=cross-answers.txt \
-    CC="$CC" AR="$AR" \
-    CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" \
-    TALLOC_CFLAGS="$CFLAGS" TALLOC_LDFLAGS="$LDFLAGS" \
-    > configure.log 2>&1
+  if [ $rc -ne 0 ]; then
+      echo "libtalloc configure failed for $android_arch"
+      echo "--- configure.log (last 100 lines) ---"
+      tail -n 100 configure.log || true
+      echo "--- end configure.log ---"
+      return 1
+  fi
 
-    make clean || true
-    make
-    make install
+  set -x
+  make -j"$(nproc)" > build.log 2>&1
+  rc=$?
+  set +x
 
-    # Copy built library
-    cp "$BUILD_DIR/talloc-install/$android_arch/lib/libtalloc.so"* \
-       "$output_dir/libdata_libtalloc.so.2.so"
+  echo "==== make exit code: $rc ===="
+  if [ $rc -ne 0 ]; then
+      echo "libtalloc make failed for $android_arch"
+      tail -n 100 build.log || true
+      return 1
+  fi
 
-    popd > /dev/null
-    echo -e "${GREEN}✓ Built libtalloc for $android_arch${NC}"
+  make install DESTDIR="$BUILD_DIR/talloc-install/$android_arch" > install.log 2>&1
+  rc=$?
+  echo "==== make install exit code: $rc ===="
+  if [ $rc -ne 0 ]; then
+      echo "libtalloc install failed for $android_arch"
+      tail -n 100 install.log || true
+      return 1
+  fi
+
+  popd >/dev/null
+  echo "✓ Built libtalloc for $android_arch"
 }
+
 
 
 main() {
