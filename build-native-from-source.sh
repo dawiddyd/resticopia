@@ -305,7 +305,6 @@ main() {
 
   echo -e "${BLUE}Step 2: Building architectures${NC}"
   for arch in arm64-v8a armeabi-v7a x86_64 x86; do
-    build_libtalloc_simple "$arch"
     build_proot "$arch"
     build_go_binary "restic" "$SOURCE_DIR/restic" "libdata_restic.so" "$arch"
     build_go_binary "rclone" "$SOURCE_DIR/rclone" "libdata_rclone.so" "$arch"
