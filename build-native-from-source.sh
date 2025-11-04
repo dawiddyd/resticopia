@@ -139,8 +139,10 @@ build_libtalloc() {
   local src="$SOURCE_DIR/talloc"
   mkdir -p "$out_dir"
 
-  export CC="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
-  export AR="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/llvm-ar"
+  export TOOLCHAIN_BIN="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin"
+  export PATH="$TOOLCHAIN_BIN:$PATH"
+  export CC="${ndk_arch}${MIN_API_LEVEL}-clang"
+  export AR="llvm-ar"
   export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64"
   export PYTHONHASHSEED=1
 
@@ -149,7 +151,6 @@ build_libtalloc() {
 
   if [ -f "./configure" ]; then
       echo -e "${BLUE}Detected hybrid ./configure (Waf frontend) — using cross-compile mode${NC}"
-
       make clean >/dev/null 2>&1 || true
 
       ./configure \
@@ -229,6 +230,7 @@ build_libtalloc() {
   popd >/dev/null
   echo -e "${GREEN}✓ Built libtalloc for $arch${NC}"
 }
+
 
 
 main() {
