@@ -133,81 +133,52 @@ build_proot() {
 }
 
 build_libtalloc() {
-  local arch="$1"
-  local out_dir="$OUTPUT_DIR/$arch"
-  local src="$SOURCE_DIR/talloc"
-  mkdir -p "$out_dir"
+    local android_arch="$1"
+    local ndk_arch="${NDK_ARCH_ABI[$android_arch]}"
+    local output_dir="$OUTPUT_DIR/$android_arch"
+    
+    echo -e "${BLUE}Building libtalloc for $android_arch...${NC}"
+    
+    mkdir -p "$output_dir"
+    
+    local talloc_source="$SOURCE_DIR/talloc"
+    
+    # Set up NDK toolchain
+    export CC="$NDK/toolchains/llvm/prebuilt/$(uname -s | tr '[:upper:]' '[:lower:]')-*/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
+    export CC=$(eval echo $CC)
+    export AR="$NDK/toolchains/llvm/prebuilt/$(uname -s | tr '[:upper:]' '[:lower:]')-*/bin/llvm-ar"
+    export AR=$(eval echo $AR)
+    export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64"
+    
+    pushd "$talloc_source" > /dev/null
 
-  echo -e "${BLUE}Building libtalloc for $arch...${NC}"
+    # ✅ Create cross answers for Waf
+    cat > cross-answers.txt <<'EOF'
+talloc_cv_HAVE_VA_COPY=yes
+talloc_cv_C99_VSNPRINTF=yes
+talloc_cv_HAVE_LIBREPLACE=no
+talloc_cv_SIZEOF_OFF_T=8
+EOF
 
-  # Toolchain setup
-  export TOOLCHAIN_BIN="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
-  export PATH="$TOOLCHAIN_BIN:$PATH"
+    # ✅ Call ./configure, but pass Waf options through
+    ./configure \
+        --prefix="$BUILD_DIR/talloc-install/$android_arch" \
+        --disable-python \
+        --cross-compile \
+        --cross-answers=cross-answers.txt \
+        CC="$CC" AR="$AR" CFLAGS="$CFLAGS"
 
-  case "$arch" in
-      arm64-v8a)   TARGET_HOST="aarch64-linux-android" ;;
-      armeabi-v7a) TARGET_HOST="armv7a-linux-androideabi" ;;
-      x86_64)      TARGET_HOST="x86_64-linux-android" ;;
-      x86)         TARGET_HOST="i686-linux-android" ;;
-  esac
+    make clean || true
+    make
+    make install
 
-  # Prefer the exact API-level binary if it exists, otherwise fall back
-  if [ -x "$TOOLCHAIN_BIN/${TARGET_HOST}${MIN_API_LEVEL}-clang" ]; then
-      export CC="${TARGET_HOST}${MIN_API_LEVEL}-clang"
-  else
-      export CC="${TARGET_HOST}-clang"
-  fi
+    # Copy built library
+    cp "$BUILD_DIR/talloc-install/$android_arch/lib/libtalloc.so"* \
+       "$output_dir/libdata_libtalloc.so.2.so"
 
-  export AR="llvm-ar"
-  export CFLAGS="--target=${TARGET_HOST}${MIN_API_LEVEL} -D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64"
-  export LDFLAGS="-static-libgcc -no-canonical-prefixes"
-  export PYTHONHASHSEED=1
-
-  echo -e "${BLUE}Using compiler: $(command -v $CC)${NC}"
-  command -v "$CC" || { echo -e "${RED}Compiler $CC not found on PATH${NC}"; exit 1; }
-
-  pushd "$src" >/dev/null
-  make clean >/dev/null 2>&1 || true
-
-  echo -e "${BLUE}Configuring libtalloc for $arch...${NC}"
-  PATH="$TOOLCHAIN_BIN:$PATH" ./configure \
-    --disable-python \
-    --without-gettext \
-    --disable-rpath \
-    --disable-symbol-versions \
-    --cross-compile \
-    --cross-execute="true" \
-    --prefix="$BUILD_DIR/talloc-install/$arch" \
-    --check-c-compiler="$CC" > configure.log 2>&1 || {
-        echo -e "${RED}libtalloc ./configure failed for $arch${NC}"
-        tail -n 20 configure.log
-        exit 1
-  }
-
-  echo -e "${BLUE}Building libtalloc...${NC}"
-  make -j"$(nproc)" > build.log 2>&1 || {
-      echo -e "${RED}libtalloc build failed for $arch${NC}"
-      tail -n 40 build.log
-      exit 1
-  }
-
-  echo -e "${BLUE}Installing libtalloc...${NC}"
-  make install DESTDIR="$BUILD_DIR/talloc-install/$arch" > install.log 2>&1 || {
-      echo -e "${RED}libtalloc install failed for $arch${NC}"
-      tail -n 40 install.log
-      exit 1
-  }
-
-  find "$BUILD_DIR/talloc-install/$arch" -type f -name "libtalloc*.so*" \
-      -exec cp {} "$out_dir/libdata_libtalloc.so" \; || {
-      echo -e "${RED}Failed to copy built libtalloc .so for $arch${NC}"
-      exit 1
-  }
-
-  popd >/dev/null
-  echo -e "${GREEN}✓ Built libtalloc for $arch${NC}"
+    popd > /dev/null
+    echo -e "${GREEN}✓ Built libtalloc for $android_arch${NC}"
 }
-
 
 
 main() {
