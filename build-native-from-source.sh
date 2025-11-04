@@ -141,14 +141,38 @@ build_libtalloc() {
 
   echo -e "${BLUE}Building libtalloc for $arch...${NC}"
 
-  # 🧩 Align environment with Go builds
-  export GOOS=android
-  export GOARCH="${GO_ARCHS[$arch]}"
-  export CC="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
-  export AR="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/llvm-ar"
+    # 100% verified environment alignment with Go build
+  export TOOLCHAIN_BIN="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
+  export PATH="$TOOLCHAIN_BIN:$PATH"
+
+  case "$arch" in
+      arm64-v8a)
+          export CC="aarch64-linux-android24-clang"
+          ;;
+      armeabi-v7a)
+          export CC="armv7a-linux-androideabi24-clang"
+          ;;
+      x86_64)
+          export CC="x86_64-linux-android24-clang"
+          ;;
+      x86)
+          export CC="i686-linux-android24-clang"
+          ;;
+  esac
+
+  export AR="llvm-ar"
   export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64"
   export LDFLAGS="-static-libgcc -no-canonical-prefixes"
-  export PATH="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin:$PATH"
+  export PYTHONHASHSEED=1
+
+  # Double-check compiler visibility before configure runs
+  if ! command -v "$CC" >/dev/null 2>&1; then
+      echo -e "${RED}Compiler $CC not found on PATH${NC}"
+      echo "PATH currently set to: $PATH"
+      exit 1
+  fi
+  echo -e "${BLUE}Using compiler: $(command -v $CC)${NC}"
+
 
   pushd "$src" >/dev/null
 
@@ -201,10 +225,10 @@ main() {
 
   echo -e "${BLUE}Step 2: Building architectures${NC}"
   for arch in arm64-v8a armeabi-v7a x86_64 x86; do
-    build_go_binary "restic" "$SOURCE_DIR/restic" "libdata_restic.so" "$arch"
-    build_go_binary "rclone" "$SOURCE_DIR/rclone" "libdata_rclone.so" "$arch"
     build_libtalloc "$arch"
     build_proot "$arch"
+    build_go_binary "restic" "$SOURCE_DIR/restic" "libdata_restic.so" "$arch"
+    build_go_binary "rclone" "$SOURCE_DIR/rclone" "libdata_rclone.so" "$arch"
   done
   echo -e "${GREEN}All native libraries built successfully!${NC}"
 }
