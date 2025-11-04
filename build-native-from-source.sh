@@ -141,37 +141,38 @@ build_libtalloc() {
 
   echo -e "${BLUE}Building libtalloc for $arch...${NC}"
 
-    # 100% verified environment alignment with Go build
   export TOOLCHAIN_BIN="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
   export PATH="$TOOLCHAIN_BIN:$PATH"
 
   case "$arch" in
       arm64-v8a)
-          export CC="aarch64-linux-android24-clang"
+          export TARGET_HOST="aarch64-linux-android"
           ;;
       armeabi-v7a)
-          export CC="armv7a-linux-androideabi24-clang"
+          export TARGET_HOST="armv7a-linux-androideabi"
           ;;
       x86_64)
-          export CC="x86_64-linux-android24-clang"
+          export TARGET_HOST="x86_64-linux-android"
           ;;
       x86)
-          export CC="i686-linux-android24-clang"
+          export TARGET_HOST="i686-linux-android"
           ;;
   esac
 
+  export CC="${TARGET_HOST}${MIN_API_LEVEL}-clang"
   export AR="llvm-ar"
-  export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64"
+  export CFLAGS="--target=${TARGET_HOST}${MIN_API_LEVEL} -D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64"
   export LDFLAGS="-static-libgcc -no-canonical-prefixes"
   export PYTHONHASHSEED=1
 
-  # Double-check compiler visibility before configure runs
+  echo -e "${BLUE}Using compiler: $(command -v $CC)${NC}"
+
   if ! command -v "$CC" >/dev/null 2>&1; then
       echo -e "${RED}Compiler $CC not found on PATH${NC}"
       echo "PATH currently set to: $PATH"
       exit 1
   fi
-  echo -e "${BLUE}Using compiler: $(command -v $CC)${NC}"
+
 
 
   pushd "$src" >/dev/null
