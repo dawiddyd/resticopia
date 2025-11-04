@@ -132,6 +132,74 @@ build_proot() {
   echo -e "${GREEN}✓ Built proot for $arch${NC}"
 }
 
+build_libtalloc_simple() {
+    local android_arch="$1"
+    local ndk_arch="${NDK_ARCH_ABI[$android_arch]}"
+    local output_dir="$OUTPUT_DIR/$android_arch"
+    local talloc_source="$SOURCE_DIR/talloc"
+
+    echo -e "${BLUE}Building libtalloc (simple mode) for $android_arch...${NC}"
+
+    mkdir -p "$output_dir"
+
+    # --- Setup toolchain paths ---
+    local TOOLCHAIN="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
+    export PATH="$TOOLCHAIN:$PATH"
+
+    # --- Map Android arch to NDK target triple ---
+    case "$android_arch" in
+        arm64-v8a)
+            TARGET_HOST="aarch64-linux-android"
+            ;;
+        armeabi-v7a)
+            TARGET_HOST="armv7a-linux-androideabi"
+            ;;
+        x86_64)
+            TARGET_HOST="x86_64-linux-android"
+            ;;
+        x86)
+            TARGET_HOST="i686-linux-android"
+            ;;
+        *)
+            echo -e "${RED}Unknown architecture: $android_arch${NC}"
+            return 1
+            ;;
+    esac
+
+    export CC="${TOOLCHAIN}/${TARGET_HOST}${MIN_API_LEVEL}-clang"
+    export AR="${TOOLCHAIN}/llvm-ar"
+    export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -O2 -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES"
+
+    echo "Using compiler: $CC"
+
+    pushd "$talloc_source" >/dev/null || {
+        echo -e "${RED}talloc source directory missing!${NC}"
+        return 1
+    }
+
+    # --- Compile directly without configure/waf ---
+    if [ ! -f "talloc.c" ]; then
+        echo -e "${RED}talloc.c not found in $talloc_source${NC}"
+        popd >/dev/null
+        return 1
+    fi
+
+    $CC $CFLAGS -I"$talloc_source" -c talloc.c -o "$output_dir/talloc.o" || {
+        echo -e "${RED}Failed to compile talloc.c${NC}"
+        popd >/dev/null
+        return 1
+    }
+
+    # --- Create static and shared libraries ---
+    $AR rcs "$output_dir/libtalloc.a" "$output_dir/talloc.o"
+    $CC -shared -o "$output_dir/libdata_libtalloc.so" "$output_dir/talloc.o"
+
+    popd >/dev/null
+
+    echo -e "${GREEN}✓ Built libtalloc (simple mode) for $android_arch${NC}"
+}
+
+
 build_libtalloc() {
   local android_arch="$1"
   local ndk_arch="${NDK_ARCH_ABI[$android_arch]}"
@@ -237,7 +305,7 @@ main() {
 
   echo -e "${BLUE}Step 2: Building architectures${NC}"
   for arch in arm64-v8a armeabi-v7a x86_64 x86; do
-    build_libtalloc "$arch"
+    build_libtalloc_simple "$arch"
     build_proot "$arch"
     build_go_binary "restic" "$SOURCE_DIR/restic" "libdata_restic.so" "$arch"
     build_go_binary "rclone" "$SOURCE_DIR/rclone" "libdata_rclone.so" "$arch"
