@@ -142,56 +142,94 @@ build_libtalloc() {
   export CC="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
   export AR="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/llvm-ar"
   export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64"
+  export PYTHONHASHSEED=1  # required if waf gets invoked internally
 
   pushd "$src" >/dev/null
   echo -e "${BLUE}Building libtalloc for $arch...${NC}"
 
-  # 🧠 Detect waf script (different talloc releases package it in different places)
-  local waf_bin="./waf"
-  if [ ! -f "$waf_bin" ]; then
-      waf_bin="$(find . -type f -name waf | head -n 1)"
+  # 🧠 Detect build system
+  if [ -f "./configure" ]; then
+      echo -e "${BLUE}Detected Autotools-style talloc (using ./configure + make)${NC}"
+
+      make clean >/dev/null 2>&1 || true
+
+      ./configure \
+        --host="${ndk_arch}" \
+        --build="$(uname -m)-linux-gnu" \
+        --disable-python \
+        --without-gettext \
+        --disable-rpath \
+        --disable-symbol-versions \
+        --prefix="$BUILD_DIR/talloc-install/$arch" \
+        CC="$CC" AR="$AR" CFLAGS="$CFLAGS" \
+        ac_cv_func_malloc_0_nonnull=yes \
+        ac_cv_func_realloc_0_nonnull=yes \
+        ac_cv_func_vsnprintf_works=yes \
+        ac_cv_func_snprintf_works=yes \
+        ac_cv_func_memcmp_working=yes \
+        ac_cv_func_gettimeofday=yes \
+        > configure.log 2>&1 || {
+          echo -e "${RED}libtalloc ./configure failed for $arch${NC}"
+          tail -n 20 configure.log
+          exit 1
+      }
+
+      make -j"$(nproc)" > build.log 2>&1 || {
+          echo -e "${RED}libtalloc make failed for $arch${NC}"
+          tail -n 40 build.log
+          exit 1
+      }
+
+      make install DESTDIR="$BUILD_DIR/talloc-install/$arch" > install.log 2>&1 || {
+          echo -e "${RED}libtalloc install failed for $arch${NC}"
+          tail -n 40 install.log
+          exit 1
+      }
+
+  else
+      echo -e "${BLUE}No ./configure found — using Waf build path${NC}"
+
+      # locate waf
+      local waf_bin="./waf"
+      if [ ! -f "$waf_bin" ]; then
+          waf_bin="$(find . -type f -name waf | head -n 1)"
+      fi
+      if [ -z "$waf_bin" ]; then
+          echo -e "${RED}ERROR: waf not found in $src${NC}"
+          find . -maxdepth 2 -type f | head -n 20
+          exit 1
+      fi
+      echo -e "${BLUE}Using waf at $waf_bin${NC}"
+
+      python3 "$waf_bin" distclean >/dev/null 2>&1 || true
+      python3 "$waf_bin" configure \
+        --disable-python \
+        --without-gettext \
+        --disable-rpath \
+        --disable-symbol-versions \
+        --cross-compile \
+        --cross-execute="true" \
+        --prefix="$BUILD_DIR/talloc-install/$arch" \
+        --check-c-compiler="$CC" > configure.log 2>&1 || {
+          echo -e "${RED}libtalloc waf configure failed for $arch${NC}"
+          tail -n 20 configure.log
+          exit 1
+      }
+
+      python3 "$waf_bin" build -j"$(nproc)" > build.log 2>&1 || {
+          echo -e "${RED}libtalloc waf build failed for $arch${NC}"
+          tail -n 40 build.log
+          exit 1
+      }
+
+      python3 "$waf_bin" install --destdir="$BUILD_DIR/talloc-install/$arch" > install.log 2>&1 || {
+          echo -e "${RED}libtalloc waf install failed for $arch${NC}"
+          tail -n 40 install.log
+          exit 1
+      }
   fi
-  if [ -z "$waf_bin" ]; then
-      echo -e "${RED}ERROR: waf not found in $src${NC}"
-      echo "Contents of talloc source:"
-      find . -maxdepth 2 -type f | head -n 20
-      exit 1
-  fi
-  echo -e "${BLUE}Using waf at $waf_bin${NC}"
 
-  # 🧹 Clean previous build quietly
-  python3 "$waf_bin" distclean >/dev/null 2>&1 || true
-
-  # ⚙️ Configure for cross-compilation
-  python3 "$waf_bin" configure \
-    --disable-python \
-    --without-gettext \
-    --disable-rpath \
-    --disable-symbol-versions \
-    --cross-compile \
-    --cross-execute="true" \
-    --prefix="$BUILD_DIR/talloc-install/$arch" \
-    --check-c-compiler="$CC" > configure.log 2>&1 || {
-      echo -e "${RED}libtalloc waf configure failed for $arch${NC}"
-      tail -n 20 configure.log
-      exit 1
-  }
-
-  # 🏗️ Build quietly
-  python3 "$waf_bin" build -j"$(nproc)" > build.log 2>&1 || {
-      echo -e "${RED}libtalloc build failed for $arch${NC}"
-      tail -n 40 build.log
-      exit 1
-  }
-
-  # 📦 Install to prefixed directory
-  python3 "$waf_bin" install --destdir="$BUILD_DIR/talloc-install/$arch" > install.log 2>&1 || {
-      echo -e "${RED}libtalloc install failed for $arch${NC}"
-      tail -n 40 install.log
-      exit 1
-  }
-
-  # 📁 Copy resulting .so file into JNI output directory
+  # 📁 Copy resulting shared object to jniLibs
   find "$BUILD_DIR/talloc-install/$arch" -type f -name "libtalloc*.so*" -exec cp {} "$out_dir/libdata_libtalloc.so" \; || {
       echo -e "${RED}Failed to copy built libtalloc .so for $arch${NC}"
       exit 1
@@ -200,6 +238,7 @@ build_libtalloc() {
   popd >/dev/null
   echo -e "${GREEN}✓ Built libtalloc for $arch${NC}"
 }
+
 
 
 
