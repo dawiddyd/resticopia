@@ -134,53 +134,42 @@ build_proot() {
 
 build_libtalloc() {
   local arch="$1"
-  local ndk_arch="${NDK_ARCH_ABI[$arch]}"
   local out_dir="$OUTPUT_DIR/$arch"
   local src="$SOURCE_DIR/talloc"
   mkdir -p "$out_dir"
 
   echo -e "${BLUE}Building libtalloc for $arch...${NC}"
 
-  # 🧩 Align environment setup with Go builds
+  # Toolchain setup
   export TOOLCHAIN_BIN="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
   export PATH="$TOOLCHAIN_BIN:$PATH"
 
   case "$arch" in
-      arm64-v8a)
-          export TARGET_HOST="aarch64-linux-android"
-          ;;
-      armeabi-v7a)
-          export TARGET_HOST="armv7a-linux-androideabi"
-          ;;
-      x86_64)
-          export TARGET_HOST="x86_64-linux-android"
-          ;;
-      x86)
-          export TARGET_HOST="i686-linux-android"
-          ;;
+      arm64-v8a)   TARGET_HOST="aarch64-linux-android" ;;
+      armeabi-v7a) TARGET_HOST="armv7a-linux-androideabi" ;;
+      x86_64)      TARGET_HOST="x86_64-linux-android" ;;
+      x86)         TARGET_HOST="i686-linux-android" ;;
   esac
 
-  export CC="${TARGET_HOST}${MIN_API_LEVEL}-clang"
+  # Prefer the exact API-level binary if it exists, otherwise fall back
+  if [ -x "$TOOLCHAIN_BIN/${TARGET_HOST}${MIN_API_LEVEL}-clang" ]; then
+      export CC="${TARGET_HOST}${MIN_API_LEVEL}-clang"
+  else
+      export CC="${TARGET_HOST}-clang"
+  fi
+
   export AR="llvm-ar"
   export CFLAGS="--target=${TARGET_HOST}${MIN_API_LEVEL} -D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64"
   export LDFLAGS="-static-libgcc -no-canonical-prefixes"
   export PYTHONHASHSEED=1
 
-  # 🧠 Verify compiler visibility
-  echo -e "${BLUE}Using compiler: $(command -v $CC 2>/dev/null || echo 'not found')${NC}"
-  if ! command -v "$CC" >/dev/null 2>&1; then
-      echo -e "${YELLOW}⚠️  Compiler $CC not found in current PATH. Contents of $TOOLCHAIN_BIN:${NC}"
-      ls -1 "$TOOLCHAIN_BIN" | grep clang || true
-  fi
+  echo -e "${BLUE}Using compiler: $(command -v $CC)${NC}"
+  command -v "$CC" || { echo -e "${RED}Compiler $CC not found on PATH${NC}"; exit 1; }
 
   pushd "$src" >/dev/null
-
-  # 🧹 Clean previous build if exists
   make clean >/dev/null 2>&1 || true
 
   echo -e "${BLUE}Configuring libtalloc for $arch...${NC}"
-
-  # ⚙️ Explicitly prefix PATH so waf sees compiler even in CI subshell
   PATH="$TOOLCHAIN_BIN:$PATH" ./configure \
     --disable-python \
     --without-gettext \
@@ -190,9 +179,9 @@ build_libtalloc() {
     --cross-execute="true" \
     --prefix="$BUILD_DIR/talloc-install/$arch" \
     --check-c-compiler="$CC" > configure.log 2>&1 || {
-      echo -e "${RED}libtalloc ./configure failed for $arch${NC}"
-      tail -n 20 configure.log
-      exit 1
+        echo -e "${RED}libtalloc ./configure failed for $arch${NC}"
+        tail -n 20 configure.log
+        exit 1
   }
 
   echo -e "${BLUE}Building libtalloc...${NC}"
@@ -209,8 +198,8 @@ build_libtalloc() {
       exit 1
   }
 
-  # 📁 Copy resulting .so file to JNI libs
-  find "$BUILD_DIR/talloc-install/$arch" -type f -name "libtalloc*.so*" -exec cp {} "$out_dir/libdata_libtalloc.so" \; || {
+  find "$BUILD_DIR/talloc-install/$arch" -type f -name "libtalloc*.so*" \
+      -exec cp {} "$out_dir/libdata_libtalloc.so" \; || {
       echo -e "${RED}Failed to copy built libtalloc .so for $arch${NC}"
       exit 1
   }
