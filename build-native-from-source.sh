@@ -148,7 +148,8 @@ build_libtalloc() {
     export CC=$(eval echo $CC)
     export AR="$NDK/toolchains/llvm/prebuilt/$(uname -s | tr '[:upper:]' '[:lower:]')-*/bin/llvm-ar"
     export AR=$(eval echo $AR)
-    export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_LARGE_FILES"
+    export LFS_FLAGS="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_LARGE_FILES"
+    export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64 $LFS_FLAGS -D_LARGEFILE64_SOURCE -D_LARGE_FILES"
     
     pushd "$talloc_source" > /dev/null
 
@@ -161,13 +162,18 @@ talloc_cv_SIZEOF_OFF_T=8
 talloc_cv_LARGEFILE_SUPPORT=yes
 EOF
 
-    # ✅ Call ./configure, but pass Waf options through
-    ./configure \
-        --prefix="$BUILD_DIR/talloc-install/$android_arch" \
-        --disable-python \
-        --cross-compile \
-        --cross-answers=cross-answers.txt \
-        CC="$CC" AR="$AR" CFLAGS="$CFLAGS"
+
+
+# ✅ Explicitly tell waf where the cross answers file is and pass flags inline
+./configure \
+    --prefix="$BUILD_DIR/talloc-install/$android_arch" \
+    --disable-python \
+    --cross-compile \
+    --cross-answers=cross-answers.txt \
+    CC="$CC" AR="$AR" \
+    CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" \
+    TALLOC_CFLAGS="$CFLAGS" TALLOC_LDFLAGS="$LDFLAGS" \
+    > configure.log 2>&1
 
     make clean || true
     make
