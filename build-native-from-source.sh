@@ -179,6 +179,20 @@ EOF
   set +x
   echo "==== configure exit code: $rc ===="
 
+if [ $rc -ne 0 ]; then
+    echo "libtalloc ./configure failed for $android_arch"
+    if [ -f configure.log ]; then
+        echo "--- configure.log (last 100 lines) ---"
+        tail -n 100 configure.log || true
+        echo "--- end configure.log ---"
+    else
+        echo "configure.log not found in $(pwd)"
+        find . -maxdepth 2 -type f -name 'config*.log'
+    fi
+    return 1
+fi
+  
+
   if [ $rc -ne 0 ]; then
       echo "libtalloc configure failed for $android_arch"
       echo "--- configure.log (last 100 lines) ---"
