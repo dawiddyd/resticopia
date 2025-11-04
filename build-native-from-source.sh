@@ -142,57 +142,53 @@ build_libtalloc() {
   export CC="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
   export AR="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/llvm-ar"
   export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64"
+  export LDFLAGS="--sysroot=$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/sysroot"
 
   pushd "$src" >/dev/null
+  echo -e "${BLUE}Building libtalloc for $arch...${NC}"
 
-  # Clean up any previous build
-  make clean || true
+  # Clean previous build if any
+  python3 ./waf distclean >/dev/null 2>&1 || true
 
-  # Cross-compile configure step with pre-answered tests
-  ./configure \
-    --prefix="$BUILD_DIR/talloc-install/$arch" \
+  # Configure using Waf (modern talloc build system)
+  python3 ./waf configure \
     --disable-python \
-    --host="${ndk_arch}" \
-    --build="$(uname -m)-linux-gnu" \
-    --enable-static \
-    --enable-shared \
-    CC="$CC" AR="$AR" CFLAGS="$CFLAGS" \
-    ac_cv_func_malloc_0_nonnull=yes \
-    ac_cv_func_realloc_0_nonnull=yes \
-    ac_cv_func_vsnprintf_works=yes \
-    ac_cv_func_snprintf_works=yes \
-    ac_cv_func_memcmp_working=yes \
-    ac_cv_func_vprintf=yes \
-    ac_cv_func_printf=yes \
-    ac_cv_func_vfprintf=yes \
-    ac_cv_func_fprintf=yes \
-    ac_cv_func_strerror_r_char_p=yes \
-    ac_cv_func_gettimeofday=yes \
-    ac_cv_func_mmap_fixed_mapped=yes \
-    ac_cv_func_mmap_anon=yes \
-    ac_cv_func_mmap_dev_zero=yes
+    --without-gettext \
+    --disable-rpath \
+    --disable-symbol-versions \
+    --cross-compile \
+    --cross-execute="true" \
+    --prefix="$BUILD_DIR/talloc-install/$arch" \
+    --check-c-compiler="$CC" > configure.log 2>&1 || {
+      echo -e "${RED}libtalloc waf configure failed for $arch${NC}"
+      tail -n 20 configure.log
+      exit 1
+  }
 
-  # Build quietly but show logs if anything fails
-  make -j"$(nproc)" > build.log 2>&1 || {
-      echo -e "${RED}Talloc build failed ($arch). Showing last 40 lines of build.log:${NC}"
+  # Build quietly, print last lines on failure
+  python3 ./waf build -j"$(nproc)" > build.log 2>&1 || {
+      echo -e "${RED}libtalloc build failed for $arch${NC}"
       tail -n 40 build.log
       exit 1
   }
 
-  make install > install.log 2>&1 || {
-      echo -e "${RED}Talloc install failed ($arch). Showing last 40 lines of install.log:${NC}"
+  # Install to prefixed directory
+  python3 ./waf install --destdir="$BUILD_DIR/talloc-install/$arch" > install.log 2>&1 || {
+      echo -e "${RED}libtalloc install failed for $arch${NC}"
       tail -n 40 install.log
       exit 1
   }
 
-  cp "$BUILD_DIR/talloc-install/$arch/lib/libtalloc.so"* "$out_dir/libdata_libtalloc.so.2.so" || {
-      echo -e "${RED}Talloc copy failed for $arch${NC}"
+  # Copy resulting .so into JNI libs output
+  find "$BUILD_DIR/talloc-install/$arch" -type f -name "libtalloc*.so*" -exec cp {} "$out_dir/libdata_libtalloc.so" \; || {
+      echo -e "${RED}Failed to copy built libtalloc .so for $arch${NC}"
       exit 1
   }
 
   popd >/dev/null
   echo -e "${GREEN}✓ Built libtalloc for $arch${NC}"
 }
+
 
 
 main() {
