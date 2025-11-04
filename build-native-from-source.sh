@@ -144,26 +144,56 @@ build_libtalloc() {
   export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64"
 
   pushd "$src" >/dev/null
-  cat > cross-answers.txt <<'EOF'
-talloc_cv_HAVE_VA_COPY=yes
-talloc_cv_C99_VSNPRINTF=yes
-talloc_cv_HAVE_LIBREPLACE=no
-talloc_cv_SIZEOF_OFF_T=8
-EOF
 
+  # Clean up any previous build
+  make clean || true
+
+  # Cross-compile configure step with pre-answered tests
   ./configure \
     --prefix="$BUILD_DIR/talloc-install/$arch" \
     --disable-python \
-    --cross-compile \
-    --cross-answers=cross-answers.txt \
-    CC="$CC" AR="$AR" CFLAGS="$CFLAGS"
+    --host="${ndk_arch}" \
+    --build="$(uname -m)-linux-gnu" \
+    --enable-static \
+    --enable-shared \
+    CC="$CC" AR="$AR" CFLAGS="$CFLAGS" \
+    ac_cv_func_malloc_0_nonnull=yes \
+    ac_cv_func_realloc_0_nonnull=yes \
+    ac_cv_func_vsnprintf_works=yes \
+    ac_cv_func_snprintf_works=yes \
+    ac_cv_func_memcmp_working=yes \
+    ac_cv_func_vprintf=yes \
+    ac_cv_func_printf=yes \
+    ac_cv_func_vfprintf=yes \
+    ac_cv_func_fprintf=yes \
+    ac_cv_func_strerror_r_char_p=yes \
+    ac_cv_func_gettimeofday=yes \
+    ac_cv_func_mmap_fixed_mapped=yes \
+    ac_cv_func_mmap_anon=yes \
+    ac_cv_func_mmap_dev_zero=yes
 
-  make clean || true
-  make && make install
-  cp "$BUILD_DIR/talloc-install/$arch/lib/libtalloc.so"* "$out_dir/libdata_libtalloc.so.2.so"
+  # Build quietly but show logs if anything fails
+  make -j"$(nproc)" > build.log 2>&1 || {
+      echo -e "${RED}Talloc build failed ($arch). Showing last 40 lines of build.log:${NC}"
+      tail -n 40 build.log
+      exit 1
+  }
+
+  make install > install.log 2>&1 || {
+      echo -e "${RED}Talloc install failed ($arch). Showing last 40 lines of install.log:${NC}"
+      tail -n 40 install.log
+      exit 1
+  }
+
+  cp "$BUILD_DIR/talloc-install/$arch/lib/libtalloc.so"* "$out_dir/libdata_libtalloc.so.2.so" || {
+      echo -e "${RED}Talloc copy failed for $arch${NC}"
+      exit 1
+  }
+
   popd >/dev/null
   echo -e "${GREEN}✓ Built libtalloc for $arch${NC}"
 }
+
 
 main() {
   echo -e "${BLUE}Step 1: Downloading sources${NC}"
