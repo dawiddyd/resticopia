@@ -142,16 +142,28 @@ build_libtalloc() {
   export CC="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
   export AR="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/llvm-ar"
   export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64"
-  export LDFLAGS="--sysroot=$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/sysroot"
 
   pushd "$src" >/dev/null
   echo -e "${BLUE}Building libtalloc for $arch...${NC}"
 
-  # Clean previous build if any
-  python3 ./waf distclean >/dev/null 2>&1 || true
+  # 🧠 Detect waf script (different talloc releases package it in different places)
+  local waf_bin="./waf"
+  if [ ! -f "$waf_bin" ]; then
+      waf_bin="$(find . -type f -name waf | head -n 1)"
+  fi
+  if [ -z "$waf_bin" ]; then
+      echo -e "${RED}ERROR: waf not found in $src${NC}"
+      echo "Contents of talloc source:"
+      find . -maxdepth 2 -type f | head -n 20
+      exit 1
+  fi
+  echo -e "${BLUE}Using waf at $waf_bin${NC}"
 
-  # Configure using Waf (modern talloc build system)
-  python3 ./waf configure \
+  # 🧹 Clean previous build quietly
+  python3 "$waf_bin" distclean >/dev/null 2>&1 || true
+
+  # ⚙️ Configure for cross-compilation
+  python3 "$waf_bin" configure \
     --disable-python \
     --without-gettext \
     --disable-rpath \
@@ -165,21 +177,21 @@ build_libtalloc() {
       exit 1
   }
 
-  # Build quietly, print last lines on failure
-  python3 ./waf build -j"$(nproc)" > build.log 2>&1 || {
+  # 🏗️ Build quietly
+  python3 "$waf_bin" build -j"$(nproc)" > build.log 2>&1 || {
       echo -e "${RED}libtalloc build failed for $arch${NC}"
       tail -n 40 build.log
       exit 1
   }
 
-  # Install to prefixed directory
-  python3 ./waf install --destdir="$BUILD_DIR/talloc-install/$arch" > install.log 2>&1 || {
+  # 📦 Install to prefixed directory
+  python3 "$waf_bin" install --destdir="$BUILD_DIR/talloc-install/$arch" > install.log 2>&1 || {
       echo -e "${RED}libtalloc install failed for $arch${NC}"
       tail -n 40 install.log
       exit 1
   }
 
-  # Copy resulting .so into JNI libs output
+  # 📁 Copy resulting .so file into JNI output directory
   find "$BUILD_DIR/talloc-install/$arch" -type f -name "libtalloc*.so*" -exec cp {} "$out_dir/libdata_libtalloc.so" \; || {
       echo -e "${RED}Failed to copy built libtalloc .so for $arch${NC}"
       exit 1
