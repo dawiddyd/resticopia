@@ -141,6 +141,7 @@ build_libtalloc() {
 
   echo -e "${BLUE}Building libtalloc for $arch...${NC}"
 
+  # 🧩 Align environment setup with Go builds
   export TOOLCHAIN_BIN="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
   export PATH="$TOOLCHAIN_BIN:$PATH"
 
@@ -165,23 +166,22 @@ build_libtalloc() {
   export LDFLAGS="-static-libgcc -no-canonical-prefixes"
   export PYTHONHASHSEED=1
 
-  echo -e "${BLUE}Using compiler: $(command -v $CC)${NC}"
-
+  # 🧠 Verify compiler visibility
+  echo -e "${BLUE}Using compiler: $(command -v $CC 2>/dev/null || echo 'not found')${NC}"
   if ! command -v "$CC" >/dev/null 2>&1; then
-      echo -e "${RED}Compiler $CC not found on PATH${NC}"
-      echo "PATH currently set to: $PATH"
-      exit 1
+      echo -e "${YELLOW}⚠️  Compiler $CC not found in current PATH. Contents of $TOOLCHAIN_BIN:${NC}"
+      ls -1 "$TOOLCHAIN_BIN" | grep clang || true
   fi
-
-
 
   pushd "$src" >/dev/null
 
-  # 🧹 Clean previous build
+  # 🧹 Clean previous build if exists
   make clean >/dev/null 2>&1 || true
 
-  # 🛠️ Keep the existing ./configure call
-  ./configure \
+  echo -e "${BLUE}Configuring libtalloc for $arch...${NC}"
+
+  # ⚙️ Explicitly prefix PATH so waf sees compiler even in CI subshell
+  PATH="$TOOLCHAIN_BIN:$PATH" ./configure \
     --disable-python \
     --without-gettext \
     --disable-rpath \
@@ -195,18 +195,21 @@ build_libtalloc() {
       exit 1
   }
 
+  echo -e "${BLUE}Building libtalloc...${NC}"
   make -j"$(nproc)" > build.log 2>&1 || {
       echo -e "${RED}libtalloc build failed for $arch${NC}"
       tail -n 40 build.log
       exit 1
   }
 
+  echo -e "${BLUE}Installing libtalloc...${NC}"
   make install DESTDIR="$BUILD_DIR/talloc-install/$arch" > install.log 2>&1 || {
       echo -e "${RED}libtalloc install failed for $arch${NC}"
       tail -n 40 install.log
       exit 1
   }
 
+  # 📁 Copy resulting .so file to JNI libs
   find "$BUILD_DIR/talloc-install/$arch" -type f -name "libtalloc*.so*" -exec cp {} "$out_dir/libdata_libtalloc.so" \; || {
       echo -e "${RED}Failed to copy built libtalloc .so for $arch${NC}"
       exit 1
@@ -215,6 +218,7 @@ build_libtalloc() {
   popd >/dev/null
   echo -e "${GREEN}✓ Built libtalloc for $arch${NC}"
 }
+
 
 
 main() {
