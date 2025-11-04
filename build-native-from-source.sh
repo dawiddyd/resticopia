@@ -142,33 +142,25 @@ build_libtalloc() {
   export CC="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
   export AR="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/llvm-ar"
   export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64"
-  export PYTHONHASHSEED=1  # required if waf gets invoked internally
+  export PYTHONHASHSEED=1
 
   pushd "$src" >/dev/null
   echo -e "${BLUE}Building libtalloc for $arch...${NC}"
 
-  # 🧠 Detect build system
   if [ -f "./configure" ]; then
-      echo -e "${BLUE}Detected Autotools-style talloc (using ./configure + make)${NC}"
+      echo -e "${BLUE}Detected hybrid ./configure (Waf frontend) — using cross-compile mode${NC}"
 
       make clean >/dev/null 2>&1 || true
 
       ./configure \
-        --host="${ndk_arch}" \
-        --build="$(uname -m)-linux-gnu" \
         --disable-python \
         --without-gettext \
         --disable-rpath \
         --disable-symbol-versions \
+        --cross-compile \
+        --cross-execute="true" \
         --prefix="$BUILD_DIR/talloc-install/$arch" \
-        CC="$CC" AR="$AR" CFLAGS="$CFLAGS" \
-        ac_cv_func_malloc_0_nonnull=yes \
-        ac_cv_func_realloc_0_nonnull=yes \
-        ac_cv_func_vsnprintf_works=yes \
-        ac_cv_func_snprintf_works=yes \
-        ac_cv_func_memcmp_working=yes \
-        ac_cv_func_gettimeofday=yes \
-        > configure.log 2>&1 || {
+        --check-c-compiler="$CC" > configure.log 2>&1 || {
           echo -e "${RED}libtalloc ./configure failed for $arch${NC}"
           tail -n 20 configure.log
           exit 1
@@ -187,9 +179,8 @@ build_libtalloc() {
       }
 
   else
-      echo -e "${BLUE}No ./configure found — using Waf build path${NC}"
+      echo -e "${BLUE}No ./configure found — using direct waf build${NC}"
 
-      # locate waf
       local waf_bin="./waf"
       if [ ! -f "$waf_bin" ]; then
           waf_bin="$(find . -type f -name waf | head -n 1)"
@@ -238,8 +229,6 @@ build_libtalloc() {
   popd >/dev/null
   echo -e "${GREEN}✓ Built libtalloc for $arch${NC}"
 }
-
-
 
 
 main() {
