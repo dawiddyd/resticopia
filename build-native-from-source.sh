@@ -211,7 +211,7 @@ build_libtalloc() {
     export CC=$(eval echo $CC)
     export AR="$NDK/toolchains/llvm/prebuilt/$(uname -s | tr '[:upper:]' '[:lower:]')-*/bin/llvm-ar"
     export AR=$(eval echo $AR)
-    export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC"
+    export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64"
     
     pushd "$talloc_source" > /dev/null
 
@@ -220,6 +220,7 @@ build_libtalloc() {
 talloc_cv_HAVE_VA_COPY=yes
 talloc_cv_C99_VSNPRINTF=yes
 talloc_cv_HAVE_LIBREPLACE=no
+talloc_cv_SIZEOF_OFF_T=8
 EOF
 
     # ✅ Call ./configure, but pass Waf options through
