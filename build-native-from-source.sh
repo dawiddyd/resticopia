@@ -127,13 +127,14 @@ build_proot() {
   export CC="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
   export AR="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/llvm-ar"
 
-  # ✅ Link talloc into proot as well (if it uses it)
+  # ✅ Link talloc + set correct STRIP tool
   export CFLAGS="-I/opt/talloc-arm64/include -D__ANDROID_API__=$MIN_API_LEVEL"
   export LDFLAGS="-L/opt/talloc-arm64/lib -ltalloc"
+  export STRIP="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}-strip"
 
   pushd "$src/src" >/dev/null
   make clean || true
-  make CC="$CC" AR="$AR" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
+  make CC="$CC" AR="$AR" STRIP="$STRIP" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
   cp proot "$out_dir/libdata_proot.so" || true
   [ -f "$out_dir/libdata_proot.so" ] || { echo -e "${RED}Failed to build proot ($arch)${NC}"; exit 1; }
   popd >/dev/null
@@ -147,7 +148,7 @@ main() {
   download_source "proot" "https://github.com/proot-me/proot/archive/refs/tags/v${PROOT_VERSION}.tar.gz" "$SOURCE_DIR/proot"
 
   echo -e "${BLUE}Step 2: Building architectures${NC}"
-  for arch in arm64-v8a armeabi-v7a x86_64 x86; do
+  for arch in arm64-v8a; do
     build_proot "$arch"
     build_go_binary "restic" "$SOURCE_DIR/restic" "libdata_restic.so" "$arch"
     build_go_binary "rclone" "$SOURCE_DIR/rclone" "libdata_rclone.so" "$arch"
