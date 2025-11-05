@@ -123,21 +123,36 @@ build_proot() {
   local src="$SOURCE_DIR/proot"
   mkdir -p "$out_dir"
 
-  export CC=aarch64-linux-gnu-gcc
-  export AR=aarch64-linux-gnu-ar
-  export STRIP=aarch64-linux-gnu-strip
-  export OBJCOPY=aarch64-linux-gnu-objcopy
-  export CFLAGS="-O2 -static -I/opt/talloc-arm64/include"
-  export LDFLAGS="-L/opt/talloc-arm64/lib -ltalloc -static"
+  # NDK r21e (Linux x86_64 host)
+  export NDK_TOOLCHAIN="$NDK/toolchains/llvm/prebuilt/linux-x86_64"
+  export PATH="$NDK_TOOLCHAIN/bin:$PATH"
+  export MIN_API_LEVEL=21
+
+  export CC="$NDK_TOOLCHAIN/bin/aarch64-linux-android${MIN_API_LEVEL}-clang"
+  export AR="$NDK_TOOLCHAIN/bin/llvm-ar"
+  export STRIP="$NDK_TOOLCHAIN/bin/llvm-strip"
+  export OBJCOPY="$NDK_TOOLCHAIN/bin/llvm-objcopy"
+  export RANLIB="$NDK_TOOLCHAIN/bin/llvm-ranlib"
+
+  export CFLAGS="-O2 --sysroot=$NDK_TOOLCHAIN/sysroot -I/opt/talloc-arm64/include -D__ANDROID_API__=$MIN_API_LEVEL"
+  export LDFLAGS="-L/opt/talloc-arm64/lib -L$NDK_TOOLCHAIN/sysroot/usr/lib/aarch64-linux-android${MIN_API_LEVEL} -ltalloc -llog"
+  export PKG_CONFIG_PATH="/opt/talloc-arm64/lib/pkgconfig"
+  export PKG_CONFIG_LIBDIR=""
 
   pushd "$src/src" >/dev/null
   make clean || true
-  make CC="$CC" AR="$AR" STRIP="$STRIP" OBJCOPY="$OBJCOPY" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
+  make CC="$CC" AR="$AR" STRIP="$STRIP" OBJCOPY="$OBJCOPY" RANLIB="$RANLIB" \
+       CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
+
   cp proot "$out_dir/libdata_proot.so"
-  [ -f "$out_dir/libdata_proot.so" ] || { echo -e "${RED}Failed to build proot (arm64-v8a)${NC}"; exit 1; }
+  [ -f "$out_dir/libdata_proot.so" ] || {
+    echo -e "${RED}✗ Failed to build proot (arm64-v8a)${NC}"
+    exit 1
+  }
   popd >/dev/null
   echo -e "${GREEN}✓ Built proot for arm64-v8a${NC}"
 }
+
 
 main() {
   echo -e "${BLUE}Step 1: Downloading sources${NC}"
