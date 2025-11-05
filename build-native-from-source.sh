@@ -119,26 +119,24 @@ build_go_binary() {
 }
 
 build_proot() {
-  local arch="$1"
-  local ndk_arch="${NDK_ARCH_ABI[$arch]}"
-  local out_dir="$OUTPUT_DIR/$arch"
+  local out_dir="$OUTPUT_DIR/arm64-v8a"
   local src="$SOURCE_DIR/proot"
   mkdir -p "$out_dir"
-  export CC="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
-  export AR="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/llvm-ar"
 
-  # ✅ Link talloc + set correct STRIP tool
-  export CFLAGS="-I/opt/talloc-arm64/include -D__ANDROID_API__=$MIN_API_LEVEL"
-  export LDFLAGS="-L/opt/talloc-arm64/lib -ltalloc"
-  export STRIP="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}-strip"
+  export CC=aarch64-linux-gnu-gcc
+  export AR=aarch64-linux-gnu-ar
+  export STRIP=aarch64-linux-gnu-strip
+  export OBJCOPY=aarch64-linux-gnu-objcopy
+  export CFLAGS="-O2 -static -I/opt/talloc-arm64/include"
+  export LDFLAGS="-L/opt/talloc-arm64/lib -ltalloc -static"
 
   pushd "$src/src" >/dev/null
   make clean || true
-  make CC="$CC" AR="$AR" STRIP="$STRIP" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
-  cp proot "$out_dir/libdata_proot.so" || true
-  [ -f "$out_dir/libdata_proot.so" ] || { echo -e "${RED}Failed to build proot ($arch)${NC}"; exit 1; }
+  make CC="$CC" AR="$AR" STRIP="$STRIP" OBJCOPY="$OBJCOPY" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
+  cp proot "$out_dir/libdata_proot.so"
+  [ -f "$out_dir/libdata_proot.so" ] || { echo -e "${RED}Failed to build proot (arm64-v8a)${NC}"; exit 1; }
   popd >/dev/null
-  echo -e "${GREEN}✓ Built proot for $arch${NC}"
+  echo -e "${GREEN}✓ Built proot for arm64-v8a${NC}"
 }
 
 main() {
