@@ -123,7 +123,6 @@ build_proot() {
   local src="$SOURCE_DIR/proot"
   mkdir -p "$out_dir"
 
-  # NDK r21e (Linux x86_64 host)
   export NDK_TOOLCHAIN="$NDK/toolchains/llvm/prebuilt/linux-x86_64"
   export PATH="$NDK_TOOLCHAIN/bin:$PATH"
   export MIN_API_LEVEL=21
@@ -140,6 +139,11 @@ build_proot() {
   export PKG_CONFIG_LIBDIR=""
 
   pushd "$src/src" >/dev/null
+
+  # 🩹 Patch out loader-wrapped to fix llvm-objcopy "invalid architecture"
+  sed -i '/loader-wrapped.o:/,+2d' GNUmakefile
+  sed -i 's/loader\/loader-wrapped.o//g' GNUmakefile
+
   make clean || true
   make CC="$CC" AR="$AR" STRIP="$STRIP" OBJCOPY="$OBJCOPY" RANLIB="$RANLIB" \
        CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
@@ -149,6 +153,7 @@ build_proot() {
     echo -e "${RED}✗ Failed to build proot (arm64-v8a)${NC}"
     exit 1
   }
+
   popd >/dev/null
   echo -e "${GREEN}✓ Built proot for arm64-v8a${NC}"
 }
