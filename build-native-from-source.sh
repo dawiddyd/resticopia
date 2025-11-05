@@ -1,6 +1,6 @@
 #!/bin/bash
 # Build native dependencies from source for F-Droid compliance
-# This script compiles restic, rclone, proot, and libtalloc from source
+# This script compiles restic, rclone, proot
 
 set -eo pipefail
 
@@ -18,7 +18,6 @@ echo -e "${BLUE}=================================${NC}"
 RESTIC_VERSION="0.18.1"
 RCLONE_VERSION="1.68.2"
 PROOT_VERSION="5.4.0"
-LIBTALLOC_VERSION="2.4.3"
 
 # Directories
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -101,6 +100,11 @@ build_go_binary() {
   export GOOS=android
   export GOARCH="$go_arch"
   export CGO_ENABLED=1
+
+  # ✅ Add talloc include and library paths for CGO
+  export CGO_CFLAGS="-I/opt/talloc-arm64/include"
+  export CGO_LDFLAGS="-L/opt/talloc-arm64/lib -ltalloc"
+
   export CC="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
 
   echo -e "${BLUE}Building $name for $arch...${NC}"
@@ -123,185 +127,24 @@ build_proot() {
   export CC="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
   export AR="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/llvm-ar"
 
+  # ✅ Link talloc into proot as well (if it uses it)
+  export CFLAGS="-I/opt/talloc-arm64/include -D__ANDROID_API__=$MIN_API_LEVEL"
+  export LDFLAGS="-L/opt/talloc-arm64/lib -ltalloc"
+
   pushd "$src/src" >/dev/null
   make clean || true
-  make CC="$CC" AR="$AR" CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL"
+  make CC="$CC" AR="$AR" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
   cp proot "$out_dir/libdata_proot.so" || true
   [ -f "$out_dir/libdata_proot.so" ] || { echo -e "${RED}Failed to build proot ($arch)${NC}"; exit 1; }
   popd >/dev/null
   echo -e "${GREEN}✓ Built proot for $arch${NC}"
 }
 
-build_libtalloc_simple() {
-    local android_arch="$1"
-    local ndk_arch="${NDK_ARCH_ABI[$android_arch]}"
-    local output_dir="$OUTPUT_DIR/$android_arch"
-    local talloc_source="$SOURCE_DIR/talloc"
-
-    echo -e "${BLUE}Building libtalloc (simple mode) for $android_arch...${NC}"
-
-    mkdir -p "$output_dir"
-
-    # --- Setup toolchain paths ---
-    local TOOLCHAIN="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin"
-    export PATH="$TOOLCHAIN:$PATH"
-
-    # --- Map Android arch to NDK target triple ---
-    case "$android_arch" in
-        arm64-v8a)
-            TARGET_HOST="aarch64-linux-android"
-            ;;
-        armeabi-v7a)
-            TARGET_HOST="armv7a-linux-androideabi"
-            ;;
-        x86_64)
-            TARGET_HOST="x86_64-linux-android"
-            ;;
-        x86)
-            TARGET_HOST="i686-linux-android"
-            ;;
-        *)
-            echo -e "${RED}Unknown architecture: $android_arch${NC}"
-            return 1
-            ;;
-    esac
-
-    export CC="${TOOLCHAIN}/${TARGET_HOST}${MIN_API_LEVEL}-clang"
-    export AR="${TOOLCHAIN}/llvm-ar"
-    export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -O2 -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES"
-
-    echo "Using compiler: $CC"
-
-    pushd "$talloc_source" >/dev/null || {
-        echo -e "${RED}talloc source directory missing!${NC}"
-        return 1
-    }
-
-    # --- Compile directly without configure/waf ---
-    if [ ! -f "talloc.c" ]; then
-        echo -e "${RED}talloc.c not found in $talloc_source${NC}"
-        popd >/dev/null
-        return 1
-    fi
-
-    $CC $CFLAGS -I"$talloc_source" -c talloc.c -o "$output_dir/talloc.o" || {
-        echo -e "${RED}Failed to compile talloc.c${NC}"
-        popd >/dev/null
-        return 1
-    }
-
-    # --- Create static and shared libraries ---
-    $AR rcs "$output_dir/libtalloc.a" "$output_dir/talloc.o"
-    $CC -shared -o "$output_dir/libdata_libtalloc.so" "$output_dir/talloc.o"
-
-    popd >/dev/null
-
-    echo -e "${GREEN}✓ Built libtalloc (simple mode) for $android_arch${NC}"
-}
-
-
-build_libtalloc() {
-  local android_arch="$1"
-  local ndk_arch="${NDK_ARCH_ABI[$android_arch]}"
-  local output_dir="$OUTPUT_DIR/$android_arch"
-  local talloc_source="$SOURCE_DIR/talloc"
-
-  echo "Building libtalloc for $android_arch..."
-
-  mkdir -p "$output_dir"
-  pushd "$talloc_source" >/dev/null
-  
-
-  # enable bash tracing to see every command
-  set -x
-
-   # Set up NDK toolchain
-    export CC="$NDK/toolchains/llvm/prebuilt/$(uname -s | tr '[:upper:]' '[:lower:]')-*/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
-    export CC=$(eval echo $CC)
-    export AR="$NDK/toolchains/llvm/prebuilt/$(uname -s | tr '[:upper:]' '[:lower:]')-*/bin/llvm-ar"
-    export AR=$(eval echo $AR)
-    export LFS_FLAGS="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_LARGE_FILES"
-    export CFLAGS="-D__ANDROID_API__=$MIN_API_LEVEL -fPIC -D_FILE_OFFSET_BITS=64 $LFS_FLAGS -D_LARGEFILE64_SOURCE -D_LARGE_FILES"    
-
-    # ✅ Create cross answers for Waf
-    cat > cross-answers.txt <<'EOF'
-talloc_cv_HAVE_VA_COPY=yes
-talloc_cv_C99_VSNPRINTF=yes
-talloc_cv_HAVE_LIBREPLACE=no
-talloc_cv_SIZEOF_OFF_T=8
-talloc_cv_LARGEFILE_SUPPORT=yes
-EOF
-
-  # run configure and capture exit code
-  ./configure \
-      --prefix="$BUILD_DIR/talloc-install/$android_arch" \
-      --disable-python \
-      --cross-compile \
-      --cross-answers=cross-answers.txt \
-      CC="$CC" AR="$AR" \
-      CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" \
-      TALLOC_CFLAGS="$CFLAGS" TALLOC_LDFLAGS="$LDFLAGS" \
-      > configure.log 2>&1
-  rc=$?
-
-  set +x
-  echo "==== configure exit code: $rc ===="
-
-if [ $rc -ne 0 ]; then
-    echo "libtalloc ./configure failed for $android_arch"
-    if [ -f configure.log ]; then
-        echo "--- configure.log (last 100 lines) ---"
-        tail -n 100 configure.log || true
-        echo "--- end configure.log ---"
-    else
-        echo "configure.log not found in $(pwd)"
-        find . -maxdepth 2 -type f -name 'config*.log'
-    fi
-    return 1
-fi
-  
-
-  if [ $rc -ne 0 ]; then
-      echo "libtalloc configure failed for $android_arch"
-      echo "--- configure.log (last 100 lines) ---"
-      tail -n 100 configure.log || true
-      echo "--- end configure.log ---"
-      return 1
-  fi
-
-  set -x
-  make -j"$(nproc)" > build.log 2>&1
-  rc=$?
-  set +x
-
-  echo "==== make exit code: $rc ===="
-  if [ $rc -ne 0 ]; then
-      echo "libtalloc make failed for $android_arch"
-      tail -n 100 build.log || true
-      return 1
-  fi
-
-  make install DESTDIR="$BUILD_DIR/talloc-install/$android_arch" > install.log 2>&1
-  rc=$?
-  echo "==== make install exit code: $rc ===="
-  if [ $rc -ne 0 ]; then
-      echo "libtalloc install failed for $android_arch"
-      tail -n 100 install.log || true
-      return 1
-  fi
-
-  popd >/dev/null
-  echo "✓ Built libtalloc for $android_arch"
-}
-
-
-
 main() {
   echo -e "${BLUE}Step 1: Downloading sources${NC}"
   download_source "restic" "https://github.com/restic/restic/archive/refs/tags/v${RESTIC_VERSION}.tar.gz" "$SOURCE_DIR/restic"
   download_source "rclone" "https://github.com/rclone/rclone/archive/refs/tags/v${RCLONE_VERSION}.tar.gz" "$SOURCE_DIR/rclone"
   download_source "proot" "https://github.com/proot-me/proot/archive/refs/tags/v${PROOT_VERSION}.tar.gz" "$SOURCE_DIR/proot"
-  download_source "talloc" "https://download.samba.org/pub/talloc/talloc-${LIBTALLOC_VERSION}.tar.gz" "$SOURCE_DIR/talloc"
 
   echo -e "${BLUE}Step 2: Building architectures${NC}"
   for arch in arm64-v8a armeabi-v7a x86_64 x86; do
