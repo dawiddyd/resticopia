@@ -123,7 +123,7 @@ build_proot() {
   local src="$SOURCE_DIR/proot"
   mkdir -p "$out_dir"
 
-  # Modern NDK setup - let build tools auto-detect cross-compilation
+  # Modern NDK setup
   export ANDROID_NDK_HOME="$NDK"
   export PATH="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin:$PATH"
   export MIN_API_LEVEL=21
@@ -132,6 +132,7 @@ build_proot() {
   #  F-Droid style cross-compilation using toolchain sysroot
   # -------------------------
   SYSROOT="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/sysroot"
+  echo -e "${GREEN}Using toolchain sysroot: $SYSROOT${NC}"
 
   export CFLAGS="--sysroot=$SYSROOT \
   -I$SYSROOT/usr/include \
@@ -144,19 +145,52 @@ build_proot() {
   -L/tmp/talloc-arm64/lib \
   -L$SYSROOT/usr/lib/aarch64-linux-android/$MIN_API_LEVEL \
   -ltalloc -llog"
+
   export PKG_CONFIG_PATH="/tmp/talloc-arm64/lib/pkgconfig"
   export PKG_CONFIG_LIBDIR=""
 
   pushd "$src/src" >/dev/null
 
-  # 🩹 Patch out loader-wrapped to fix llvm-objcopy "invalid architecture"
+  # -------------------------
+  # 🩹 Android NDK compatibility patches
+  # -------------------------
+  echo -e "${BLUE}Applying Android NDK patches for proot...${NC}"
+
+  # Fix missing <asm/types.h> by using <linux/types.h>
+  find . -type f \( -name "*.c" -o -name "*.h" \) -exec sed -i 's@<asm/types.h>@<linux/types.h>@g' {} +
+
+  # Fix ioctl redeclaration conflict (NDK >= r21)
+  find . -type f -name "compat.h" -exec sed -i '1i #include <sys/ioctl.h>\n#undef ioctl' {} +
+
+  # Ensure basename() is properly declared
+  find . -type f -name "cli.c" -exec sed -i '1i #include <libgen.h>' {} +
+
+  # Provide fallback libgen.h (in case it's missing)
+  mkdir -p /tmp/fake-headers
+  cat > /tmp/fake-headers/libgen.h <<'EOF'
+#ifndef _LIBGEN_H_
+#define _LIBGEN_H_
+#include <string.h>
+static inline char *basename(const char *path) {
+    const char *slash = strrchr(path, '/');
+    return slash ? (char *)(slash + 1) : (char *)path;
+}
+#endif
+EOF
+  export CFLAGS="$CFLAGS -I/tmp/fake-headers"
+
+  # 🩹 Remove loader-wrapped to fix llvm-objcopy "invalid architecture"
   sed -i '/loader-wrapped.o:/,+2d' GNUmakefile
   sed -i 's/loader\/loader-wrapped.o//g' GNUmakefile
 
-  # 🩹 Replace pkg-config calls with direct flags since talloc doesn't provide .pc files
+  # 🩹 Replace pkg-config calls (talloc has no .pc files)
   sed -i 's/$(shell pkg-config --cflags talloc)/-I\/tmp\/talloc-arm64\/include/g' GNUmakefile
   sed -i 's/$(shell pkg-config --libs talloc)/-L\/tmp\/talloc-arm64\/lib -ltalloc/g' GNUmakefile
 
+  # -------------------------
+  #  Build proot
+  # -------------------------
+  echo -e "${BLUE}Compiling proot...${NC}"
   make clean || true
   make CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
 
@@ -169,6 +203,7 @@ build_proot() {
   popd >/dev/null
   echo -e "${GREEN}✓ Built proot for arm64-v8a${NC}"
 }
+
 
 
 main() {
