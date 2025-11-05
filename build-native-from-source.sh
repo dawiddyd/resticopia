@@ -128,8 +128,8 @@ build_proot() {
   export PATH="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin:$PATH"
   export MIN_API_LEVEL=21
 
-  # Android cross-compilation flags
-  export CFLAGS="--sysroot=$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/sysroot -I/tmp/talloc-arm64/include -D__ANDROID_API__=$MIN_API_LEVEL"
+  # Android cross-compilation flags - use toolchain sysroot with additional includes
+  export CFLAGS="--sysroot=$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/sysroot -I$NDK/sysroot/usr/include -I/tmp/talloc-arm64/include -D__ANDROID_API__=$MIN_API_LEVEL"
   export LDFLAGS="--sysroot=$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/sysroot -L/tmp/talloc-arm64/lib -L$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/sysroot/usr/lib/aarch64-linux-android/$MIN_API_LEVEL -ltalloc -llog"
   export PKG_CONFIG_PATH="/tmp/talloc-arm64/lib/pkgconfig"
   export PKG_CONFIG_LIBDIR=""
