@@ -102,8 +102,8 @@ build_go_binary() {
   export CGO_ENABLED=1
 
   # ✅ Add talloc include and library paths for CGO
-  export CGO_CFLAGS="-I/opt/talloc-arm64/include"
-  export CGO_LDFLAGS="-L/opt/talloc-arm64/lib -ltalloc"
+  export CGO_CFLAGS="-I/tmp/talloc-arm64/include"
+  export CGO_LDFLAGS="-L/tmp/talloc-arm64/lib -ltalloc"
 
   export CC="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
 
@@ -123,19 +123,15 @@ build_proot() {
   local src="$SOURCE_DIR/proot"
   mkdir -p "$out_dir"
 
-  export NDK_TOOLCHAIN="$NDK/toolchains/llvm/prebuilt/linux-x86_64"
-  export PATH="$NDK_TOOLCHAIN/bin:$PATH"
+  # Modern NDK setup - let build tools auto-detect cross-compilation
+  export ANDROID_NDK_HOME="$NDK"
+  export PATH="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin:$PATH"
   export MIN_API_LEVEL=21
 
-  export CC="$NDK_TOOLCHAIN/bin/aarch64-linux-android${MIN_API_LEVEL}-clang"
-  export AR="$NDK_TOOLCHAIN/bin/llvm-ar"
-  export STRIP="$NDK_TOOLCHAIN/bin/llvm-strip"
-  export OBJCOPY="$NDK_TOOLCHAIN/bin/llvm-objcopy"
-  export RANLIB="$NDK_TOOLCHAIN/bin/llvm-ranlib"
-
-  export CFLAGS="-O2 --sysroot=$NDK_TOOLCHAIN/sysroot -I/opt/talloc-arm64/include -D__ANDROID_API__=$MIN_API_LEVEL"
-  export LDFLAGS="-L/opt/talloc-arm64/lib -L$NDK_TOOLCHAIN/sysroot/usr/lib/aarch64-linux-android${MIN_API_LEVEL} -ltalloc -llog"
-  export PKG_CONFIG_PATH="/opt/talloc-arm64/lib/pkgconfig"
+  # Simple flags - no manual sysroot paths needed
+  export CFLAGS="-O2 -I/tmp/talloc-arm64/include -D__ANDROID_API__=$MIN_API_LEVEL"
+  export LDFLAGS="-L/tmp/talloc-arm64/lib -ltalloc -llog"
+  export PKG_CONFIG_PATH="/tmp/talloc-arm64/lib/pkgconfig"
   export PKG_CONFIG_LIBDIR=""
 
   pushd "$src/src" >/dev/null
@@ -144,9 +140,12 @@ build_proot() {
   sed -i '/loader-wrapped.o:/,+2d' GNUmakefile
   sed -i 's/loader\/loader-wrapped.o//g' GNUmakefile
 
+  # 🩹 Replace pkg-config calls with direct flags since talloc doesn't provide .pc files
+  sed -i 's/$(shell pkg-config --cflags talloc)/-I\/tmp\/talloc-arm64\/include/g' GNUmakefile
+  sed -i 's/$(shell pkg-config --libs talloc)/-L\/tmp\/talloc-arm64\/lib -ltalloc/g' GNUmakefile
+
   make clean || true
-  make CC="$CC" AR="$AR" STRIP="$STRIP" OBJCOPY="$OBJCOPY" RANLIB="$RANLIB" \
-       CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
+  make CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
 
   cp proot "$out_dir/libdata_proot.so"
   [ -f "$out_dir/libdata_proot.so" ] || {
