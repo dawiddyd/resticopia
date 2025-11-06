@@ -138,7 +138,8 @@ build_talloc() {
 
     # Create static library
     log_info "Creating libtalloc.a..."
-    "${TARGET_ARCH}-ar" rcs "$INSTALL_DIR/libtalloc.a" talloc.o
+    mkdir -p "$INSTALL_DIR/lib"
+    "${TARGET_ARCH}-ar" rcs "$INSTALL_DIR/lib/libtalloc.a" talloc.o
 
     # Install headers
     mkdir -p "$INSTALL_DIR/include"
@@ -158,71 +159,180 @@ build_proot() {
     # Copy source directory
     cp -r "$SRC_DIR"/* .
 
-    # Set build environment
-    export CC="${TARGET_ARCH}-gcc"
-    export AR="${TARGET_ARCH}-ar"
-    export STRIP="${TARGET_ARCH}-strip"
-    export CFLAGS="-I$INSTALL_DIR/include -I. -I../lib/uthash/include -I/usr/aarch64-linux-gnu/include -D_GNU_SOURCE -static -O2 -fPIC"
-    export LDFLAGS="-L$INSTALL_DIR -static -ltalloc"
+    # Create a dummy pkg-config script for talloc
+    mkdir -p "$build_dir/bin"
+    cat > "$build_dir/bin/pkg-config" << EOF
+#!/bin/bash
+if [ "\$1" = "--cflags" ] && [ "\$2" = "talloc" ]; then
+    echo "-I$INSTALL_DIR/include"
+elif [ "\$1" = "--libs" ] && [ "\$2" = "talloc" ]; then
+    echo "$INSTALL_DIR/libtalloc.a -Wl,-Bstatic"
+elif [ "\$1" = "--libs" ] && [ "\$2" = "libarchive" ]; then
+    echo ""  # We're not using libarchive
+else
+    exit 1
+fi
+EOF
+    chmod +x "$build_dir/bin/pkg-config"
+
+    export PATH="$build_dir/bin:$PATH"
+    export PKG_CONFIG="$build_dir/bin/pkg-config"
 
     # Build in the src directory
     cd src
 
-    # Manual compilation approach - compile core PRoot objects directly
-    log_info "Compiling PRoot source files manually..."
+    # First build the loader for the HOST architecture (x86_64)
+    log_info "Building loader for host architecture..."
+    # Ensure we're using host tools for loader
+    export CC="gcc"
+    export AR="ar"
+    export STRIP="strip"
+    export CFLAGS="-static -O2"
+    export LDFLAGS="-static"
+    # Disable 32-bit loader since we're cross-compiling to ARM64
+    # Comment out the 32-bit loader build rules specifically
+    sed -i '/^ifdef HAS_LOADER_32BIT/,/^endif/ s|^|# |' GNUmakefile
+    # Temporarily remove any cross-linker from PATH
+    export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-    # List of core source files (excluding loader for now)
-    local core_sources=(
-        cli/cli.c
-        cli/proot.c
-        execve/enter.c
-        execve/exit.c
-        execve/shebang.c
-        execve/elf.c
-        execve/ldso.c
-        execve/auxv.c
-        execve/aoxp.c
-        path/binding.c
-        path/glue.c
-        path/canon.c
-        path/path.c
-        path/proc.c
-        path/temp.c
-        syscall/seccomp.c
-        syscall/syscall.c
-        syscall/chain.c
-        tracee/tracee.c
-        ptrace/ptrace.c
-    )
-
-    # Compile all core objects
-    local objects=()
-    for src in "${core_sources[@]}"; do
-        local obj="${src%.c}.o"
-        log_info "Compiling $src..."
-        if ! "$CC" $CFLAGS -c "$src" -o "$obj"; then
-            log_error "Failed to compile $src"
-            return 1
-        fi
-        objects+=("$obj")
-    done
-
-    # Link the final binary
-    log_info "Linking proot binary..."
-    if ! "$CC" "${objects[@]}" $LDFLAGS -o proot; then
-        log_error "Failed to link proot binary"
+    if ! make loader.elf build.h; then
+        log_error "Failed to build loader for host architecture"
         return 1
     fi
 
+    # Restore PATH with our bin directory
+    export PATH="$build_dir/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+    # Now build proot for the TARGET architecture (aarch64)
+    log_info "Building proot binary for ${TARGET_ARCH}..."
+    export CC="${TARGET_ARCH}-gcc"
+    export AR="${TARGET_ARCH}-ar"
+    export STRIP="${TARGET_ARCH}-strip"
+    export CFLAGS="-I$INSTALL_DIR/include -static -O2 -Wno-implicit-function-declaration"
+    export LDFLAGS="-static"
+
+    # Force rebuild of proot by removing existing binary first
+    rm -f proot
+
+    # Try building proot without the loader (as suggested by the referenced documentation for simplicity)
+    log_info "Building proot without loader for cross-compilation to ARM64"
+
+    # Set environment variables to disable loader
+    export HAS_LOADER_32BIT=0
+    export DISABLE_LOADER=1
+
+    # Create a simple makefile that builds proot with talloc sources directly
+    log_info "Creating simplified makefile for proot-only build with inline talloc"
+
+    # Get the talloc source files
+    TALLOC_SOURCES="$TALLOC_DIR/talloc.c"
+
+    cat > "Makefile.simple" << EOF
+CC = aarch64-linux-gnu-gcc
+AR = aarch64-linux-gnu-ar
+STRIP = aarch64-linux-gnu-strip
+CFLAGS = -I/build/install/include -I. -I../lib/uthash/include -static -O2 -Wno-implicit-function-declaration -D_GNU_SOURCE
+LDFLAGS = -static
+
+# talloc object
+TALLOC_OBJ = talloc.o
+
+# Dummy loader symbols (since we're not building the loader)
+LOADER_DUMMY = loader_dummy.o
+
+# Core proot objects (excluding loader)
+OBJECTS = \\
+    cli/cli.o \\
+    cli/proot.o \\
+    cli/note.o \\
+    execve/enter.o \\
+    execve/exit.o \\
+    execve/shebang.o \\
+    execve/elf.o \\
+    execve/ldso.o \\
+    execve/auxv.o \\
+    execve/aoxp.o \\
+    path/binding.o \\
+    path/glue.o \\
+    path/canon.o \\
+    path/path.o \\
+    path/proc.o \\
+    path/temp.o \\
+    syscall/seccomp.o \\
+    syscall/syscall.o \\
+    syscall/chain.o \\
+    syscall/enter.o \\
+    syscall/exit.o \\
+    syscall/heap.o \\
+    syscall/rlimit.o \\
+    syscall/socket.o \\
+    syscall/sysnum.o \\
+    tracee/tracee.o \\
+    tracee/event.o \\
+    tracee/mem.o \\
+    tracee/reg.o \\
+    ptrace/ptrace.o \\
+    ptrace/user.o \\
+    ptrace/wait.o \\
+    extension/extension.o \\
+    extension/fake_id0/fake_id0.o \\
+    extension/kompat/kompat.o \\
+    extension/link2symlink/link2symlink.o \\
+    extension/portmap/portmap.o \\
+    extension/portmap/map.o
+
+proot: \$(TALLOC_OBJ) \$(LOADER_DUMMY) \$(OBJECTS)
+	\$(CC) \$(LDFLAGS) -o \$@ \$^
+
+\$(TALLOC_OBJ): $TALLOC_SOURCES
+	\$(CC) \$(CFLAGS) -c -o \$@ \$<
+
+\$(LOADER_DUMMY): loader_dummy.c
+	\$(CC) \$(CFLAGS) -c -o \$@ \$<
+
+loader_dummy.c:
+	printf "unsigned char _binary_loader_elf_start[] = {0};\nunsigned char _binary_loader_elf_end[] = {0};\nunsigned char _binary_loader_m32_elf_start[] __attribute__((weak)) = {0};\nunsigned char _binary_loader_m32_elf_end[] __attribute__((weak)) = {0};\n" > \$@
+
+%.o: %.c
+	\$(CC) \$(CFLAGS) -c -o \$@ \$<
+
+clean:
+	rm -f \$(TALLOC_OBJ) \$(LOADER_DUMMY) loader_dummy.c \$(OBJECTS) proot
+EOF
+
+    # Check if talloc library exists
+    if [ ! -f "/build/install/lib/libtalloc.a" ]; then
+        log_error "talloc library not found at /build/install/lib/libtalloc.a"
+        return 1
+    fi
+
+    log_info "Found talloc library, proceeding with proot build"
+
+    # Build proot using the simple makefile
+    if ! make -f Makefile.simple proot; then
+        log_error "Failed to build proot binary"
+        return 1
+    fi
+
+    # Restore original ld
+    rm "$build_dir/bin/ld"
+    mv "$build_dir/bin/ld.bak" "$build_dir/bin/ld" 2>/dev/null || true
+
     # Verify build artifacts
     if [ ! -f "proot" ]; then
-        die "PRoot binary not found after manual build"
+        die "PRoot binary not found after build"
+    fi
+
+    # Check if loader was built
+    local loader_path=""
+    if [ -f "loader.elf" ]; then
+        loader_path="src/loader.elf"
     fi
 
     log_success "PRoot built successfully"
 
-    # Return empty loader path since we're not building the loader
-    echo ""
+    # Return loader path
+    echo "$loader_path"
 }
 
 package_artifacts() {
@@ -230,12 +340,12 @@ package_artifacts() {
 
     log_info "Packaging build artifacts..."
 
-    # Copy main binary
-    cp "$BUILD_DIR/proot/proot" "$OUT_DIR/proot-${TARGET_ARCH}"
+    # Copy main binary (built in src directory)
+    cp "$BUILD_DIR/proot/src/proot" "$OUT_DIR/proot-${TARGET_ARCH}"
 
-    # Copy loader if it exists
-    if [ -n "$loader_path" ] && [ -f "$BUILD_DIR/proot/$loader_path" ]; then
-        cp "$BUILD_DIR/proot/$loader_path" "$OUT_DIR/loader-${TARGET_ARCH}"
+    # Copy loader if it exists (not built in our simplified version)
+    if [ -n "$loader_path" ] && [ -f "$BUILD_DIR/proot/src/$loader_path" ]; then
+        cp "$BUILD_DIR/proot/src/$loader_path" "$OUT_DIR/loader-${TARGET_ARCH}"
     fi
 
     # Strip binaries for smaller size
