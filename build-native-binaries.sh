@@ -140,6 +140,12 @@ set-arch() {
 }
 EOF
 
+# Set reproducible build environment
+export SOURCE_DATE_EPOCH=0
+export CFLAGS="-g0 -O2 -Wno-unused-command-line-argument"
+export CXXFLAGS="-g0 -O2 -Wno-unused-command-line-argument"
+export LDFLAGS="-s -w"
+
 # Run the build
 echo "🏗️  Building PRoot..."
 ./get-talloc.sh
