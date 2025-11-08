@@ -3,12 +3,6 @@
 
 set -euo pipefail
 
-# Colors (matching your existing style)
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
 
 # Configuration - align with your existing build-go-binaries.sh
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -22,33 +16,19 @@ MIN_API_LEVEL=24
 PROOT_V='0.15_release'
 TALLOC_V='2.4.2'
 
-echo -e "${BLUE}================================${NC}"
-echo -e "${BLUE}Building PRoot using build-proot-android${NC}"
-echo -e "${BLUE}================================${NC}"
+echo "================================="
+echo "Building PRoot using build-proot-android"
+echo "================================="
 
-# Use same NDK detection as build-go-binaries.sh
-ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-}"
-ANDROID_NDK_ROOT="${ANDROID_NDK_ROOT:-}"
-ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-}"
-
-if [ -z "$ANDROID_NDK_HOME" ] && [ -z "$ANDROID_NDK_ROOT" ]; then
-  if [ -d "$ANDROID_SDK_ROOT/ndk" ]; then
-    ANDROID_NDK_HOME="$(find "$ANDROID_SDK_ROOT/ndk" -maxdepth 1 -type d | sort -V | tail -n 1)"
-  elif [ -d "$HOME/Android/Sdk/ndk" ]; then
-    ANDROID_NDK_HOME="$(find "$HOME/Android/Sdk/ndk" -maxdepth 1 -type d | sort -V | tail -n 1)"
-  else
-    echo -e "${RED}ERROR: Android NDK not found${NC}"
-    exit 1
-  fi
-fi
-
-NDK="${ANDROID_NDK_HOME:-$ANDROID_NDK_ROOT}"
-echo -e "${GREEN}Using NDK: $NDK${NC}"
+# Use Docker-provided Android NDK
+export ANDROID_NDK_HOME="/opt/android-ndk"
+export NDK="$ANDROID_NDK_HOME"
+echo "Using NDK: $NDK"
 
 # Clone build-proot-android if not present
 PROOT_BUILD_REPO="$SOURCE_DIR/build-proot-android"
 if [ ! -d "$PROOT_BUILD_REPO" ]; then
-  echo -e "${BLUE}📦 Cloning build-proot-android repository...${NC}"
+  echo "📦 Cloning build-proot-android repository..."
   git clone --depth 1 https://codeberg.org/dawdyd/build-proot-android "$PROOT_BUILD_REPO"
 fi
 
@@ -161,20 +141,20 @@ set-arch() {
 EOF
 
 # Run the build
-echo -e "${BLUE}🏗️  Building PRoot...${NC}"
+echo "🏗️  Building PRoot..."
 ./get-talloc.sh
 ./get-proot.sh
 ./make-talloc-static.sh
 ./make-proot-for-apk.sh
 
 # Copy results to Android JNI libs
-echo -e "${BLUE}📦 Copying PRoot binaries to Android JNI libs...${NC}"
+echo "📦 Copying PRoot binaries to Android JNI libs..."
 
 # Find the built APK root directory
 APK_ROOT_DIR=$(find "$PROOT_BUILD_DIR/build" -name "root-apk" -type d | head -1)
 
 if [ -z "$APK_ROOT_DIR" ]; then
-  echo -e "${RED}ERROR: APK root directory not found${NC}"
+  echo "ERROR: APK root directory not found"
   echo "Build directory contents:"
   find "$PROOT_BUILD_DIR/build" -type d -name "*apk*" || true
   exit 1
@@ -202,7 +182,7 @@ mv libproot.so libdata_proot.so 2>/dev/null || echo "libproot.so not renamed"
 mv libproot-loader.so libdata_loader.so 2>/dev/null || echo "libproot-loader.so not renamed"  
 mv libproot-loader32.so libdata_loader32.so 2>/dev/null || echo "libproot-loader32.so not renamed"
 
-echo -e "${GREEN}✅ PRoot build completed successfully${NC}"
+echo "✅ PRoot build completed successfully"
 echo "Output files in $ARM64_DIR:"
 ls -la "$ARM64_DIR/"
 

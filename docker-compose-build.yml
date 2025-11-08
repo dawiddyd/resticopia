@@ -1,13 +1,12 @@
 services:
-  proot-build-integrated:
+  native-build:
     image: debian:bookworm
     platform: linux/amd64 # Keep amd64 for testing, use arm64 for production F-Droid builds
-    container_name: proot-build-integrated
+    container_name: native-build
     working_dir: /build
     tty: true
     environment:
       DEBIAN_FRONTEND: noninteractive
-      TARGET_ARCH: aarch64-linux-gnu
       ANDROID_NDK_HOME: /opt/android-ndk
       PATH: /usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     volumes:
@@ -21,10 +20,6 @@ services:
         apt-get update -qq
         apt-get install -y -qq --no-install-recommends ca-certificates curl wget git make pkg-config build-essential file unzip python3 gawk
         echo '✅ Base dependencies installed'
-
-        echo '📦 Installing cross-compilation toolchain...'
-        apt-get install -y -qq --no-install-recommends gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
-        echo '✅ Cross-compilation toolchain installed'
 
         echo '📦 Installing development libraries...'
         apt-get install -y -qq --no-install-recommends libarchive-dev uthash-dev swig xsltproc strace
@@ -63,6 +58,4 @@ services:
 
 volumes:
   build-cache:
-    driver: local
-  build-artifacts:
     driver: local
