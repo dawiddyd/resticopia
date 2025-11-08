@@ -49,7 +49,7 @@ echo -e "${GREEN}Using NDK: $NDK${NC}"
 PROOT_BUILD_REPO="$SOURCE_DIR/build-proot-android"
 if [ ! -d "$PROOT_BUILD_REPO" ]; then
   echo -e "${BLUE}📦 Cloning build-proot-android repository...${NC}"
-  git clone --depth 1 https://github.com/green-green-avk/build-proot-android.git "$PROOT_BUILD_REPO"
+  git clone --depth 1 https://codeberg.org/dawdyd/build-proot-android "$PROOT_BUILD_REPO"
 fi
 
 # Create build-proot-android config (adapted for restic-android)
