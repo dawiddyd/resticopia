@@ -34,7 +34,7 @@ export PATH=$PATH:/usr/local/go/bin
 # -------------------------------
 #  Android NDK setup (provided by Docker)
 # -------------------------------
-export ANDROID_NDK_HOME="/opt/android-ndk"
+export ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-/opt/android-ndk}"
 export NDK="$ANDROID_NDK_HOME"
 export PREBUILT_TAG="linux-x86_64"
 
@@ -115,7 +115,7 @@ main() {
   download_source "rclone" "https://github.com/rclone/rclone/archive/refs/tags/v${RCLONE_VERSION}.tar.gz" "$SOURCE_DIR/rclone"
 
   echo "⚙️  Step 2: Building PRoot"
-  /build/build-native-binaries.sh
+  ./build-native-binaries.sh
 
   echo "💻 Step 3: Building Go binaries (restic & rclone)"
   for arch in arm64-v8a; do

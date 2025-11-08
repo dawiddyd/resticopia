@@ -21,7 +21,7 @@ echo "Building PRoot using build-proot-android"
 echo "================================="
 
 # Use Docker-provided Android NDK
-export ANDROID_NDK_HOME="/opt/android-ndk"
+export ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-/opt/android-ndk}"
 export NDK="$ANDROID_NDK_HOME"
 echo "Using NDK: $NDK"
 
