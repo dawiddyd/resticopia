@@ -8,7 +8,7 @@ services:
     environment:
       DEBIAN_FRONTEND: noninteractive
       ANDROID_NDK_HOME: /opt/android-ndk
-      PATH: /usr/local/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     volumes:
       - .:/build
       - build-cache:/build/sources # Cache source repositories
@@ -25,15 +25,14 @@ services:
         apt-get install -y -qq --no-install-recommends libarchive-dev uthash-dev swig xsltproc strace
         echo '✅ Development libraries installed'
 
-        echo '📦 Installing Go...'
-        if [ ! -d "/usr/local/go" ]; then
-          wget -O go.tar.gz https://dl.google.com/go/go1.23.0.linux-amd64.tar.gz
-          tar -C /usr/local -xzf go.tar.gz
-          rm go.tar.gz
-          echo '✅ Go installed'
-        else
-          echo '✅ Go already exists, skipping installation'
-        fi
+        echo '📦 Setting up Debian backports...'
+        echo 'deb http://deb.debian.org/debian bookworm-backports main' > /etc/apt/sources.list.d/backports.list
+        apt-get update -qq
+        echo '✅ Debian backports configured'
+
+        echo '📦 Installing Go from Debian backports...'
+        apt-get install -y -qq --no-install-recommends -t bookworm-backports golang-go
+        echo '✅ Go installed from Debian backports'
 
         echo '📦 Installing Android NDK...'
         if [ ! -d "/opt/android-ndk" ]; then

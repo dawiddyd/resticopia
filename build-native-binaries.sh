@@ -169,7 +169,6 @@ echo "Copying from: $APK_ROOT_DIR/bin/"
 ls -la "$APK_ROOT_DIR/bin/" || true
 
 cp "$APK_ROOT_DIR/bin/libproot.so" "$ARM64_DIR/" 2>/dev/null || echo "libproot.so not found"
-cp "$APK_ROOT_DIR/bin/libproot-userland.so" "$ARM64_DIR/" 2>/dev/null || echo "libproot-userland.so not found"
 
 # Also copy any loader libraries if they exist
 cp "$APK_ROOT_DIR/bin/libproot-loader.so" "$ARM64_DIR/" 2>/dev/null || echo "libproot-loader.so not found"
