@@ -1,0 +1,60 @@
+services:
+  native-build:
+    image: debian:bookworm
+    platform: linux/amd64 # Keep amd64 for testing, use arm64 for production F-Droid builds
+    container_name: native-build
+    working_dir: /build
+    tty: true
+    environment:
+      DEBIAN_FRONTEND: noninteractive
+      ANDROID_NDK_HOME: /opt/android-ndk
+      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    volumes:
+      - .:/build
+      - build-cache:/build/sources # Cache source repositories
+    command: >
+      bash -c "
+        set -euo pipefail
+
+        echo '📦 Installing system dependencies...'
+        apt-get update -qq
+        apt-get install -y -qq --no-install-recommends ca-certificates curl wget git make pkg-config build-essential file unzip python3 gawk
+        echo '✅ Base dependencies installed'
+
+        echo '📦 Installing development libraries...'
+        apt-get install -y -qq --no-install-recommends libarchive-dev uthash-dev swig xsltproc strace
+        echo '✅ Development libraries installed'
+
+        echo '📦 Setting up Debian backports...'
+        echo 'deb http://deb.debian.org/debian bookworm-backports main' > /etc/apt/sources.list.d/backports.list
+        apt-get update -qq
+        echo '✅ Debian backports configured'
+
+        echo '📦 Installing Go from Debian backports...'
+        apt-get install -y -qq --no-install-recommends -t bookworm-backports golang-go
+        echo '✅ Go installed from Debian backports'
+
+        echo '📦 Installing Android NDK...'
+        if [ ! -d "/opt/android-ndk" ]; then
+          mkdir -p /opt
+          cd /opt
+          curl -L -o ndk.zip https://dl.google.com/android/repository/android-ndk-r26b-linux.zip
+          unzip -q ndk.zip
+          mv android-ndk-r26b android-ndk
+          rm ndk.zip
+          echo '✅ Android NDK installed'
+        else
+          echo '✅ Android NDK already exists, skipping installation'
+        fi
+
+        update-ca-certificates
+        echo '🎯 Starting build-go-binaries.sh process (includes PRoot now)...'
+        chmod +x /build/build-go-binaries.sh
+        chmod +x /build/build-native-binaries.sh
+        /build/build-go-binaries.sh
+        echo '🎯 Build completed successfully!'
+      "
+
+volumes:
+  build-cache:
+    driver: local
