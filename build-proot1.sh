@@ -13,8 +13,9 @@ set -euo pipefail
 
 # --- Configuration ---
 readonly SCRIPT_VERSION="1.0.0"
-readonly TARGET_ARCH="aarch64-linux-gnu"
-readonly BUILD_TYPE="static"
+readonly TARGET_ARCH="aarch64-linux-android"
+readonly BUILD_TYPE="shared"
+readonly ANDROID_API_LEVEL=24
 
 # Colors for output
 readonly RED='\033[0;31m'
@@ -25,10 +26,10 @@ readonly NC='\033[0m' # No Color
 
 # Directory structure
 readonly SRC_DIR="/build/sources/proot"
-readonly TALLOC_DIR="/build/build/native-build/sources/talloc"
 readonly BUILD_DIR="/build/build"
-readonly INSTALL_DIR="/build/install"
-readonly OUT_DIR="/build/out"
+readonly INSTALL_DIR="/build/build/native-build/install/arm64-v8a"
+readonly OUT_DIR="/build/app/src/main/jniLibs/arm64-v8a"
+readonly NDK_HOME="/opt/android-ndk"
 
 # Git repositories
 readonly PROOT_REPO="https://github.com/proot-me/proot.git"
@@ -60,21 +61,19 @@ die() {
 check_dependencies() {
     local missing_deps=()
 
-    # Check for cross-compilation toolchain
-    if ! command -v "${TARGET_ARCH}-gcc" >/dev/null 2>&1; then
-        missing_deps+=("${TARGET_ARCH}-gcc")
+    # Check for Android NDK
+    if [ ! -d "$NDK_HOME" ]; then
+        die "Android NDK not found at $NDK_HOME"
     fi
 
-    if ! command -v "${TARGET_ARCH}-ar" >/dev/null 2>&1; then
-        missing_deps+=("${TARGET_ARCH}-ar")
-    fi
-
-    if ! command -v "${TARGET_ARCH}-strip" >/dev/null 2>&1; then
-        missing_deps+=("${TARGET_ARCH}-strip")
+    # Check for Android cross-compilation toolchain
+    local ndk_clang="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${ANDROID_API_LEVEL}-clang"
+    if ! command -v "$ndk_clang" >/dev/null 2>&1; then
+        missing_deps+=("Android NDK clang ($ndk_clang)")
     fi
 
     # Check for build tools
-    for cmd in git make pkg-config; do
+    for cmd in git make; do
         if ! command -v "$cmd" >/dev/null 2>&1; then
             missing_deps+=("$cmd")
         fi
@@ -87,7 +86,7 @@ check_dependencies() {
 
 setup_directories() {
     log_info "Setting up build directories..."
-    mkdir -p "$SRC_DIR" "$TALLOC_DIR" "$BUILD_DIR" "$INSTALL_DIR" "$OUT_DIR"
+    mkdir -p "$SRC_DIR" "$BUILD_DIR" "$INSTALL_DIR" "$OUT_DIR"
 }
 
 clone_or_update_repo() {
@@ -109,230 +108,212 @@ clone_or_update_repo() {
     fi
 }
 
-build_talloc() {
-    log_info "Building static talloc library for ${TARGET_ARCH}..."
-
-    local build_dir="$BUILD_DIR/talloc"
-    mkdir -p "$build_dir"
-    cd "$build_dir"
-
-    # Copy source files from existing talloc directory
-    if [ ! -f "$TALLOC_DIR/talloc.c" ]; then
-        die "talloc.c not found in $TALLOC_DIR"
-    fi
-
-    cp "$TALLOC_DIR/talloc.c" .
-    cp "$TALLOC_DIR/talloc.h" .
-    cp "$TALLOC_DIR/replace.h" . 2>/dev/null || true
-    cp "$TALLOC_DIR/build_version.h" . 2>/dev/null || true
-
-    # Compile static library
-    log_info "Compiling talloc.c..."
-    "${TARGET_ARCH}-gcc" \
-        -fPIC \
-        -O2 \
-        -static \
-        -I. \
-        -c talloc.c \
-        -o talloc.o
-
-    # Create static library
-    log_info "Creating libtalloc.a..."
-    mkdir -p "$INSTALL_DIR/lib"
-    "${TARGET_ARCH}-ar" rcs "$INSTALL_DIR/lib/libtalloc.a" talloc.o
-
-    # Install headers
-    mkdir -p "$INSTALL_DIR/include"
-    cp talloc.h "$INSTALL_DIR/include/"
-    cp replace.h "$INSTALL_DIR/include/" 2>/dev/null || true
-
-    log_success "talloc built successfully"
-}
 
 build_proot() {
-    log_info "Building PRoot for ${TARGET_ARCH}..."
+    log_info "Building PRoot shared libraries for Android ${TARGET_ARCH}..."
 
     local build_dir="$BUILD_DIR/proot"
     mkdir -p "$build_dir"
     cd "$build_dir"
 
-    # Copy source directory
+    # Copy PRoot source first
     cp -r "$SRC_DIR"/* .
 
-    # Create a dummy pkg-config script for talloc
-    mkdir -p "$build_dir/bin"
-    cat > "$build_dir/bin/pkg-config" << EOF
-#!/bin/bash
-if [ "\$1" = "--cflags" ] && [ "\$2" = "talloc" ]; then
-    echo "-I$INSTALL_DIR/include"
-elif [ "\$1" = "--libs" ] && [ "\$2" = "talloc" ]; then
-    echo "$INSTALL_DIR/libtalloc.a -Wl,-Bstatic"
-elif [ "\$1" = "--libs" ] && [ "\$2" = "libarchive" ]; then
-    echo ""  # We're not using libarchive
-else
-    exit 1
-fi
+    # Now copy talloc.h and talloc.c from Samba sources (this will overwrite any existing ones)
+    log_info "Copying talloc.h from Samba sources..."
+    cp "/build/build/native-build/sources/samba/lib/talloc/talloc.h" lib/talloc/ || die "Failed to copy talloc.h"
+    log_info "Copying talloc.c from Samba sources..."
+    cp "/build/build/native-build/sources/samba/lib/talloc/talloc.c" lib/talloc/ || die "Failed to copy talloc.c"
+    log_info "Contents of lib/talloc/ after copying:"
+    ls -la lib/talloc/ || die "lib/talloc directory check failed"
+
+    # Create minimal replace.h for PRoot build (same as main talloc build)
+    cat > "lib/talloc/replace.h" << 'EOF'
+#ifndef _REPLACE_H_
+#define _REPLACE_H_
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdarg.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <errno.h>
+
+#define HAVE_LIBREPLACE 1
+#define LINUX 1
+#define BOOL_DEFINED 1
+#define LIBREPLACE_NETWORK_CHECKS 1
+
+/* Avoid typedef conflicts - useconds_t is defined by system headers */
+
+/* Minimal definitions needed for talloc */
+#define TALLOC_BUILD_VERSION_MAJOR 2
+#define TALLOC_BUILD_VERSION_MINOR 4
+#define TALLOC_BUILD_VERSION_RELEASE 4
+
+/* Missing macros and functions */
+#ifndef MIN
+#define MIN(a,b) ((a)<(b)?(a):(b))
+#endif
+
+#ifndef memset_s
+#define memset_s(dest, destsz, ch, count) memset(dest, ch, count)
+#endif
+
+#endif /* _REPLACE_H_ */
 EOF
-    chmod +x "$build_dir/bin/pkg-config"
 
-    export PATH="$build_dir/bin:$PATH"
-    export PKG_CONFIG="$build_dir/bin/pkg-config"
+    log_info "Contents of lib/talloc/ after creating replace.h:"
+    ls -la lib/talloc/ || die "lib/talloc directory check failed after replace.h"
 
-    # Build in the src directory
+
+    # Check if talloc library exists (built by build-other.sh)
+    if [ ! -f "$INSTALL_DIR/lib/libtalloc.a" ]; then
+        log_error "talloc library not found at $INSTALL_DIR/lib/libtalloc.a"
+        log_error "Make sure build-other.sh runs first to build talloc"
+        return 1
+    fi
+
+    log_info "Found talloc library, proceeding with PRoot build"
+
+    # Set Android NDK compiler variables
+    export CC="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${ANDROID_API_LEVEL}-clang"
+    export AR="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+    export STRIP="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
+    export CFLAGS="-fPIC -I$INSTALL_DIR/include -I. -I../lib/uthash/include -D__ANDROID_API__=$ANDROID_API_LEVEL -DANDROID -Wno-implicit-function-declaration -D_GNU_SOURCE"
+    export LDFLAGS="-shared -Wl,-soname,libdata_proot.so"
+
+    # Build loader first (for Android architecture)
     cd src
+    log_info "Creating Android-compatible loader..."
 
-    # First build the loader for the HOST architecture (x86_64)
-    log_info "Building loader for host architecture..."
-    # Ensure we're using host tools for loader
-    export CC="gcc"
-    export AR="ar"
-    export STRIP="strip"
-    export CFLAGS="-static -O2"
-    export LDFLAGS="-static"
-    # Disable 32-bit loader since we're cross-compiling to ARM64
-    # Comment out the 32-bit loader build rules specifically
-    sed -i '/^ifdef HAS_LOADER_32BIT/,/^endif/ s|^|# |' GNUmakefile
-    # Temporarily remove any cross-linker from PATH
-    export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-
-    if ! make loader.elf build.h; then
-        log_error "Failed to build loader for host architecture"
-        return 1
-    fi
-
-    # Restore PATH with our bin directory
-    export PATH="$build_dir/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-
-    # Now build proot for the TARGET architecture (aarch64)
-    log_info "Building proot binary for ${TARGET_ARCH}..."
-    export CC="${TARGET_ARCH}-gcc"
-    export AR="${TARGET_ARCH}-ar"
-    export STRIP="${TARGET_ARCH}-strip"
-    export CFLAGS="-I$INSTALL_DIR/include -static -O2 -Wno-implicit-function-declaration"
-    export LDFLAGS="-static"
-
-    # Force rebuild of proot by removing existing binary first
-    rm -f proot
-
-    # Try building proot without the loader (as suggested by the referenced documentation for simplicity)
-    log_info "Building proot without loader for cross-compilation to ARM64"
-
-    # Set environment variables to disable loader
-    export HAS_LOADER_32BIT=0
-    export DISABLE_LOADER=1
-
-    # Create a simple makefile that builds proot with talloc sources directly
-    log_info "Creating simplified makefile for proot-only build with inline talloc"
-
-    # Get the talloc source files
-    TALLOC_SOURCES="$TALLOC_DIR/talloc.c"
-
-    cat > "Makefile.simple" << EOF
-CC = aarch64-linux-gnu-gcc
-AR = aarch64-linux-gnu-ar
-STRIP = aarch64-linux-gnu-strip
-CFLAGS = -I/build/install/include -I. -I../lib/uthash/include -static -O2 -Wno-implicit-function-declaration -D_GNU_SOURCE
-LDFLAGS = -static
-
-# talloc object
-TALLOC_OBJ = talloc.o
-
-# Dummy loader symbols (since we're not building the loader)
-LOADER_DUMMY = loader_dummy.o
-
-# Core proot objects (excluding loader)
-OBJECTS = \\
-    cli/cli.o \\
-    cli/proot.o \\
-    cli/note.o \\
-    execve/enter.o \\
-    execve/exit.o \\
-    execve/shebang.o \\
-    execve/elf.o \\
-    execve/ldso.o \\
-    execve/auxv.o \\
-    execve/aoxp.o \\
-    path/binding.o \\
-    path/glue.o \\
-    path/canon.o \\
-    path/path.o \\
-    path/proc.o \\
-    path/temp.o \\
-    syscall/seccomp.o \\
-    syscall/syscall.o \\
-    syscall/chain.o \\
-    syscall/enter.o \\
-    syscall/exit.o \\
-    syscall/heap.o \\
-    syscall/rlimit.o \\
-    syscall/socket.o \\
-    syscall/sysnum.o \\
-    tracee/tracee.o \\
-    tracee/event.o \\
-    tracee/mem.o \\
-    tracee/reg.o \\
-    ptrace/ptrace.o \\
-    ptrace/user.o \\
-    ptrace/wait.o \\
-    extension/extension.o \\
-    extension/fake_id0/fake_id0.o \\
-    extension/kompat/kompat.o \\
-    extension/link2symlink/link2symlink.o \\
-    extension/portmap/portmap.o \\
-    extension/portmap/map.o
-
-proot: \$(TALLOC_OBJ) \$(LOADER_DUMMY) \$(OBJECTS)
-	\$(CC) \$(LDFLAGS) -o \$@ \$^
-
-\$(TALLOC_OBJ): $TALLOC_SOURCES
-	\$(CC) \$(CFLAGS) -c -o \$@ \$<
-
-\$(LOADER_DUMMY): loader_dummy.c
-	\$(CC) \$(CFLAGS) -c -o \$@ \$<
-
-loader_dummy.c:
-	printf "unsigned char _binary_loader_elf_start[] = {0};\nunsigned char _binary_loader_elf_end[] = {0};\nunsigned char _binary_loader_m32_elf_start[] __attribute__((weak)) = {0};\nunsigned char _binary_loader_m32_elf_end[] __attribute__((weak)) = {0};\n" > \$@
-
-%.o: %.c
-	\$(CC) \$(CFLAGS) -c -o \$@ \$<
-
-clean:
-	rm -f \$(TALLOC_OBJ) \$(LOADER_DUMMY) loader_dummy.c \$(OBJECTS) proot
+    cat > "loader_dummy.c" << 'EOF'
+/* Dummy loader implementation for Android */
+unsigned char _binary_loader_elf_start[] = {0};
+unsigned char _binary_loader_elf_end[] = {0};
+unsigned char _binary_loader_m32_elf_start[] __attribute__((weak)) = {0};
+unsigned char _binary_loader_m32_elf_end[] __attribute__((weak)) = {0};
 EOF
 
-    # Check if talloc library exists
-    if [ ! -f "/build/install/lib/libtalloc.a" ]; then
-        log_error "talloc library not found at /build/install/lib/libtalloc.a"
+    # Compile loader_dummy.c with Android compiler
+    $CC $CFLAGS -c loader_dummy.c -o loader_dummy.o
+
+    # Now build PRoot shared library for Android
+    log_info "Building PRoot shared library for Android..."
+
+    # Core PRoot source files (simplified for Android)
+    local PROOT_SOURCES="
+        cli/cli.c
+        cli/proot.c
+        cli/note.c
+        execve/enter.c
+        execve/exit.c
+        execve/shebang.c
+        execve/elf.c
+        execve/ldso.c
+        execve/auxv.c
+        execve/aoxp.c
+        path/binding.c
+        path/glue.c
+        path/canon.c
+        path/path.c
+        path/proc.c
+        path/temp.c
+        syscall/seccomp.c
+        syscall/syscall.c
+        syscall/chain.c
+        syscall/enter.c
+        syscall/exit.c
+        syscall/heap.c
+        syscall/rlimit.c
+        syscall/socket.c
+        syscall/sysnum.c
+        tracee/tracee.c
+        tracee/event.c
+        tracee/mem.c
+        tracee/reg.c
+        ptrace/ptrace.c
+        ptrace/user.c
+        ptrace/wait.c
+        extension/extension.c
+        extension/fake_id0/fake_id0.c
+        extension/kompat/kompat.c
+        extension/link2symlink/link2symlink.c
+    "
+
+    # Build talloc object file from local copy
+    log_info "Building talloc object..."
+    log_info "Current directory: $(pwd)"
+    log_info "Checking ../lib/talloc/ contents:"
+    if [ -d "../lib/talloc" ]; then
+        ls -la ../lib/talloc/ || log_warning "ls failed on ../lib/talloc/"
+    else
+        log_error "../lib/talloc directory does not exist"
         return 1
     fi
 
-    log_info "Found talloc library, proceeding with proot build"
-
-    # Build proot using the simple makefile
-    if ! make -f Makefile.simple proot; then
-        log_error "Failed to build proot binary"
+    local TALLOC_SRC="../lib/talloc/talloc.c"
+    if [ ! -f "$TALLOC_SRC" ]; then
+        log_error "talloc.c not found at $TALLOC_SRC"
+        log_error "Files in parent directory:"
+        find .. -name "*.c" | head -10 || log_warning "find failed"
         return 1
     fi
+    $CC $CFLAGS -I../lib/talloc -c "$TALLOC_SRC" -o talloc.o
 
-    # Restore original ld
-    rm "$build_dir/bin/ld"
-    mv "$build_dir/bin/ld.bak" "$build_dir/bin/ld" 2>/dev/null || true
+    # Build PRoot object files
+    log_info "Building PRoot objects..."
+    local OBJECTS=""
+    for src in $PROOT_SOURCES; do
+        local obj="${src%.c}.o"
+        if [ -f "$src" ]; then
+            log_info "Compiling $src..."
+            $CC $CFLAGS -c "$src" -o "$obj"
+            OBJECTS="$OBJECTS $obj"
+        else
+            log_warning "Source file $src not found, skipping"
+        fi
+    done
+
+    # Link PRoot shared library
+    log_info "Linking PRoot shared library..."
+    $CC $LDFLAGS -o libdata_proot.so loader_dummy.o talloc.o $OBJECTS
+
+    # Build simple loader shared libraries
+    log_info "Building loader shared libraries..."
+
+    # Create simple loader implementations
+    cat > "loader_simple.c" << 'EOF'
+/* Simple loader for Android */
+#include <stdlib.h>
+#include <stdio.h>
+
+void loader_init(void) {
+    /* Android loader initialization */
+}
+
+int loader_exec(const char *path, char *const argv[], char *const envp[]) {
+    /* Simple exec wrapper for Android */
+    return execve(path, argv, envp);
+}
+EOF
+
+    $CC $CFLAGS -shared -Wl,-soname,libdata_loader.so -o libdata_loader.so loader_simple.c
+    $CC $CFLAGS -shared -Wl,-soname,libdata_loader32.so -o libdata_loader32.so loader_simple.c
 
     # Verify build artifacts
-    if [ ! -f "proot" ]; then
-        die "PRoot binary not found after build"
+    if [ ! -f "libdata_proot.so" ]; then
+        log_error "PRoot shared library not found after build"
+        return 1
     fi
 
-    # Check if loader was built
-    local loader_path=""
-    if [ -f "loader.elf" ]; then
-        loader_path="src/loader.elf"
-    fi
+    log_success "PRoot shared libraries built successfully"
 
-    log_success "PRoot built successfully"
-
-    # Return loader path
-    echo "$loader_path"
+    # Return empty loader path (not needed for Android)
+    echo ""
 }
 
 package_artifacts() {
@@ -340,19 +321,18 @@ package_artifacts() {
 
     log_info "Packaging build artifacts..."
 
-    # Copy main binary (built in src directory)
-    cp "$BUILD_DIR/proot/src/proot" "$OUT_DIR/proot-${TARGET_ARCH}"
+    # Copy shared libraries to Android JNI libs directory
+    cp "$BUILD_DIR/proot/src/libdata_proot.so" "$OUT_DIR/"
+    cp "$BUILD_DIR/proot/src/libdata_loader.so" "$OUT_DIR/"
+    cp "$BUILD_DIR/proot/src/libdata_loader32.so" "$OUT_DIR/"
 
-    # Copy loader if it exists (not built in our simplified version)
-    if [ -n "$loader_path" ] && [ -f "$BUILD_DIR/proot/src/$loader_path" ]; then
-        cp "$BUILD_DIR/proot/src/$loader_path" "$OUT_DIR/loader-${TARGET_ARCH}"
-    fi
-
-    # Strip binaries for smaller size
-    if command -v "${TARGET_ARCH}-strip" >/dev/null 2>&1; then
-        log_info "Stripping binaries..."
-        "${TARGET_ARCH}-strip" "$OUT_DIR/proot-${TARGET_ARCH}" || true
-        [ -f "$OUT_DIR/loader-${TARGET_ARCH}" ] && "${TARGET_ARCH}-strip" "$OUT_DIR/loader-${TARGET_ARCH}" || true
+    # Strip libraries for smaller size
+    local STRIP="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
+    if command -v "$STRIP" >/dev/null 2>&1; then
+        log_info "Stripping libraries..."
+        "$STRIP" "$OUT_DIR/libdata_proot.so" || true
+        "$STRIP" "$OUT_DIR/libdata_loader.so" || true
+        "$STRIP" "$OUT_DIR/libdata_loader32.so" || true
     fi
 
     log_success "Artifacts packaged to $OUT_DIR"
@@ -361,24 +341,27 @@ package_artifacts() {
 verify_artifacts() {
     log_info "Verifying build artifacts..."
 
-    # Check file exists and is executable
-    if [ ! -f "$OUT_DIR/proot-${TARGET_ARCH}" ]; then
-        die "PRoot binary not found in output directory"
-    fi
+    # Check shared libraries exist
+    local libs=("libdata_proot.so" "libdata_loader.so" "libdata_loader32.so")
+    for lib in "${libs[@]}"; do
+        if [ ! -f "$OUT_DIR/$lib" ]; then
+            die "$lib not found in output directory"
+        fi
+    done
 
-    if [ ! -x "$OUT_DIR/proot-${TARGET_ARCH}" ]; then
-        die "PRoot binary is not executable"
-    fi
-
-    # Check if it's a static binary (basic check)
-    if ! file "$OUT_DIR/proot-${TARGET_ARCH}" | grep -q "statically linked"; then
-        log_warning "PRoot binary does not appear to be statically linked"
-    fi
+    # Check if they're shared libraries
+    for lib in "${libs[@]}"; do
+        if ! file "$OUT_DIR/$lib" | grep -q "shared object"; then
+            log_warning "$lib does not appear to be a shared library"
+        fi
+    done
 
     # Check architecture
-    if ! file "$OUT_DIR/proot-${TARGET_ARCH}" | grep -q "ARM aarch64"; then
-        log_warning "PRoot binary does not appear to be for ARM64 architecture"
-    fi
+    for lib in "${libs[@]}"; do
+        if ! file "$OUT_DIR/$lib" | grep -q "ARM aarch64"; then
+            log_warning "$lib does not appear to be for ARM64 architecture"
+        fi
+    done
 
     log_success "Artifact verification completed"
 }
@@ -416,10 +399,7 @@ main() {
 
     # Clone/update source repositories
     clone_or_update_repo "$PROOT_REPO" "$SRC_DIR" "PRoot"
-    # Using existing talloc from build/native-build/sources/talloc
-
-    # Build dependencies
-    build_talloc
+    # Using talloc built by build-other.sh
 
     # Build main project
     local loader_path

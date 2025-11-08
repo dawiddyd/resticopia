@@ -132,7 +132,7 @@ build_go_binary() {
 }
 
 # -------------------------------
-#  Build talloc from Samba sources (static)
+#  Build talloc from Samba sources (shared)
 # -------------------------------
 build_talloc() {
   local arch="$1"
@@ -141,15 +141,16 @@ build_talloc() {
   local ndk_arch=$(eval echo "\$$ndk_arch_var")
   local samba_src="$SOURCE_DIR/samba"
   local install_dir="$BUILD_DIR/install/$arch"
+  local output_dir="$SCRIPT_DIR/app/src/main/jniLibs/$arch"
 
-  mkdir -p "$install_dir/lib" "$install_dir/include"
+  mkdir -p "$install_dir/lib" "$install_dir/include" "$output_dir"
 
   # Create a build directory to avoid modifying source
   local build_dir="$BUILD_DIR/talloc-$arch"
   mkdir -p "$build_dir"
   pushd "$build_dir" >/dev/null
 
-  echo -e "${BLUE}🏗️  Building talloc (static) for $arch from Samba sources...${NC}"
+  echo -e "${BLUE}🏗️  Building talloc (shared) for $arch from Samba sources...${NC}"
 
   # Copy talloc source files from Samba
   echo -e "${BLUE}📋 Copying talloc source files...${NC}"
@@ -204,18 +205,25 @@ EOF
 
   local CC="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
   local CFLAGS="-fPIC -O2 -D__ANDROID_API__=$MIN_API_LEVEL -DNO_CONFIG_H -I."
+  local LDFLAGS="-shared -Wl,-soname,libtalloc.so.2"
 
   echo -e "${BLUE}🔨 Compiling talloc.c...${NC}"
   "$CC" $CFLAGS -c talloc.c -o talloc.o
 
-  echo -e "${BLUE}📚 Creating static library...${NC}"
+  echo -e "${BLUE}📚 Creating shared library...${NC}"
+  "$CC" $LDFLAGS -o libtalloc.so.2 talloc.o
+
+  # Copy shared library to Android JNI libs
+  cp libtalloc.so.2 "$output_dir/"
+
+  # Also create the static library for PRoot build
   ar rcs "$install_dir/lib/libtalloc.a" talloc.o
 
   # Copy header files
   cp talloc.h "$install_dir/include/"
   cp replace.h "$install_dir/include/"
 
-  echo -e "${GREEN}✅ talloc built from Samba sources → $install_dir/lib/libtalloc.a${NC}"
+  echo -e "${GREEN}✅ talloc built from Samba sources → $output_dir/libtalloc.so.2${NC}"
   popd >/dev/null
 }
 
@@ -226,12 +234,10 @@ main() {
   echo -e "${BLUE}📥 Step 1: Downloading sources${NC}"
   download_source "restic" "https://github.com/restic/restic/archive/refs/tags/v${RESTIC_VERSION}.tar.gz" "$SOURCE_DIR/restic"
   download_source "rclone" "https://github.com/rclone/rclone/archive/refs/tags/v${RCLONE_VERSION}.tar.gz" "$SOURCE_DIR/rclone"
-  clone_repo "samba" "https://github.com/samba-team/samba.git" "$SOURCE_DIR/samba"
+  # Note: Samba/talloc is now handled by the integrated PRoot build
 
-  echo -e "${BLUE}⚙️  Step 2: Building dependencies (talloc)${NC}"
-  for arch in arm64-v8a; do
-    build_talloc "$arch"
-  done
+  echo -e "${BLUE}⚙️  Step 2: Building PRoot${NC}"
+  /build/build-proot-integrated.sh
 
   echo -e "${BLUE}💻 Step 3: Building Go binaries (restic & rclone)${NC}"
   for arch in arm64-v8a; do
