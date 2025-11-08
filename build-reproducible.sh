@@ -2,7 +2,7 @@
 
 set -e
 
-# Build reproducible APKs for F-Droid verification
+# Build reproducible APKs for F-Droid verification (builds from source)
 # Usage: ./build-reproducible.sh <version-tag>
 # Example: ./build-reproducible.sh 0.7.5
 
@@ -74,27 +74,25 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
-# Download native binaries using Docker
+# Build native binaries from source using Docker
 echo ""
-echo "Downloading native binaries using Docker..."
+echo "Building native binaries from source using Docker..."
 
 # Remove old binaries if they exist
 rm -rf app/src/main/jniLibs
 
-# Build a temporary Docker image and extract the binaries
-docker build -f Dockerfile.download-binaries -t resticopia-binaries-temp .
+# Build native binaries using our docker-compose setup
+echo "Starting native binary build..."
+docker compose -f docker-compose-build.yml up --build --abort-on-container-exit
 
-# Create a temporary container to copy files from
-CONTAINER_ID=$(docker create resticopia-binaries-temp)
+# The binaries should now be in app/src/main/jniLibs/
+if [ ! -d "app/src/main/jniLibs" ]; then
+    echo "Error: Native binaries were not built successfully"
+    echo "Expected directory: app/src/main/jniLibs/"
+    exit 1
+fi
 
-# Copy the jniLibs directory from the container
-docker cp $CONTAINER_ID:/build/app/src/main/jniLibs app/src/main/
-
-# Clean up the container and image
-docker rm $CONTAINER_ID
-docker rmi resticopia-binaries-temp
-
-echo "Native binaries downloaded successfully!"
+echo "Native binaries built from source successfully!"
 
 # Modify build.gradle to match F-Droid build configuration
 echo ""
