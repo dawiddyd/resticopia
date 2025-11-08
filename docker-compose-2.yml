@@ -13,7 +13,6 @@ services:
     volumes:
       - .:/build
       - build-cache:/build/sources # Cache source repositories
-      - build-artifacts:/build/out # Persist build artifacts
     command: >
       bash -c "
         set -euo pipefail
