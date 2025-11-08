@@ -1,5 +1,5 @@
 #!/bin/bash
-# build-proot-integrated.sh - Integrated PRoot build using build-proot-android approach
+# build-native-binaries.sh - Integrated PRoot build using build-proot-android approach
 
 set -euo pipefail
 
@@ -10,7 +10,7 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# Configuration - align with your existing build-other.sh
+# Configuration - align with your existing build-go-binaries.sh
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="$SCRIPT_DIR/build/native-build"
 SOURCE_DIR="$BUILD_DIR/sources"
@@ -18,7 +18,7 @@ PROOT_BUILD_DIR="$BUILD_DIR/proot-build"
 OUTPUT_DIR="$SCRIPT_DIR/app/src/main/jniLibs"
 MIN_API_LEVEL=24
 
-# PRoot versions (updated to match build-other.sh for compatibility)
+# PRoot versions (updated to match build-go-binaries.sh for compatibility)
 PROOT_V='0.15_release'
 TALLOC_V='2.4.2'
 
@@ -26,7 +26,7 @@ echo -e "${BLUE}================================${NC}"
 echo -e "${BLUE}Building PRoot using build-proot-android${NC}"
 echo -e "${BLUE}================================${NC}"
 
-# Use same NDK detection as build-other.sh
+# Use same NDK detection as build-go-binaries.sh
 ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-}"
 ANDROID_NDK_ROOT="${ANDROID_NDK_ROOT:-}"
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-}"

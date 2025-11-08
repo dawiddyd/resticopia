@@ -1,5 +1,5 @@
 #!/bin/bash
-# Minimal native build script for Android (restic, rclone, talloc)
+# Native build script for Android (restic, rclone, PRoot, talloc)
 # F-Droid compliant build — no prebuilt binaries
 set -eo pipefail
 
@@ -237,7 +237,7 @@ main() {
   # Note: Samba/talloc is now handled by the integrated PRoot build
 
   echo -e "${BLUE}⚙️  Step 2: Building PRoot${NC}"
-  /build/build-proot-integrated.sh
+  /build/build-native-binaries.sh
 
   echo -e "${BLUE}💻 Step 3: Building Go binaries (restic & rclone)${NC}"
   for arch in arm64-v8a; do

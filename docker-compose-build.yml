@@ -54,10 +54,10 @@ services:
         fi
 
         update-ca-certificates
-        echo '🎯 Starting build-other.sh process (includes PRoot now)...'
-        chmod +x /build/build-other.sh
-        chmod +x /build/build-proot-integrated.sh
-        /build/build-other.sh
+        echo '🎯 Starting build-go-binaries.sh process (includes PRoot now)...'
+        chmod +x /build/build-go-binaries.sh
+        chmod +x /build/build-native-binaries.sh
+        /build/build-go-binaries.sh
         echo '🎯 Build completed successfully!'
       "
 
