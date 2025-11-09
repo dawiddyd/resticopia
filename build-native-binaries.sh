@@ -25,6 +25,15 @@ export ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-/opt/android-ndk}"
 export NDK="$ANDROID_NDK_HOME"
 echo "Using NDK: $NDK"
 
+# Set reproducible build environment for C/C++ compilation
+export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-$(date +%s)}"
+echo "Using SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH ($(date -r $SOURCE_DATE_EPOCH 2>/dev/null || date -d @$SOURCE_DATE_EPOCH))"
+
+# Deterministic compilation flags
+export CFLAGS="-g0 -O2 -Wno-unused-command-line-argument -fdebug-prefix-map=/build= -ffile-prefix-map=/build="
+export CXXFLAGS="-g0 -O2 -Wno-unused-command-line-argument -fdebug-prefix-map=/build= -ffile-prefix-map=/build="
+export LDFLAGS="-s -w"
+
 # Clone build-proot-android if not present
 PROOT_BUILD_REPO="$SOURCE_DIR/build-proot-android"
 if [ ! -d "$PROOT_BUILD_REPO" ]; then
@@ -140,17 +149,18 @@ set-arch() {
 }
 EOF
 
-# Set reproducible build environment
-export SOURCE_DATE_EPOCH=0
-export CFLAGS="-g0 -O2 -Wno-unused-command-line-argument"
-export CXXFLAGS="-g0 -O2 -Wno-unused-command-line-argument"
-export LDFLAGS="-s -w"
+# Reproducible build environment is already set above
 
 # Run the build
 echo "🏗️  Building PRoot..."
 ./get-talloc.sh
 ./get-proot.sh
 ./make-talloc-static.sh
+
+# Apply reproducible build patch to make-proot-for-apk.sh
+echo "🔧 Applying reproducible build patch to make-proot-for-apk.sh..."
+sed -i 's/export CFLAGS="-I$STATIC_ROOT\/include -Werror=implicit-function-declaration"/export CFLAGS="$CFLAGS -I$STATIC_ROOT\/include -Werror=implicit-function-declaration"/' make-proot-for-apk.sh
+
 ./make-proot-for-apk.sh
 
 # Copy results to Android JNI libs
@@ -184,8 +194,17 @@ cp "$APK_ROOT_DIR/bin/libproot-loader32.so" "$ARM64_DIR/" 2>/dev/null || echo "l
 echo "Renaming files for app compatibility..."
 cd "$ARM64_DIR"
 mv libproot.so libdata_proot.so 2>/dev/null || echo "libproot.so not renamed"
-mv libproot-loader.so libdata_loader.so 2>/dev/null || echo "libproot-loader.so not renamed"  
+mv libproot-loader.so libdata_loader.so 2>/dev/null || echo "libproot-loader.so not renamed"
 mv libproot-loader32.so libdata_loader32.so 2>/dev/null || echo "libproot-loader32.so not renamed"
+
+# Strip build metadata for reproducible builds
+echo "Stripping build metadata..."
+STRIP_TOOL="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
+for file in *.so; do
+  if [ -f "$file" ]; then
+    "$STRIP_TOOL" --strip-all "$file" 2>/dev/null || echo "Could not strip $file"
+  fi
+done
 
 echo "✅ PRoot build completed successfully"
 echo "Output files in $ARM64_DIR:"

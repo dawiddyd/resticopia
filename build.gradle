@@ -20,6 +20,12 @@ tasks.withType(AbstractArchiveTask).configureEach {
     reproducibleFileOrder = true
 }
 
+// Ensure consistent file ordering and timestamps for JAR tasks
+tasks.withType(Jar).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
 allprojects {
     repositories {
         google()

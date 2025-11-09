@@ -85,6 +85,8 @@ android {
         jniLibs {
             useLegacyPackaging true
         }
+        // Ensure consistent ordering for reproducible builds
+        pickFirst 'META-INF/*'
     }
     
     // Store TTF/OTF files uncompressed for reproducible builds

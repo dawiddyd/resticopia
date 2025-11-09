@@ -9,6 +9,8 @@ services:
       DEBIAN_FRONTEND: noninteractive
       ANDROID_NDK_HOME: /opt/android-ndk
       PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      SOURCE_DATE_EPOCH: ${SOURCE_DATE_EPOCH:-0}
+      TZ: UTC
     volumes:
       - .:/build
       - build-cache:/build/sources # Cache source repositories

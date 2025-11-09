@@ -37,7 +37,10 @@ fi
 # Set SOURCE_DATE_EPOCH to match the commit timestamp
 # This is what F-Droid does for reproducible builds
 export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct "$VERSION_TAG")
-echo "Using SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH ($(date -r $SOURCE_DATE_EPOCH))"
+echo "Using SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH ($(date -r $SOURCE_DATE_EPOCH 2>/dev/null || date -d @$SOURCE_DATE_EPOCH))"
+
+# Ensure consistent timezone for reproducible builds
+export TZ=UTC
 
 # Set JAVA_HOME to JDK 17 (required for reproducible builds matching F-Droid)
 if [ -d "/opt/homebrew/opt/openjdk@17" ]; then
@@ -83,7 +86,7 @@ rm -rf app/src/main/jniLibs
 
 # Build native binaries using our docker-compose setup
 echo "Starting native binary build..."
-docker compose -f docker-compose-build.yml up --build --abort-on-container-exit
+SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH docker compose -f docker-compose-build.yml up --build --abort-on-container-exit
 
 # The binaries should now be in app/src/main/jniLibs/
 if [ ! -d "app/src/main/jniLibs" ]; then

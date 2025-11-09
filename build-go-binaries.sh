@@ -32,6 +32,18 @@ mkdir -p "$BUILD_DIR" "$SOURCE_DIR" "$OUTPUT_DIR"
 export PATH=$PATH:/usr/local/go/bin
 
 # -------------------------------
+#  Reproducible build setup
+# -------------------------------
+# Set SOURCE_DATE_EPOCH for reproducible builds (F-Droid requirement)
+export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-$(date +%s)}"
+echo "Using SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH ($(date -r $SOURCE_DATE_EPOCH 2>/dev/null || date -d @$SOURCE_DATE_EPOCH))"
+
+# Set Go build environment for reproducible builds
+export GOFLAGS="-trimpath -ldflags=-buildid="
+export CGO_CFLAGS="-g0 -O2"
+export CGO_LDFLAGS="-s -w"
+
+# -------------------------------
 #  Android NDK setup (provided by Docker)
 # -------------------------------
 export ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-/opt/android-ndk}"
@@ -94,14 +106,35 @@ build_go_binary() {
   export CGO_ENABLED=1
   export CC="$NDK/toolchains/llvm/prebuilt/$PREBUILT_TAG/bin/${ndk_arch}${MIN_API_LEVEL}-clang"
 
+  # Additional reproducible build environment variables
+  export CGO_CFLAGS="-g0 -O2 -Wno-unused-command-line-argument"
+  export CGO_LDFLAGS="-s -w"
+
   echo "🏗️  Building $name for $arch..."
   pushd "$src" >/dev/null
+
+  # Build with reproducible flags - SOURCE_DATE_EPOCH ensures consistent timestamps
+  local ldflags="-s -w -buildid="
+  if [ -n "$SOURCE_DATE_EPOCH" ]; then
+    # Format SOURCE_DATE_EPOCH as RFC3339 for Go builds
+    local build_date=$(date -u -d "@$SOURCE_DATE_EPOCH" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u -r "$SOURCE_DATE_EPOCH" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "")
+    if [ -n "$build_date" ]; then
+      ldflags="$ldflags -X main.version=$build_date"
+    fi
+  fi
+
   case "$name" in
-    restic) go build -v -ldflags="-s -w" -o "$out_dir/$out" ./cmd/restic ;;
-    rclone) go build -v -ldflags="-s -w" -o "$out_dir/$out" . ;;
+    restic) go build -trimpath -ldflags="$ldflags" -o "$out_dir/$out" ./cmd/restic ;;
+    rclone) go build -trimpath -ldflags="$ldflags" -o "$out_dir/$out" . ;;
   esac
   popd >/dev/null
   [ -f "$out_dir/$out" ] || { echo "✗ Failed to build $name ($arch)"; exit 1; }
+
+  # Strip any remaining build metadata for reproducible builds
+  if command -v strip >/dev/null 2>&1; then
+    strip --strip-all "$out_dir/$out" 2>/dev/null || true
+  fi
+
   echo "✅ Built $name → $out_dir/$out"
 }
 
@@ -115,7 +148,12 @@ main() {
   download_source "rclone" "https://github.com/rclone/rclone/archive/refs/tags/v${RCLONE_VERSION}.tar.gz" "$SOURCE_DIR/rclone"
 
   echo "⚙️  Step 2: Building PRoot"
-  ./build-native-binaries.sh
+  # Instead of hardcoded /build/build-native-binaries.sh
+  if [ -f "/build/build-native-binaries.sh" ]; then
+      /build/build-native-binaries.sh  # Docker
+  else
+      ./build-native-binaries.sh      # Direct execution
+  fi
 
   echo "💻 Step 3: Building Go binaries (restic & rclone)"
   for arch in arm64-v8a; do
