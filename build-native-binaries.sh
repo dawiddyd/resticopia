@@ -34,6 +34,9 @@ export CFLAGS="-g0 -O2 -Wno-unused-command-line-argument -fdebug-prefix-map=/bui
 export CXXFLAGS="-g0 -O2 -Wno-unused-command-line-argument -fdebug-prefix-map=/build= -ffile-prefix-map=/build="
 export LDFLAGS="-s -w"
 
+# Force consistent PRoot version (backup to mock git)
+export VERSION="v0.15_release"
+
 # Clone build-proot-android if not present
 PROOT_BUILD_REPO="$SOURCE_DIR/build-proot-android"
 if [ ! -d "$PROOT_BUILD_REPO" ]; then
@@ -159,8 +162,8 @@ echo "🏗️  Building PRoot..."
 
 # Mock git describe for reproducible builds (PRoot embeds git version info)
 echo "🔧 Setting up git mock for reproducible PRoot builds..."
-mkdir -p /mock
-cat > /mock/git << 'EOF'
+mkdir -p "$HOME/mock"
+cat > "$HOME/mock/git" << 'EOF'
 #!/bin/bash
 if [[ "$*" == *"describe"* ]]; then
     echo "v0.15_release"  # Fixed version matching PROOT_V
@@ -168,8 +171,8 @@ else
     exec /usr/bin/git "$@"
 fi
 EOF
-chmod +x /mock/git
-export PATH="/mock:$PATH"
+chmod +x "$HOME/mock/git"
+export PATH="$HOME/mock:$PATH"
 
 # Apply reproducible build patch to make-proot-for-apk.sh
 echo "🔧 Applying reproducible build patch to make-proot-for-apk.sh..."
@@ -219,6 +222,9 @@ for file in *.so; do
     "$STRIP_TOOL" --strip-all "$file" 2>/dev/null || echo "Could not strip $file"
   fi
 done
+
+# Clean up mock git
+rm -rf "$HOME/mock"
 
 echo "✅ PRoot build completed successfully"
 echo "Output files in $ARM64_DIR:"
