@@ -157,6 +157,20 @@ echo "🏗️  Building PRoot..."
 ./get-proot.sh
 ./make-talloc-static.sh
 
+# Mock git describe for reproducible builds (PRoot embeds git version info)
+echo "🔧 Setting up git mock for reproducible PRoot builds..."
+mkdir -p /mock
+cat > /mock/git << 'EOF'
+#!/bin/bash
+if [[ "$*" == *"describe"* ]]; then
+    echo "v0.15_release"  # Fixed version matching PROOT_V
+else
+    exec /usr/bin/git "$@"
+fi
+EOF
+chmod +x /mock/git
+export PATH="/mock:$PATH"
+
 # Apply reproducible build patch to make-proot-for-apk.sh
 echo "🔧 Applying reproducible build patch to make-proot-for-apk.sh..."
 sed -i 's/export CFLAGS="-I$STATIC_ROOT\/include -Werror=implicit-function-declaration"/export CFLAGS="$CFLAGS -I$STATIC_ROOT\/include -Werror=implicit-function-declaration"/' make-proot-for-apk.sh
