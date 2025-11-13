@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resticopia - Android Backup Made Simple</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../screenshots/icon.png">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="../docs/final-svg-resticopia.svg" alt="Resticopia Logo" class="logo">
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#screenshots">Screenshots</a>
+                <a href="#download">Download</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1>Android Backup Made Simple</h1>
+                <p class="hero-subtitle">Powerful data backups powered by Restic, running natively on your Android device.</p>
+                <div class="hero-badges">
+                    <a href="https://f-droid.org/packages/org.dydlakcloud.resticopia/" class="badge-link">
+                        <img src="../docs/badges/fdroid-get-it-on.svg" alt="Get it on F-Droid" class="badge">
+                    </a>
+                    <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://codeberg.org/dawdyd/resticopia" class="badge-link">
+                        <img src="../docs/badges/obtainium.png" alt="Get it on Obtainium" class="badge">
+                    </a>
+                </div>
+                <div class="hero-cta">
+                    <a href="#download" class="cta-button primary">Get Started</a>
+                    <a href="#features" class="cta-button secondary">Learn More</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="../screenshots/2.png" alt="Resticopia Repository Setup" class="hero-screenshot">
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2>Powerful Backup Features</h2>
+            <p class="section-subtitle">Everything you need for reliable, automated backups on Android</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📁</div>
+                    <h3>Repository Management</h3>
+                    <p>Create and configure Restic repositories with support for S3, B2, Rest, Local, and Rclone protocols.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Encrypted Backups</h3>
+                    <p>All your data is encrypted using industry-standard cryptography before storage.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📸</div>
+                    <h3>Snapshot Control</h3>
+                    <p>Browse, manage, and restore from your backup snapshots with ease.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⏰</div>
+                    <h3>Automated Scheduling</h3>
+                    <p>Set up recurring backup tasks that run automatically in the background.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🗂️</div>
+                    <h3>Smart Retention</h3>
+                    <p>Define cleanup rules and retention policies for individual folders.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">☁️</div>
+                    <h3>Rclone Integration</h3>
+                    <p>Access 40+ cloud storage providers through the powerful Rclone backend.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section id="screenshots" class="screenshots">
+        <div class="container">
+            <h2>See Resticopia in action</h2>
+
+            <div class="screenshots-grid">
+                <div class="screenshot-card">
+                    <img src="../screenshots/2.png" alt="Repository Setup" loading="lazy">
+                </div>
+
+                <div class="screenshot-card">
+                    <img src="../screenshots/3.png" alt="Encrypted Backups" loading="lazy">
+                </div>
+
+                <div class="screenshot-card">
+                    <img src="../screenshots/4.png" alt="Folder Snapshots" loading="lazy">
+                </div>
+
+                <div class="screenshot-card">
+                    <img src="../screenshots/5.png" alt="Scheduled Backups" loading="lazy">
+                </div>
+
+                <div class="screenshot-card">
+                    <img src="../screenshots/6.png" alt="Browse & Restore" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download" class="download">
+        <div class="container">
+            <h2>Get Resticopia</h2>
+            <p class="section-subtitle">Download from your preferred app store</p>
+
+            <div class="download-grid">
+                <div class="download-card">
+                    <h3>F-Droid</h3>
+                    <p>Free and Open Source Android App Repository</p>
+                    <a href="https://f-droid.org/packages/org.dydlakcloud.resticopia/" class="download-button">
+                        <img src="../docs/badges/fdroid-get-it-on.svg" alt="Get it on F-Droid">
+                    </a>
+                </div>
+
+                <div class="download-card">
+                    <h3>Obtainium</h3>
+                    <p>Get automatic updates from the source repository</p>
+                    <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://codeberg.org/dawdyd/resticopia" class="download-button">
+                        <img src="../docs/badges/obtainium.png" alt="Get it on Obtainium">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="../docs/final-svg-resticopia.svg" alt="Resticopia Logo" class="footer-icon">
+                </div>
+
+                <div class="footer-links">
+                    <a href="https://codeberg.org/dawdyd/resticopia" target="_blank">Source Code</a>
+                    <a href="https://github.com/restic/restic" target="_blank">Restic</a>
+                    <a href="https://rclone.org" target="_blank">Rclone</a>
+                </div>
+
+                <div class="footer-donate">
+                    <a href="https://buymeacoffee.com/dawdyd" target="_blank">
+                        <img src="../docs/badges/bmc_button.png" alt="Buy Me a Coffee" class="bmc-badge">
+                    </a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 Resticopia. Licensed under GNU General Public License v2.0</p>
+                <p class="disclaimer">This is an unofficial application and is not developed or endorsed by the official Restic project team.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

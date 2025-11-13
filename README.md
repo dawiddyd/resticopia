@@ -1,9 +1,13 @@
 # Resticopia
 
+[![F-Droid](https://img.shields.io/f-droid/v/org.dydlakcloud.resticopia.svg)](https://f-droid.org/packages/org.dydlakcloud.resticopia/)
 [![GNU General Public License, Version 2](https://img.shields.io/github/license/lhns/restic-android.svg?maxAge=3600)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![Build Status](https://codeberg.org/dawdyd/resticopia/badges/workflows/build.yml/badge.svg)](https://codeberg.org/dawdyd/resticopia/actions)
 [![Code Quality](https://codeberg.org/dawdyd/resticopia/badges/workflows/code-quality.yml/badge.svg)](https://codeberg.org/dawdyd/resticopia/actions)
 
+ <a href="https://f-droid.org/packages/org.dydlakcloud.resticopia/">
+    <img src="docs/badges/fdroid-get-it-on.svg" alt="Get it on F-Droid" width="160"/>
+  </a>
  <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://add/https://codeberg.org/dawdyd/resticopia">
     <img src="docs/badges/obtainium.png" alt="Obtainium" width="160"/>
   </a>

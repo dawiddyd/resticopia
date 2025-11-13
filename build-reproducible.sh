@@ -36,7 +36,7 @@ fi
 
 # Set SOURCE_DATE_EPOCH to match the commit timestamp
 # This is what F-Droid does for reproducible builds
-export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct "$VERSION_TAG")
+export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct HEAD)
 echo "Using SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH ($(date -r $SOURCE_DATE_EPOCH 2>/dev/null || date -d @$SOURCE_DATE_EPOCH))"
 
 # Ensure consistent timezone for reproducible builds
