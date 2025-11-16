@@ -45,11 +45,10 @@ body {
     position: fixed;
     top: 0;
     width: 100%;
-    background: rgba(0, 0, 0, 0.9);
-    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(15px);
     border-bottom: 1px solid var(--gray-800);
     z-index: 1000;
-    transition: all 0.3s ease;
 }
 
 .nav-container {
@@ -310,15 +309,12 @@ body {
     overflow-x: auto;
     overflow-y: hidden;
     padding: 0 1rem;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
 }
 
 .screenshot-card {
     flex: 0 0 auto;
     border-radius: var(--border-radius);
     overflow: hidden;
-    scroll-snap-align: start;
     box-shadow: var(--shadow);
 }
 
@@ -471,6 +467,10 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .hero {
+        margin-top: 80px;
+    }
+
     .hero-container {
         grid-template-columns: 1fr;
         gap: 2rem;
@@ -554,18 +554,6 @@ body {
         width: 190px;
     }
 
-}
-
-/* Scroll Animations */
-.fade-in {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.6s ease;
-}
-
-.fade-in.visible {
-    opacity: 1;
-    transform: translateY(0);
 }
 
 /* Custom Scrollbar */
