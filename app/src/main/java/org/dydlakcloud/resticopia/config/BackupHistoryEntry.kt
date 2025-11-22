@@ -14,7 +14,12 @@ data class BackupHistoryEntry(
     val scheduled: Boolean,
     val cancelled: Boolean,
     val snapshotId: ResticSnapshotId?,
-    val errorMessage: String?
+    val errorMessage: String?,
+    val deletionPerformed: Boolean = false,
+    val deletedFiles: Int = 0,
+    val deletedFolders: Int = 0,
+    val deletionErrors: String? = null
 ) {
     val successful get() = snapshotId != null
+    val deletionSuccessful get() = deletionPerformed && deletionErrors == null
 }

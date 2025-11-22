@@ -194,4 +194,18 @@
     <string name="ignore_patterns_discard_message">You have unsaved changes. Discard them?</string>
     <string name="action_help">Help</string>
     <string name="action_discard">Discard</string>
+
+    <!-- Delete Contents After Backup -->
+    <string name="text_delete_contents_after_backup">⚠️ Delete contents after backup</string>
+    <string name="text_delete_contents_warning">WARNING: This will permanently delete all files in the folder after a successful backup. Only enable this for temporary data that you want to keep in backups but not on your device. This action cannot be undone!</string>
+    <string name="alert_enable_delete_after_backup_title">⚠️ Enable Dangerous Feature</string>
+    <string name="alert_enable_delete_after_backup_message">You are about to enable automatic deletion of folder contents after backup.\n\nThis will PERMANENTLY DELETE all files in the folder after each successful backup.\n\nAre you absolutely sure you want to enable this feature?\n\nType "DELETE" to confirm:</string>
+    <string name="alert_enable_delete_after_backup_hint">Type DELETE to confirm</string>
+    <string name="alert_enable_delete_after_backup_confirm_text">DELETE</string>
+    <string name="alert_enable_delete_after_backup_wrong_text">Please type "DELETE" exactly to confirm</string>
+    <string name="toast_delete_after_backup_enabled">Delete after backup enabled</string>
+    <string name="toast_delete_after_backup_disabled">Delete after backup disabled</string>
+    <string name="notification_deletion_started">Deleting folder contents…</string>
+    <string name="notification_deletion_completed">Folder contents deleted successfully</string>
+    <string name="notification_deletion_failed">Failed to delete folder contents: %s</string>
 </resources>

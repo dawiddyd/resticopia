@@ -2,6 +2,7 @@ package org.dydlakcloud.resticopia
 
 import org.dydlakcloud.resticopia.restic.ResticBackupProgress
 import org.dydlakcloud.resticopia.restic.ResticBackupSummary
+import org.dydlakcloud.resticopia.util.FolderDeletionManager
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -11,7 +12,9 @@ data class ActiveBackup(
     val summary: ResticBackupSummary?,
     val error: String?,
     val cancelFuture: CompletableFuture<Unit>,
-    val notificationId: Int
+    val notificationId: Int,
+    val deletionInProgress: Boolean = false,
+    val deletionResult: FolderDeletionManager.DeletionResult? = null
 ) {
     companion object {
         private val nextNotificationId = AtomicInteger(0)

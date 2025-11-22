@@ -1,8 +1,12 @@
 package org.dydlakcloud.resticopia.ui.folder
 
+import android.app.AlertDialog
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.*
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import androidx.fragment.app.Fragment
 import org.dydlakcloud.resticopia.BackupManager
 import org.dydlakcloud.resticopia.R
@@ -104,6 +108,16 @@ class FolderEditFragment : Fragment() {
             directoryChooser.openDialog()
         }
 
+        binding.switchDeleteAfterBackup.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                // Show confirmation dialog when enabling
+                showDeleteAfterBackupConfirmationDialog()
+            } else {
+                // Allow disabling without confirmation
+                showToast(getString(R.string.toast_delete_after_backup_disabled))
+            }
+        }
+
         if (folder != null && folderRepo != null) {
             binding.spinnerRepo.setSelection(backupManager.config.repos.indexOfFirst { it.base.id == folderRepo.base.id })
             binding.editFolder.setText(folder.path.path)
@@ -112,6 +126,7 @@ class FolderEditFragment : Fragment() {
                 it.toLong() == folder.keepWithin?.toHours()
             }
             binding.spinnerRetainWithin.setSelection(if (scheduleIndex == -1) 0 else scheduleIndex)
+            binding.switchDeleteAfterBackup.isChecked = folder.deleteContentsAfterBackup
         }
 
         return root
@@ -142,6 +157,8 @@ class FolderEditFragment : Fragment() {
                 ) {
                     val prevFolder = backupManager.config.folders.find { it.id == folderId }
 
+                    val deleteContentsAfterBackup = binding.switchDeleteAfterBackup.isChecked
+
                     val folder = FolderConfig(
                         folderId,
                         repo.base.id,
@@ -149,6 +166,7 @@ class FolderEditFragment : Fragment() {
                         schedule,
                         prevFolder?.keepLast,
                         keepWithin,
+                        deleteContentsAfterBackup,
                         prevFolder?.history ?: emptyList()
                     )
 
@@ -168,6 +186,60 @@ class FolderEditFragment : Fragment() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+
+    private fun showDeleteAfterBackupConfirmationDialog() {
+        val editText = EditText(requireContext()).apply {
+            hint = getString(R.string.alert_enable_delete_after_backup_hint)
+            setSingleLine()
+        }
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle(R.string.alert_enable_delete_after_backup_title)
+            .setMessage(R.string.alert_enable_delete_after_backup_message)
+            .setView(editText)
+            .setPositiveButton(R.string.button_ok, null) // Set to null to override later
+            .setNegativeButton(R.string.button_cancel) { _, _ ->
+                binding.switchDeleteAfterBackup.isChecked = false
+            }
+            .setOnCancelListener {
+                binding.switchDeleteAfterBackup.isChecked = false
+            }
+            .create()
+
+        // Override the positive button to add validation
+        dialog.setOnShowListener {
+            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            positiveButton.isEnabled = false
+
+            editText.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                override fun afterTextChanged(s: Editable?) {
+                    val text = s?.toString()?.trim() ?: ""
+                    positiveButton.isEnabled = text == getString(R.string.alert_enable_delete_after_backup_confirm_text)
+                    if (text.isNotEmpty() && text != getString(R.string.alert_enable_delete_after_backup_confirm_text)) {
+                        editText.error = getString(R.string.alert_enable_delete_after_backup_wrong_text)
+                    } else {
+                        editText.error = null
+                    }
+                }
+            })
+
+            positiveButton.setOnClickListener {
+                val text = editText.text.toString().trim()
+                if (text == getString(R.string.alert_enable_delete_after_backup_confirm_text)) {
+                    showToast(getString(R.string.toast_delete_after_backup_enabled))
+                    dialog.dismiss()
+                }
+            }
+        }
+
+        dialog.show()
+    }
+
+    private fun showToast(message: String) {
+        android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show()
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

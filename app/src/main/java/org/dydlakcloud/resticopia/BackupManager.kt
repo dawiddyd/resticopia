@@ -10,10 +10,12 @@ import androidx.lifecycle.MutableLiveData
 import org.dydlakcloud.resticopia.config.*
 import org.dydlakcloud.resticopia.notification.NtfyNotifier
 import org.dydlakcloud.resticopia.restic.Restic
+import org.dydlakcloud.resticopia.restic.ResticBackupProgress
 import org.dydlakcloud.resticopia.restic.ResticException
 import org.dydlakcloud.resticopia.restic.ResticNameServers
 import org.dydlakcloud.resticopia.restic.ResticStorage
 import org.dydlakcloud.resticopia.ui.folder.FolderActivity
+import org.dydlakcloud.resticopia.util.FolderDeletionManager
 import org.dydlakcloud.resticopia.util.HostnameUtil
 import java.time.Duration
 import java.time.ZonedDateTime
@@ -111,14 +113,21 @@ class BackupManager private constructor(context: Context) {
                 else
                     lastMillis = nowMillis
 
-                val progress = activeBackup.progress?.percentDoneString() ?: "0%"
+                val isDeleting = activeBackup.deletionInProgress
+                val progress = if (isDeleting) "Deleting..." else activeBackup.progress?.percentDoneString() ?: "0%"
+
+                val contentTitle = if (isDeleting) {
+                    context.resources.getString(R.string.notification_deletion_started)
+                } else {
+                    "${context.resources.getString(R.string.notification_backup_progress_message)} $progress"
+                }
 
                 notificationManager(context).notify(
                     activeBackup.notificationId,
                     NotificationCompat.Builder(context, notificationChannelId)
                         .setContentIntent(pendingIntent())
                         .setSubText(progress)
-                        .setContentTitle("${context.resources.getString(R.string.notification_backup_progress_message)} $progress")
+                        .setContentTitle(contentTitle)
                         .setContentText(
                             if (activeBackup.progress == null) null
                             else "${activeBackup.progress.timeElapsedString()} elapsed"
@@ -147,38 +156,56 @@ class BackupManager private constructor(context: Context) {
             }
             activeBackup.summary != null && doneNotification -> {
                 var contentTitle = ""
+                var folderConfig: FolderConfig? = null
                 for (folder in config.folders) {
                     if (folder.id == folderConfigId) {
                         val repo = folder.repo(config)
                         val repoName = repo?.base?.name ?: "Unknown"
                         contentTitle = "$repoName: ${folder.path}"
+                        folderConfig = folder
                         break
                     }
                 }
-                val details = if (activeBackup.progress == null) "" else {
-                    val ofTotal =
-                        if (activeBackup.progress.total_files != null) "/${activeBackup.progress.total_files}" else ""
 
-                    val unmodifiedNewChanged = listOf(
-                        if (activeBackup.summary.files_unmodified != 0L) "U:${activeBackup.summary.files_unmodified}" else "",
-                        if (activeBackup.summary.files_unmodified != 0L) "N:${activeBackup.summary.files_new}" else "",
-                        if (activeBackup.summary.files_unmodified != 0L) "C:${activeBackup.summary.files_changed}" else ""
-                    ).filter { it.isNotEmpty() }.joinToString("/")
+                val isDeletionCompleted = activeBackup.deletionResult?.success == true
+                val isDeletionFailed = activeBackup.deletionResult?.success == false
 
-                    listOf(
-                        activeBackup.progress.timeElapsedString(),
-                        "${activeBackup.progress.files_done}$ofTotal Files ($unmodifiedNewChanged)",
-                        "${activeBackup.progress.bytesDoneString()}${if (activeBackup.progress.total_bytes != null) "/${activeBackup.progress.totalBytesString()}" else ""}"
-                    ).joinToString(" | ")
+                val details = when {
+                    isDeletionCompleted -> "Backup and deletion completed successfully"
+                    isDeletionFailed -> "Backup successful, deletion failed: ${activeBackup.error}"
+                    activeBackup.progress == null -> ""
+                    else -> {
+                        val ofTotal =
+                            if (activeBackup.progress.total_files != null) "/${activeBackup.progress.total_files}" else ""
+
+                        val unmodifiedNewChanged = listOf(
+                            if (activeBackup.summary.files_unmodified != 0L) "U:${activeBackup.summary.files_unmodified}" else "",
+                            if (activeBackup.summary.files_new != 0L) "N:${activeBackup.summary.files_new}" else "",
+                            if (activeBackup.summary.files_changed != 0L) "C:${activeBackup.summary.files_changed}" else ""
+                        ).filter { it.isNotEmpty() }.joinToString("/")
+
+                        listOf(
+                            activeBackup.progress.timeElapsedString(),
+                            "${activeBackup.progress.files_done}$ofTotal Files ($unmodifiedNewChanged)",
+                            "${activeBackup.progress.bytesDoneString()}${if (activeBackup.progress.total_bytes != null) "/${activeBackup.progress.totalBytesString()}" else ""}"
+                        ).joinToString(" | ")
+                    }
                 }
+
+                val notificationText = if (folderConfig?.deleteContentsAfterBackup == true && !isDeletionCompleted && !isDeletionFailed) {
+                    "$details | Deleting folder contents..."
+                } else {
+                    details
+                }
+
                 notificationManager(context).notify(
                     activeBackup.notificationId,
                     NotificationCompat.Builder(context, notificationChannelId)
                         .setContentIntent(pendingIntent())
                         .setSubText("100%")
                         .setContentTitle(contentTitle)
-                        .setContentText(details)
-                        .setSmallIcon(R.drawable.outline_cloud_done_24)
+                        .setContentText(notificationText)
+                        .setSmallIcon(if (isDeletionFailed) R.drawable.outline_cloud_error_24 else R.drawable.outline_cloud_done_24)
                         .build()
                 )
             }
@@ -297,6 +324,11 @@ class BackupManager private constructor(context: Context) {
             activeBackupLiveData.postValue(finishedActiveBackup)
             updateNotification(context, folder.id, finishedActiveBackup)
 
+            // Handle folder deletion after successful backup
+            if (summary != null && errorMessage == null && folder.deleteContentsAfterBackup) {
+                performFolderDeletion(context, folder, finishedActiveBackup)
+            }
+
             // Send ntfy notification
             val ntfyUrl = config.ntfyUrl
             if (!cancelled && ntfyUrl != null) {
@@ -329,5 +361,76 @@ class BackupManager private constructor(context: Context) {
         }
 
         return activeBackup
+    }
+
+    /**
+     * Performs folder content deletion after successful backup
+     */
+    private fun performFolderDeletion(
+        context: Context,
+        folder: FolderConfig,
+        activeBackup: ActiveBackup
+    ) {
+        // Show deletion started notification
+        val deletionStartedNotification = activeBackup.copy(
+            progress = ResticBackupProgress(percent_done = 50.0), // Show as 50% complete
+            deletionInProgress = true
+        )
+        activeBackup(folder.id).postValue(deletionStartedNotification)
+        updateNotification(context, folder.id, deletionStartedNotification, doneNotification = false)
+
+        try {
+            val deletionManager = FolderDeletionManager(context)
+            val result = deletionManager.deleteFolderContents(folder)
+
+            // Update notification with deletion result
+            val finalNotification = if (result.success) {
+                activeBackup.copy(
+                    summary = activeBackup.summary,
+                    progress = ResticBackupProgress(percent_done = 100.0),
+                    deletionInProgress = false,
+                    deletionResult = result
+                )
+            } else {
+                activeBackup.copy(
+                    error = result.errors.joinToString("; "),
+                    progress = ResticBackupProgress(percent_done = 100.0),
+                    deletionInProgress = false,
+                    deletionResult = result
+                )
+            }
+
+            activeBackup(folder.id).postValue(finalNotification)
+            updateNotification(context, folder.id, finalNotification)
+
+            // Update history entry with deletion result
+            configure { config ->
+                config.copy(folders = config.folders.map { currentFolder ->
+                    if (currentFolder.id == folder.id) {
+                        val lastEntry = currentFolder.history.firstOrNull()
+                        if (lastEntry != null) {
+                            val updatedEntry = lastEntry.copy(
+                                deletionPerformed = result.success,
+                                deletedFiles = result.deletedFiles,
+                                deletedFolders = result.deletedFolders,
+                                deletionErrors = if (result.errors.isNotEmpty()) result.errors.joinToString("; ") else null
+                            )
+                            currentFolder.copy(history = listOf(updatedEntry) + currentFolder.history.drop(1))
+                        } else {
+                            currentFolder
+                        }
+                    } else currentFolder
+                })
+            }
+
+        } catch (e: Exception) {
+            val errorMessage = "Unexpected error during folder deletion: ${e.message}"
+            val errorNotification = activeBackup.copy(
+                error = errorMessage,
+                deletionInProgress = false
+            )
+            activeBackup(folder.id).postValue(errorNotification)
+            updateNotification(context, folder.id, errorNotification)
+        }
     }
 }
