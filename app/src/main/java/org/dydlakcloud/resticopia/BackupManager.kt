@@ -21,6 +21,7 @@ import java.time.Duration
 import java.time.ZonedDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
+import java.util.concurrent.Executors
 import kotlin.math.roundToInt
 
 class BackupManager private constructor(context: Context) {
@@ -34,6 +35,13 @@ class BackupManager private constructor(context: Context) {
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     private val configManager: ConfigManager = ConfigManager(context)
+
+    // Background executor for deletion operations to prevent ANR
+    private val deletionExecutor = Executors.newSingleThreadExecutor { r ->
+        Thread(r, "FolderDeletion").apply {
+            priority = Thread.MIN_PRIORITY
+        }
+    }
 
     private val _config: MutableLiveData<Pair<Config, Runnable>> = MutableLiveData()
     val config: Config get() = _config.value!!.first
@@ -379,58 +387,82 @@ class BackupManager private constructor(context: Context) {
         activeBackup(folder.id).postValue(deletionStartedNotification)
         updateNotification(context, folder.id, deletionStartedNotification, doneNotification = false)
 
-        try {
-            val deletionManager = FolderDeletionManager(context)
-            val result = deletionManager.deleteFolderContents(folder)
-
-            // Update notification with deletion result
-            val finalNotification = if (result.success) {
-                activeBackup.copy(
-                    summary = activeBackup.summary,
-                    progress = ResticBackupProgress(percent_done = 100.0),
-                    deletionInProgress = false,
-                    deletionResult = result
-                )
-            } else {
-                activeBackup.copy(
-                    error = result.errors.joinToString("; "),
-                    progress = ResticBackupProgress(percent_done = 100.0),
-                    deletionInProgress = false,
-                    deletionResult = result
-                )
-            }
-
-            activeBackup(folder.id).postValue(finalNotification)
-            updateNotification(context, folder.id, finalNotification)
-
-            // Update history entry with deletion result
-            configure { config ->
-                config.copy(folders = config.folders.map { currentFolder ->
-                    if (currentFolder.id == folder.id) {
-                        val lastEntry = currentFolder.history.firstOrNull()
-                        if (lastEntry != null) {
-                            val updatedEntry = lastEntry.copy(
-                                deletionPerformed = result.success,
-                                deletedFiles = result.deletedFiles,
-                                deletedFolders = result.deletedFolders,
-                                deletionErrors = if (result.errors.isNotEmpty()) result.errors.joinToString("; ") else null
+        // Run deletion on background thread to prevent ANR
+        deletionExecutor.execute {
+            try {
+                val deletionManager = FolderDeletionManager(context.applicationContext)
+                val result = deletionManager.deleteFolderContents(
+                    folderConfig = folder,
+                    onProgress = { progress ->
+                        // Report progress back to main thread
+                        activeBackup(folder.id).postValue(
+                            activeBackup.copy(
+                                progress = ResticBackupProgress(percent_done = 50.0 + (progress.filesProcessed.toFloat() / maxOf(progress.totalFiles, 1) * 50.0f)),
+                                deletionInProgress = true
                             )
-                            currentFolder.copy(history = listOf(updatedEntry) + currentFolder.history.drop(1))
-                        } else {
-                            currentFolder
-                        }
-                    } else currentFolder
-                })
-            }
+                        )
+                    },
+                    cancelCheck = null
+                )
 
-        } catch (e: Exception) {
-            val errorMessage = "Unexpected error during folder deletion: ${e.message}"
-            val errorNotification = activeBackup.copy(
-                error = errorMessage,
-                deletionInProgress = false
-            )
-            activeBackup(folder.id).postValue(errorNotification)
-            updateNotification(context, folder.id, errorNotification)
+                // Update notification with deletion result on main thread
+                val finalNotification = if (result.success) {
+                    activeBackup.copy(
+                        summary = activeBackup.summary,
+                        progress = ResticBackupProgress(percent_done = 100.0),
+                        deletionInProgress = false,
+                        deletionResult = result
+                    )
+                } else {
+                    activeBackup.copy(
+                        error = result.errors.joinToString("; "),
+                        progress = ResticBackupProgress(percent_done = 100.0),
+                        deletionInProgress = false,
+                        deletionResult = result
+                    )
+                }
+
+                // Post notification update back to main thread
+                activeBackup(folder.id).postValue(finalNotification)
+                updateNotification(context, folder.id, finalNotification)
+
+                // Update history entry with deletion result
+                configure { config ->
+                    config.copy(folders = config.folders.map { currentFolder ->
+                        if (currentFolder.id == folder.id) {
+                            val lastEntry = currentFolder.history.firstOrNull()
+                            if (lastEntry != null) {
+                                val updatedEntry = lastEntry.copy(
+                                    deletionPerformed = result.success,
+                                    deletedFiles = result.deletedFiles,
+                                    deletedFolders = result.deletedFolders,
+                                    deletionErrors = if (result.errors.isNotEmpty()) result.errors.joinToString("; ") else null
+                                )
+                                currentFolder.copy(history = listOf(updatedEntry) + currentFolder.history.drop(1))
+                            } else {
+                                currentFolder
+                            }
+                        } else currentFolder
+                    })
+                }
+
+            } catch (e: Exception) {
+                val errorMessage = "Unexpected error during folder deletion: ${e.message}"
+                val errorNotification = activeBackup.copy(
+                    error = errorMessage,
+                    deletionInProgress = false
+                )
+                // Post error notification back to main thread
+                activeBackup(folder.id).postValue(errorNotification)
+                updateNotification(context, folder.id, errorNotification)
+            }
         }
+    }
+
+    /**
+     * Cleanup resources when the application is shutting down
+     */
+    fun shutdown() {
+        deletionExecutor.shutdown()
     }
 }
