@@ -18,11 +18,10 @@ import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.dydlakcloud.resticopia.config.FolderConfig
 import org.dydlakcloud.resticopia.databinding.ActivityMainBinding
+import org.dydlakcloud.resticopia.ui.Formatters
 import org.dydlakcloud.resticopia.ui.folder.FolderEditFragment
 import org.dydlakcloud.resticopia.util.PermissionManager
-import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -188,17 +187,15 @@ class MainActivity : AppCompatActivity() {
             messageBuilder.append(getString(R.string.dialog_queued_backups_message))
             messageBuilder.append("\n\n")
             
-            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
-            
             queuedBackups.forEachIndexed { index, queuedBackup ->
                 messageBuilder.append("${index + 1}. ")
                 messageBuilder.append("${queuedBackup.folder.path}\n")
                 messageBuilder.append("   Repository: ${queuedBackup.repoName}\n")
                 messageBuilder.append("   Schedule: ${queuedBackup.folder.schedule}\n")
-                
+
                 val lastBackup = queuedBackup.folder.lastBackup(filterScheduled = true)
                 if (lastBackup != null) {
-                    val formattedDate = lastBackup.timestamp.withZoneSameInstant(ZoneId.systemDefault()).format(dateFormatter)
+                    val formattedDate = Formatters.dateTimeStatus(lastBackup.timestamp)
                     val status = if (lastBackup.successful) "✓" else "✗"
                     messageBuilder.append("   Last Backup: $formattedDate $status\n")
                 } else {
