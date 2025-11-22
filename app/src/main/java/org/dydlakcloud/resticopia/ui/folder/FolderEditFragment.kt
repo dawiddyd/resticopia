@@ -108,16 +108,6 @@ class FolderEditFragment : Fragment() {
             directoryChooser.openDialog()
         }
 
-        binding.switchDeleteAfterBackup.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                // Show confirmation dialog when enabling
-                showDeleteAfterBackupConfirmationDialog()
-            } else {
-                // Allow disabling without confirmation
-                showToast(getString(R.string.toast_delete_after_backup_disabled))
-            }
-        }
-
         if (folder != null && folderRepo != null) {
             binding.spinnerRepo.setSelection(backupManager.config.repos.indexOfFirst { it.base.id == folderRepo.base.id })
             binding.editFolder.setText(folder.path.path)
@@ -127,6 +117,17 @@ class FolderEditFragment : Fragment() {
             }
             binding.spinnerRetainWithin.setSelection(if (scheduleIndex == -1) 0 else scheduleIndex)
             binding.switchDeleteAfterBackup.isChecked = folder.deleteContentsAfterBackup
+        }
+
+        // Set up switch listener after initial value is set to avoid triggering on load
+        binding.switchDeleteAfterBackup.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                // Show confirmation dialog when enabling
+                showDeleteAfterBackupConfirmationDialog()
+            } else {
+                // Allow disabling without confirmation
+                showToast(getString(R.string.toast_delete_after_backup_disabled))
+            }
         }
 
         return root
