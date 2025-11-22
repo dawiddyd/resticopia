@@ -56,7 +56,8 @@ This is an **unofficial** application and is not developed or endorsed by the of
   <img src="docs/badges/bmc_button.png" alt="Buy Me a Coffee" width="180"/>
 </a>
 
-
+### Liability Disclaimer
+This software is provided "as is" without warranty of any kind. The author is not responsible for any damages, data loss, or other issues that may result from using this application. Users are responsible for their own data and should always verify backups before relying on them.
 ## Notice
 See the file called NOTICE.
 
