@@ -41,4 +41,37 @@ object InputDialogUtil {
 
         builder.show()
     }
+
+    fun showInputMultilineTextDialog(
+        context: Context,
+        view: View,
+        title: String,
+        value: String,
+        onConfirm: (String) -> Unit
+    ) {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(context)
+        builder.setTitle(title)
+
+        val viewInflated: View = LayoutInflater.from(context)
+            .inflate(R.layout.dialog_input_multiline_text, view as ViewGroup?, false)
+
+        val input = viewInflated.findViewById<View>(R.id.input) as EditText
+
+        input.setText(value)
+        input.requestFocus()
+
+        builder.setPositiveButton(context.resources.getString(R.string.button_ok)) { dialog, which ->
+            onConfirm(
+                input.text.toString()
+            )
+        }
+
+        builder.setNegativeButton(context.resources.getString(R.string.button_cancel)) { dialog, which ->
+            dialog.cancel()
+        }
+
+        builder.setView(viewInflated)
+
+        builder.show()
+    }
 }

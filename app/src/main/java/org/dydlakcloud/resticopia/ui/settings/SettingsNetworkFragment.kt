@@ -66,7 +66,7 @@ class SettingsNetworkFragment : Fragment() {
         binding.textDns.text = restic.nameServers.nameServers().joinToString(", ")
 
         binding.buttonDnsEdit.setOnClickListener {
-            InputDialogUtil.showInputTextDialog(
+            InputDialogUtil.showInputMultilineTextDialog(
                 requireContext(),
                 requireView(),
                 "DNS Server",
