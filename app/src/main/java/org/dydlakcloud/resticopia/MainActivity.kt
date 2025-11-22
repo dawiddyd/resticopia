@@ -20,6 +20,7 @@ import org.dydlakcloud.resticopia.config.FolderConfig
 import org.dydlakcloud.resticopia.databinding.ActivityMainBinding
 import org.dydlakcloud.resticopia.ui.folder.FolderEditFragment
 import org.dydlakcloud.resticopia.util.PermissionManager
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -187,7 +188,7 @@ class MainActivity : AppCompatActivity() {
             messageBuilder.append(getString(R.string.dialog_queued_backups_message))
             messageBuilder.append("\n\n")
             
-            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
             
             queuedBackups.forEachIndexed { index, queuedBackup ->
                 messageBuilder.append("${index + 1}. ")
@@ -197,7 +198,7 @@ class MainActivity : AppCompatActivity() {
                 
                 val lastBackup = queuedBackup.folder.lastBackup(filterScheduled = true)
                 if (lastBackup != null) {
-                    val formattedDate = lastBackup.timestamp.format(dateFormatter)
+                    val formattedDate = lastBackup.timestamp.withZoneSameInstant(ZoneId.systemDefault()).format(dateFormatter)
                     val status = if (lastBackup.successful) "✓" else "✗"
                     messageBuilder.append("   Last Backup: $formattedDate $status\n")
                 } else {

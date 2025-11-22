@@ -92,7 +92,7 @@ class FolderFragment : Fragment() {
                 binding.textLastBackup.text =
                     if (lastSuccessfulBackup == null) ""
                     else {
-                        val dateFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm MMM dd, yyyy")
+                        val dateFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm MMM dd, yyyy").withZone(java.time.ZoneId.systemDefault())
                         val formattedDate = lastSuccessfulBackup.timestamp.format(dateFormatter)
                         "Last Backup on $formattedDate"
                     }

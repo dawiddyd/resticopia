@@ -82,7 +82,7 @@ class SnapshotFragment : Fragment() {
                         _snapshotRootPath = snapshotRootPath
                         
                         // Format date as "Created on HH:mm MMM dd, yyyy"
-                        val dateFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm MMM dd, yyyy")
+                        val dateFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm MMM dd, yyyy").withZone(java.time.ZoneId.systemDefault())
                         val formattedDate = snapshot.time.format(dateFormatter)
                         val timeString = "Created on $formattedDate"
 

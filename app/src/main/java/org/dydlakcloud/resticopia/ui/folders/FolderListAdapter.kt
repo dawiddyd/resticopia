@@ -9,6 +9,7 @@ import android.widget.TextView
 import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.config.Config
 import org.dydlakcloud.resticopia.config.FolderConfig
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 /**
@@ -20,7 +21,7 @@ class FolderListAdapter(
     private val config: Config
 ) : BaseAdapter() {
 
-    private val dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+    private val dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy").withZone(ZoneId.systemDefault())
 
     override fun getCount(): Int = folders.size
 
@@ -45,7 +46,7 @@ class FolderListAdapter(
         val lastBackup = folder.lastBackup(filterSuccessful = true)
         
         val detailsText = if (lastBackup != null) {
-            val formattedDate = lastBackup.timestamp.format(dateFormatter)
+            val formattedDate = lastBackup.timestamp.withZoneSameInstant(java.time.ZoneId.systemDefault()).format(dateFormatter)
             "$repoName, last backup $formattedDate"
         } else {
             "$repoName, no backups yet"

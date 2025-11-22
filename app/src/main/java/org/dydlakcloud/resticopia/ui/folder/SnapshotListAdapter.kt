@@ -8,6 +8,7 @@ import android.widget.BaseAdapter
 import android.widget.TextView
 import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.restic.ResticSnapshot
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 /**
@@ -19,7 +20,7 @@ class SnapshotListAdapter(
     private val repoName: String
 ) : BaseAdapter() {
 
-    private val dateFormatter = DateTimeFormatter.ofPattern("HH:mm MMM dd, yyyy")
+    private val dateFormatter = DateTimeFormatter.ofPattern("HH:mm MMM dd, yyyy").withZone(ZoneId.systemDefault())
 
     override fun getCount(): Int = snapshots.size
 
