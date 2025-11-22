@@ -64,26 +64,30 @@ object NtfyNotifier {
     
     /**
      * Sends a success notification for a backup.
-     * 
+     *
      * @param ntfyUrl The full ntfy URL
+     * @param hostname The device hostname for identification
      * @param folderPath The path of the backed up folder
      * @return CompletableFuture that completes when the notification is sent
      */
-    fun sendBackupSuccessNotification(ntfyUrl: String?, folderPath: String): CompletableFuture<Unit> {
-        val message = "✅ Backup successful: $folderPath"
+    fun sendBackupSuccessNotification(ntfyUrl: String?, hostname: String?, folderPath: String): CompletableFuture<Unit> {
+        val device = hostname ?: "Unknown Device"
+        val message = "✅ $device - Backup successful: $folderPath"
         return sendNotification(ntfyUrl, message)
     }
-    
+
     /**
      * Sends a failure notification for a backup.
-     * 
+     *
      * @param ntfyUrl The full ntfy URL
+     * @param hostname The device hostname for identification
      * @param folderPath The path of the folder that failed to backup
      * @param error The error message
      * @return CompletableFuture that completes when the notification is sent
      */
-    fun sendBackupFailureNotification(ntfyUrl: String?, folderPath: String, error: String): CompletableFuture<Unit> {
-        val message = "❌ Backup failed: $folderPath\nError: $error"
+    fun sendBackupFailureNotification(ntfyUrl: String?, hostname: String?, folderPath: String, error: String): CompletableFuture<Unit> {
+        val device = hostname ?: "Unknown Device"
+        val message = "❌ $device - Backup failed: $folderPath\nError: $error"
         return sendNotification(ntfyUrl, message)
     }
 }
