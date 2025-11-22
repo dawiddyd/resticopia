@@ -36,7 +36,8 @@ data class FolderConfig(
         filterScheduled: Boolean = false,
         filterSuccessful: Boolean = false
     ): BackupHistoryEntry? =
-        history.find { (!filterScheduled || it.scheduled) && (!filterSuccessful || it.successful) }
+        history.filter { (!filterScheduled || it.scheduled) && (!filterSuccessful || it.successful) }
+            .maxByOrNull { it.timestamp }
 
     fun shouldBackup(dateTime: ZonedDateTime): Boolean {
         val scheduleMinutes = FolderEditFragment.schedules.find { it.first == schedule }?.second

@@ -8,7 +8,7 @@ import android.widget.BaseAdapter
 import android.widget.TextView
 import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.restic.ResticSnapshot
-import java.time.format.DateTimeFormatter
+import org.dydlakcloud.resticopia.ui.Formatters
 
 /**
  * Custom adapter for displaying snapshot list items
@@ -19,7 +19,6 @@ class SnapshotListAdapter(
     private val repoName: String
 ) : BaseAdapter() {
 
-    private val dateFormatter = DateTimeFormatter.ofPattern("HH:mm MMM dd, yyyy")
 
     override fun getCount(): Int = snapshots.size
 
@@ -40,7 +39,7 @@ class SnapshotListAdapter(
         hashView.text = snapshot.id.short
 
         // Set date and repo name
-        val formattedDate = snapshot.time.format(dateFormatter)
+        val formattedDate = Formatters.dateTimeDetailed(snapshot.time)
         detailsView.text = "$formattedDate $repoName"
 
         return view

@@ -20,10 +20,10 @@ import org.dydlakcloud.resticopia.BackupService
 import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.config.FolderConfig
 import org.dydlakcloud.resticopia.databinding.FragmentSettingsBackupRulesBinding
+import org.dydlakcloud.resticopia.ui.Formatters
 import org.dydlakcloud.resticopia.ui.folder.FolderEditFragment
 import org.dydlakcloud.resticopia.util.GitIgnorePatternMatcher
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 /**
  * Backup Rules Settings Fragment
@@ -183,17 +183,15 @@ class SettingsBackupRulesFragment : Fragment() {
             messageBuilder.append(getString(R.string.dialog_queued_backups_message))
             messageBuilder.append("\n\n")
             
-            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-            
             queuedBackups.forEachIndexed { index, queuedBackup ->
                 messageBuilder.append("${index + 1}. ")
                 messageBuilder.append("${queuedBackup.folder.path}\n")
                 messageBuilder.append("   Repository: ${queuedBackup.repoName}\n")
                 messageBuilder.append("   Schedule: ${queuedBackup.folder.schedule}\n")
-                
+
                 val lastBackup = queuedBackup.folder.lastBackup(filterScheduled = true)
                 if (lastBackup != null) {
-                    val formattedDate = lastBackup.timestamp.format(dateFormatter)
+                    val formattedDate = Formatters.dateTimeStatus(lastBackup.timestamp)
                     val status = if (lastBackup.successful) "✓" else "✗"
                     messageBuilder.append("   Last Backup: $formattedDate $status\n")
                 } else {

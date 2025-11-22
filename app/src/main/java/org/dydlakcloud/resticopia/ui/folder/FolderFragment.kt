@@ -91,11 +91,7 @@ class FolderFragment : Fragment() {
 
                 binding.textLastBackup.text =
                     if (lastSuccessfulBackup == null) ""
-                    else {
-                        val dateFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm MMM dd, yyyy")
-                        val formattedDate = lastSuccessfulBackup.timestamp.format(dateFormatter)
-                        "Last Backup on $formattedDate"
-                    }
+                    else "Last Backup on ${Formatters.dateTimeDetailed(lastSuccessfulBackup.timestamp)}"
 
                 resticRepo.snapshots(resticRepo.restic.hostname).handle { snapshots, throwable ->
                     requireActivity().runOnUiThread {
