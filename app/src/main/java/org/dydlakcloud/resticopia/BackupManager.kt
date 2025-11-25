@@ -341,9 +341,9 @@ class BackupManager private constructor(context: Context) {
             val ntfyUrl = config.ntfyUrl
             if (!cancelled && ntfyUrl != null) {
                 if (errorMessage != null) {
-                    NtfyNotifier.sendBackupFailureNotification(ntfyUrl, folder.path.absolutePath, errorMessage)
+                    NtfyNotifier.sendBackupFailureNotification(ntfyUrl, config.hostname, folder.path.absolutePath, errorMessage)
                 } else if (summary != null) {
-                    NtfyNotifier.sendBackupSuccessNotification(ntfyUrl, folder.path.absolutePath)
+                    NtfyNotifier.sendBackupSuccessNotification(ntfyUrl, config.hostname, folder.path.absolutePath)
                 }
             }
 

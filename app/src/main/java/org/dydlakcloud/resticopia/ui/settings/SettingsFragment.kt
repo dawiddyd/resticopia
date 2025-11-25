@@ -21,6 +21,7 @@ import org.dydlakcloud.resticopia.config.PortableConfig
 import org.dydlakcloud.resticopia.databinding.FragmentSettingsBinding
 import org.dydlakcloud.resticopia.notification.NtfyNotifier
 import android.widget.EditText
+import org.dydlakcloud.resticopia.ui.Formatters
 import org.dydlakcloud.resticopia.ui.InputDialogUtil
 import org.dydlakcloud.resticopia.util.DirectoryChooser
 import org.dydlakcloud.resticopia.util.HostnameUtil
@@ -34,7 +35,6 @@ import android.os.Build
 import org.dydlakcloud.resticopia.config.FolderConfig
 import org.dydlakcloud.resticopia.ui.folder.FolderEditFragment
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 class SettingsFragment : Fragment() {
     private var _binding: FragmentSettingsBinding? = null
@@ -452,18 +452,16 @@ class SettingsFragment : Fragment() {
             messageBuilder.append(getString(R.string.dialog_queued_backups_message))
             messageBuilder.append("\n\n")
             
-            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-            
             queuedBackups.forEachIndexed { index, queuedBackup ->
                 messageBuilder.append("${index + 1}. ")
                 messageBuilder.append("${queuedBackup.folder.path}\n")
                 messageBuilder.append("   Repository: ${queuedBackup.repoName}\n")
                 messageBuilder.append("   Schedule: ${queuedBackup.folder.schedule}\n")
-                
+
                 // Show last backup info
                 val lastBackup = queuedBackup.folder.lastBackup(filterScheduled = true)
                 if (lastBackup != null) {
-                    val formattedDate = lastBackup.timestamp.format(dateFormatter)
+                    val formattedDate = Formatters.dateTimeStatus(lastBackup.timestamp)
                     val status = if (lastBackup.successful) "✓" else "✗"
                     messageBuilder.append("   Last Backup: $formattedDate $status\n")
                 } else {
