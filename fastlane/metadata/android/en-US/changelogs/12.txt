@@ -1,0 +1,5 @@
+Version 0.7.7
+
+- Include hostname information in NTFY notification
+- Fix timezone display issue in the backup
+- Improve text input handling for long values in settings dialogs
