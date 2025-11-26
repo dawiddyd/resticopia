@@ -151,10 +151,9 @@ echo ""
 ls -lh app/build/outputs/apk/release/*.apk
 echo ""
 echo "To sign the arm64-v8a APK, use:"
-echo "  jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \\"
-echo "    -keystore /path/to/your/keystore.jks \\"
+echo "  apksigner sign --ks /Users/d.dydlinski/GIT/key.jks \\"
+echo "    --ks-key-alias key \\"
+echo "    --out resticopia-${VERSION_TAG}-arm64-v8a-release.apk \\"
 echo "    app/build/outputs/apk/release/resticopia-${VERSION_TAG}-arm64-v8a-release-unsigned.apk \\"
-echo "    your-key-alias"
 echo ""
 echo "Then upload the signed APK to Codeberg releases."
-

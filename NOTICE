@@ -12,8 +12,8 @@ This project includes binaries of [Rclone](https://github.com/rclone/rclone)
 * HOMEPAGE:
   * https://rclone.org/
 
-This project includes binaries of [termux/proot](https://github.com/termux/proot)
+This project includes custom binaries based on [build-proot-android](https://github.com/green-green-avk/build-proot-android)
 * LICENSE:
-  * https://github.com/termux/proot/blob/master/COPYING
+  * https://github.com/green-green-avk/build-proot-android/blob/master/LICENSE
 * HOMEPAGE:
-  * https://wiki.termux.com/wiki/PRoot
+  * https://github.com/green-green-avk/build-proot-android/tree/master

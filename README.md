@@ -26,7 +26,7 @@
 
 A mobile Android application that enables efficient and straightforward data backups powered by [Restic](https://restic.net) backup software.
 
-The application leverages [termux/proot](https://github.com/termux/proot) technology to execute native Restic and [Rclone](https://rclone.org) Linux binaries directly on Android devices.
+The application uses a custom-built [PRoot](https://codeberg.org/dawdyd/build-proot-android) environment (based on the [build-proot-android](https://github.com/green-green-avk/build-proot-android) project) to run native [Restic](https://restic.net) and [Rclone](https://rclone.org) binaries directly on Android devices.
 
 ### Disclaimer
 This is an **unofficial** application and is not developed or endorsed by the official Restic project team.
@@ -39,7 +39,12 @@ This is an **unofficial** application and is not developed or endorsed by the of
 - Retention Policies: Define cleanup rules for individual folders
 - Live Progress: Monitor backup operations through system notifications
 - Rclone Integration: Access 40+ cloud storage providers via Rclone backend
-## Attribution
+
+## Donate
+
+<a href="https://buymeacoffee.com/dawdyd">
+  <img src="docs/badges/bmc_button.png" alt="Buy Me a Coffee" width="180"/>
+</a>
 
 ### This Project
 - All modifications and additions are also licensed under GNU General Public License v2.0
@@ -48,14 +53,6 @@ This is an **unofficial** application and is not developed or endorsed by the of
 ### Original Work
 - **Original Project**: [restic-android](https://github.com/lhns/restic-android) by [lhns](https://github.com/lhns)
 - **Original License**: GNU General Public License v2.0
-
-
-## Donate
-
-<a href="https://buymeacoffee.com/dawdyd">
-  <img src="docs/badges/bmc_button.png" alt="Buy Me a Coffee" width="180"/>
-</a>
-
 
 ## Notice
 See the file called NOTICE.
