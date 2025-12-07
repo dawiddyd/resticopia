@@ -9,7 +9,8 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    # Use available Codeberg runner label
+    runs-on: codeberg-medium
     
     steps:
       - name: Checkout code

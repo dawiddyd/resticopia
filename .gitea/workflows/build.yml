@@ -9,7 +9,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Codeberg provides runners with labels codeberg-small/medium/tiny.
+    runs-on: codeberg-medium
     
     steps:
       - name: Checkout code
