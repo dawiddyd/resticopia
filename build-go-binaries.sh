@@ -13,7 +13,7 @@ echo "================================="
 #  Version pins (override via env)
 # -------------------------------
 RESTIC_VERSION="${RESTIC_VERSION:-0.18.1}"
-RCLONE_VERSION="${RCLONE_VERSION:-1.72.0}"
+RCLONE_VERSION="${RCLONE_VERSION:-1.68.2}"
 MIN_API_LEVEL=24
 
 # -------------------------------
