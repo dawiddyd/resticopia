@@ -110,7 +110,7 @@
     <string name="repo_edit_rclone_remote_error_mandatory">Please select a remote</string>
     <string name="repo_edit_rclone_no_remotes">No remotes available</string>
     <string name="repo_edit_rclone_path_title">Repository Path</string>
-    <string name="repo_edit_rclone_path_hint">backups/restic</string>
+    <string name="repo_edit_rclone_path_hint">backups/restic (leave empty for root)</string>
     <string name="repo_edit_rclone_path_error_mandatory">Repository path needed</string>
     <string name="toast_rclone_not_configured">Rclone not configured. Please configure it in Settings first.</string>
     <string name="toast_rclone_config_error">Error loading rclone config</string>

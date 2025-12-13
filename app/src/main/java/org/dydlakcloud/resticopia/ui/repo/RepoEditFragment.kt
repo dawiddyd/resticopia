@@ -355,11 +355,12 @@ class RepoEditFragment : Fragment() {
             }
             RepoType.Rclone -> {
                 val selectedRemote = binding.editRepoRcloneParameters.spinnerRcloneRemote.selectedItem as? RcloneConfigParser.RcloneRemote
+                val pathText = binding.editRepoRcloneParameters.editRclonePath.text.toString()
                 RepoConfig(
                     baseConfig,
                     RcloneRepoParams(
                         rcloneRemote = selectedRemote?.name ?: "",
-                        rclonePath = binding.editRepoRcloneParameters.editRclonePath.text.toString()
+                        rclonePath = pathText.ifEmpty { "" } // Empty string means root directory
                     )
                 )
             }
@@ -447,11 +448,8 @@ class RepoEditFragment : Fragment() {
                 }
                 baseValidatorResults.plus(
                     listOf(
-                        hasRemote,
-                        checkFieldMandatory(
-                            binding.editRepoRcloneParameters.editRclonePath,
-                            getString(R.string.repo_edit_rclone_path_error_mandatory)
-                        )
+                        hasRemote
+                        // rclone path is now optional - empty path means root directory
                     )
                 )
             }
