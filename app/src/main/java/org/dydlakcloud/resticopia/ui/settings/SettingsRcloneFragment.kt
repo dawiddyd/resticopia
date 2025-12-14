@@ -32,11 +32,15 @@ class SettingsRcloneFragment : Fragment() {
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.getStringExtra("config")?.let { newConfig ->
+                println("DEBUG: Saving rclone config, length: ${newConfig.length}")
                 backupManager.configure { config ->
                     config.copy(rcloneConfig = newConfig)
                 }.handle { _, throwable ->
                     if (throwable != null) {
                         throwable.printStackTrace()
+                    } else {
+                        // Update the Restic instance with the new rclone config
+                        backupManager.updateRcloneConfig(requireContext())
                     }
                     activity?.runOnUiThread {
                         updateRcloneStatus()

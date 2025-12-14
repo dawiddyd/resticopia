@@ -85,6 +85,17 @@ class BackupManager private constructor(context: Context) {
         return nameServers
     }
 
+    fun updateRcloneConfig(context: Context) {
+        println("DEBUG: Updating Restic instance with new rclone config")
+        println("DEBUG: New rclone config length: ${config.rcloneConfig?.length ?: 0}")
+        _restic = Restic(
+            _restic.storage,
+            _restic.hostname,
+            _restic.nameServers,
+            config.rcloneConfig
+        )
+    }
+
     val notificationChannelId = "RESTIC_BACKUP_PROGRESS"
     private var lastMillis = 0L
 

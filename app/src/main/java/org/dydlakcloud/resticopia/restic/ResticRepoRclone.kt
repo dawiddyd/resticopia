@@ -13,7 +13,12 @@ class ResticRepoRclone(
     restic,
     password
 ) {
-    override fun repository(): String = "rclone:$rcloneRemote:$rclonePath"
+    override fun repository(): String {
+        val repo = "rclone:$rcloneRemote:$rclonePath"
+        println("DEBUG: Repository string: $repo")
+        println("DEBUG: rcloneRemote: '$rcloneRemote', rclonePath: '$rclonePath'")
+        return repo
+    }
 
     override fun hosts(): List<String> = emptyList() // rclone doesn't require specific host entries
     
@@ -22,10 +27,19 @@ class ResticRepoRclone(
         val configFile = File(restic.storage.cache(), ".rclone.conf")
         try {
             configFile.writeText(rcloneConfig)
+            // Debug logging
+            println("DEBUG: Writing rclone config to ${configFile.absolutePath}")
+            println("DEBUG: Config content length: ${rcloneConfig.length}")
+            println("DEBUG: Config content preview: ${rcloneConfig.take(200)}")
+            println("DEBUG: Config file exists: ${configFile.exists()}")
+            println("DEBUG: Config file readable: ${configFile.canRead()}")
+            if (configFile.exists()) {
+                println("DEBUG: Config file size: ${configFile.length()}")
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        
+
         // Point rclone to the temp config file
         return super.vars().plus(Pair("RCLONE_CONFIG", configFile.absolutePath))
     }

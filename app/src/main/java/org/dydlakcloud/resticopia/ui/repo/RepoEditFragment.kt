@@ -151,14 +151,19 @@ class RepoEditFragment : Fragment() {
      */
     private fun loadRcloneRemotes() {
         val globalConfig = backupManager.config.rcloneConfig
-        
+
         if (globalConfig.isNullOrBlank()) {
             // No global config - show warning
-            binding.editRepoRcloneParameters.textRcloneConfigStatus.text = 
+            binding.editRepoRcloneParameters.textRcloneConfigStatus.text =
                 getString(R.string.repo_edit_rclone_config_not_configured)
             binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = false
             return
         }
+
+        // Debug logging
+        println("DEBUG: Global rclone config length: ${globalConfig.length}")
+        println("DEBUG: Global rclone config preview: ${globalConfig.take(200)}")
+
         
         // Parse the global config
         try {
@@ -199,6 +204,13 @@ class RepoEditFragment : Fragment() {
             val index = rcloneRemotes.indexOfFirst { it.name == remoteToSelect }
             if (index >= 0) {
                 binding.editRepoRcloneParameters.spinnerRcloneRemote.setSelection(index)
+                println("DEBUG: Found existing remote '$remoteToSelect' at index $index")
+            } else {
+                // Remote not found in current config - show error
+                binding.editRepoRcloneParameters.textRcloneConfigStatus.text =
+                    getString(R.string.repo_edit_rclone_remote_not_found, remoteToSelect)
+                binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = false
+                println("DEBUG: Remote '$remoteToSelect' not found in current config")
             }
         }
     }
