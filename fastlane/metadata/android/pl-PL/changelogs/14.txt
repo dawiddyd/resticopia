@@ -1,0 +1,5 @@
+Wersja 0.7.9
+
+- Możliwość inicjalizacji w katalogu głównym zdalnego serwera
+- Zaktualizowano versję Rclone
+- Usprawniono funkcjonalność wczytywania konfiguracji Rclone

@@ -1,0 +1,5 @@
+Version 0.7.9
+
+- Allow to initialize at the root of a remote
+- Update Rclone version
+- Improved Rclone configuration load
