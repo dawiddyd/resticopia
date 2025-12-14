@@ -108,6 +108,7 @@
     <string name="repo_edit_rclone_remote_title">Select Remote</string>
     <string name="repo_edit_rclone_remote_hint">Choose a remote from your config</string>
     <string name="repo_edit_rclone_remote_error_mandatory">Please select a remote</string>
+    <string name="repo_edit_rclone_remote_not_found">⚠️ Remote \'%1$s\' not found in current config</string>
     <string name="repo_edit_rclone_no_remotes">No remotes available</string>
     <string name="repo_edit_rclone_path_title">Repository Path</string>
     <string name="repo_edit_rclone_path_hint">backups/restic (leave empty for root)</string>
