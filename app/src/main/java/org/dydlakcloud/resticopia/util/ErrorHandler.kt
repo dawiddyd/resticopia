@@ -160,22 +160,22 @@ class ErrorHandler(private val context: Context) {
         // Use the companion object's categorization logic
         val category = categorizeError(originalMessage)
         return when (category) {
-            ErrorCategory.RCLONE_CONFIG -> createRcloneConfigError(sanitizedMessage)
-            ErrorCategory.RCLONE_REMOTE_NOT_FOUND -> createRcloneRemoteNotFoundError(extractRemoteNameFromError(originalMessage), sanitizedMessage)
-            ErrorCategory.AUTHENTICATION -> createAuthenticationError(sanitizedMessage)
-            ErrorCategory.INVALID_CREDENTIALS -> createInvalidPasswordError(sanitizedMessage)
-            ErrorCategory.REPOSITORY_NOT_FOUND -> createRepositoryNotFoundError(sanitizedMessage)
-            ErrorCategory.REPOSITORY_CORRUPTED -> createRepositoryCorruptedError(sanitizedMessage)
-            ErrorCategory.NETWORK -> createNetworkError(sanitizedMessage)
-            ErrorCategory.CONNECTION_TIMEOUT -> createTimeoutError(sanitizedMessage)
-            ErrorCategory.STORAGE_FULL -> createStorageFullError(sanitizedMessage)
-            ErrorCategory.PERMISSION -> createPermissionError(sanitizedMessage)
-            ErrorCategory.RCLONE_PASSWORD_OBFUSCATION -> createPasswordObscuringError(sanitizedMessage)
-            ErrorCategory.RCLONE_SSH_KEY_FILE -> createSSHKeyFileError(sanitizedMessage)
-            ErrorCategory.RCLONE_UNAUTHORIZED -> createUnauthorizedError(sanitizedMessage)
-            ErrorCategory.RCLONE_BAD_GATEWAY -> createBadGatewayError(sanitizedMessage)
-            ErrorCategory.CONFIGURATION -> createRcloneConfigError(sanitizedMessage) // Fallback
-            else -> createGenericError(sanitizedMessage)
+            ErrorCategory.RCLONE_CONFIG -> createRcloneConfigError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.RCLONE_REMOTE_NOT_FOUND -> createRcloneRemoteNotFoundError(extractRemoteNameFromError(originalMessage), sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.AUTHENTICATION -> createAuthenticationError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.INVALID_CREDENTIALS -> createInvalidPasswordError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.REPOSITORY_NOT_FOUND -> createRepositoryNotFoundError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.REPOSITORY_CORRUPTED -> createRepositoryCorruptedError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.NETWORK -> createNetworkError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.CONNECTION_TIMEOUT -> createTimeoutError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.STORAGE_FULL -> createStorageFullError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.PERMISSION -> createPermissionError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.RCLONE_PASSWORD_OBFUSCATION -> createPasswordObscuringError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.RCLONE_SSH_KEY_FILE -> createSSHKeyFileError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.RCLONE_UNAUTHORIZED -> createUnauthorizedError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.RCLONE_BAD_GATEWAY -> createBadGatewayError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.CONFIGURATION -> createRcloneConfigError(sanitizedMessage).copy(originalError = originalMessage) // Fallback
+            else -> createGenericError(sanitizedMessage).copy(originalError = originalMessage)
         }
     }
 
