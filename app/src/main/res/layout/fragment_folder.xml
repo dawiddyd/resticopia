@@ -117,34 +117,39 @@
                     android:id="@+id/error_container"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginEnd="32dp"
-                    android:padding="12dp"
-                    android:background="?android:attr/selectableItemBackground"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:padding="16dp"
+                    android:background="@drawable/error_tile_background"
                     android:clickable="true"
                     android:focusable="true"
                     android:visibility="gone"
+                    android:elevation="2dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/skeleton_folder_snapshots">
+
+                    <ImageView
+                        android:id="@+id/icon_error"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@android:drawable/ic_dialog_alert"
+                        android:contentDescription="Error"
+                        android:tint="@color/design_default_color_error"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
 
                     <TextView
                         android:id="@+id/text_error"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
                         android:textColor="@color/design_default_color_error"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/icon_error_info"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <ImageView
-                        android:id="@+id/icon_error_info"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginStart="8dp"
-                        android:src="@android:drawable/ic_menu_info_details"
-                        android:contentDescription="@string/error_show_technical_details"
-                        android:tint="@color/design_default_color_error"
+                        android:textStyle="bold"
+                        app:layout_constraintStart_toEndOf="@+id/icon_error"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />

@@ -31,6 +31,8 @@
         <item name="checkboxStyle">@style/Widget.App.CheckBox</item>
         <!-- Rounded corners for components -->
         <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.App.SmallComponent</item>
+        <!-- Error tile colors -->
+        <item name="errorTileBackgroundColor">@color/white</item>
     </style>
 
     <!-- App Bar / Toolbar Style - Light Mode -->
