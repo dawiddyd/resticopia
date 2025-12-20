@@ -96,8 +96,8 @@ class RepoFragment : Fragment() {
                             binding.textError.text = errorMessage
                             binding.errorContainer.visibility = VISIBLE
 
-                            // Make the entire error container clickable to show technical details
-                            binding.errorContainer.setOnClickListener {
+                            // Set up button click to show technical details
+                            binding.buttonErrorDetails.setOnClickListener {
                                 showTechnicalDetailsDialog(userFriendlyError)
                             }
                         }
