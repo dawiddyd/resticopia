@@ -247,4 +247,20 @@
     <string name="error_permission_title">Permission Denied</string>
     <string name="error_permission_message">You do not have permission to access this repository or perform this operation.</string>
     <string name="error_permission_suggestion">Check that you have the correct permissions and credentials for this repository.</string>
+
+    <string name="error_rclone_password_obscuring_title">Rclone Password Not Obfuscated</string>
+    <string name="error_rclone_password_obscuring_message">The rclone password is not properly obfuscated.</string>
+    <string name="error_rclone_password_obscuring_suggestion">Rclone requires passwords to be obscured for security. Use "rclone config" on your computer to set up the remote properly, or use rclone obscure to obfuscate your password.</string>
+
+    <string name="error_rclone_ssh_key_title">SSH Key File Not Found</string>
+    <string name="error_rclone_ssh_key_message">Unable to read the SSH private key file.</string>
+    <string name="error_rclone_ssh_key_suggestion">The SSH key file could not be read. Try pasting the private key content directly in the key_pem field of your rclone configuration instead of using a file path.</string>
+
+    <string name="error_rclone_unauthorized_title">Unauthorized Access</string>
+    <string name="error_rclone_unauthorized_message">You are not authorized to access this remote storage.</string>
+    <string name="error_rclone_unauthorized_suggestion">Check your credentials and ensure you have the correct permissions for this remote storage location.</string>
+
+    <string name="error_rclone_bad_gateway_title">Server Gateway Error</string>
+    <string name="error_rclone_bad_gateway_message">The remote server returned a gateway error (502 Bad Gateway).</string>
+    <string name="error_rclone_bad_gateway_suggestion">This indicates a server-side issue. Try again later, or contact the server administrator if the problem persists.</string>
 </resources>

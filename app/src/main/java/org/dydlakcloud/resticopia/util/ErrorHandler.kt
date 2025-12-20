@@ -18,7 +18,126 @@ class ErrorHandler(private val context: Context) {
         INVALID_CREDENTIALS,
         RCLONE_CONFIG,
         RCLONE_REMOTE_NOT_FOUND,
+        RCLONE_PASSWORD_OBFUSCATION,
+        RCLONE_SSH_KEY_FILE,
+        RCLONE_UNAUTHORIZED,
+        RCLONE_BAD_GATEWAY,
         UNKNOWN
+    }
+
+    companion object {
+        // Extract pattern matching logic to avoid code duplication in tests
+        fun categorizeError(errorMessage: String): ErrorCategory {
+            return when {
+                // Most specific rclone errors first
+                isRcloneRemoteNotFoundError(errorMessage) -> ErrorCategory.RCLONE_REMOTE_NOT_FOUND
+                isPasswordObscuringError(errorMessage) -> ErrorCategory.RCLONE_PASSWORD_OBFUSCATION
+                isSSHKeyFileError(errorMessage) -> ErrorCategory.RCLONE_SSH_KEY_FILE
+                isUnauthorizedError(errorMessage) -> ErrorCategory.RCLONE_UNAUTHORIZED
+                isBadGatewayError(errorMessage) -> ErrorCategory.RCLONE_BAD_GATEWAY
+                isRcloneConfigError(errorMessage) -> ErrorCategory.RCLONE_CONFIG
+
+                // Authentication errors
+                isAuthenticationError(errorMessage) -> ErrorCategory.AUTHENTICATION
+                isInvalidPasswordError(errorMessage) -> ErrorCategory.INVALID_CREDENTIALS
+
+                // Repository errors
+                isRepositoryNotFoundError(errorMessage) -> ErrorCategory.REPOSITORY_NOT_FOUND
+                isRepositoryCorruptedError(errorMessage) -> ErrorCategory.REPOSITORY_CORRUPTED
+
+                // Network errors
+                isNetworkError(errorMessage) -> ErrorCategory.NETWORK
+                isTimeoutError(errorMessage) -> ErrorCategory.CONNECTION_TIMEOUT
+
+                // Storage errors
+                isStorageFullError(errorMessage) -> ErrorCategory.STORAGE_FULL
+
+                // Permission errors
+                isPermissionError(errorMessage) -> ErrorCategory.PERMISSION
+
+                // Default fallback
+                else -> ErrorCategory.UNKNOWN
+            }
+        }
+
+        private fun isPasswordObscuringError(message: String): Boolean {
+            return message.contains("base64 decode failed when revealing password") ||
+                   message.contains("is it obscured?: illegal base64 data")
+        }
+
+        private fun isSSHKeyFileError(message: String): Boolean {
+            return message.contains("failed to read private key file") ||
+                   message.contains("no such file or directory") &&
+                   (message.contains("ssh") || message.contains("private key"))
+        }
+
+        private fun isUnauthorizedError(message: String): Boolean {
+            return message.contains("401 Unauthorized") ||
+                   message.contains("PasswordLoginForbidden") ||
+                   (message.contains("unauthorized") && message.contains("rclone"))
+        }
+
+        private fun isBadGatewayError(message: String): Boolean {
+            return message.contains("502 Bad Gateway") ||
+                   message.contains("502") && message.contains("Bad Gateway")
+        }
+
+        private fun isRcloneConfigError(message: String): Boolean {
+            return message.contains("failed to find generated linker configuration")
+        }
+
+        private fun isRcloneRemoteNotFoundError(message: String): Boolean {
+            return message.contains("didn't find section in config file")
+        }
+
+        private fun isAuthenticationError(message: String): Boolean {
+            return message.contains("authentication failed") ||
+                   message.contains("unauthorized") ||
+                   message.contains("access denied")
+        }
+
+        private fun isInvalidPasswordError(message: String): Boolean {
+            return message.contains("wrong password") ||
+                   message.contains("invalid password") ||
+                   message.contains("password verification failed")
+        }
+
+        private fun isRepositoryNotFoundError(message: String): Boolean {
+            return message.contains("repository does not exist") ||
+                   message.contains("repository not found") ||
+                   message.contains("no such file or directory")
+        }
+
+        private fun isRepositoryCorruptedError(message: String): Boolean {
+            return message.contains("repository is corrupted") ||
+                   message.contains("repository integrity check failed") ||
+                   message.contains("repository format version")
+        }
+
+        private fun isNetworkError(message: String): Boolean {
+            return message.contains("network is unreachable") ||
+                   message.contains("connection refused") ||
+                   message.contains("connection reset") ||
+                   message.contains("no route to host")
+        }
+
+        private fun isTimeoutError(message: String): Boolean {
+            return message.contains("timeout") ||
+                   message.contains("connection timed out")
+        }
+
+        private fun isStorageFullError(message: String): Boolean {
+            return message.contains("no space left on device") ||
+                   message.contains("disk full") ||
+                   message.contains("insufficient storage")
+        }
+
+        private fun isPermissionError(message: String): Boolean {
+            return message.contains("permission denied") ||
+                   message.contains("access denied") ||
+                   message.contains("operation not permitted")
+        }
+
     }
 
     data class UserFriendlyError(
@@ -35,97 +154,63 @@ class ErrorHandler(private val context: Context) {
             else -> throwable.message ?: "Unknown error"
         }
 
-        // Check for specific error patterns and return user-friendly messages
-        return when {
-            // Rclone configuration errors
-            isRcloneConfigError(originalMessage) -> createRcloneConfigError(originalMessage)
-            isRcloneRemoteNotFoundError(originalMessage) -> createRcloneRemoteNotFoundError(extractRemoteNameFromError(originalMessage), originalMessage)
-            isRcloneSectionNotFoundError(originalMessage) -> createRcloneSectionNotFoundError(extractRemoteNameFromError(originalMessage), originalMessage)
+        // Sanitize the error message by removing generic linker warnings
+        val sanitizedMessage = sanitizeRcloneError(originalMessage)
 
-            // Authentication errors
-            isAuthenticationError(originalMessage) -> createAuthenticationError(originalMessage)
-            isInvalidPasswordError(originalMessage) -> createInvalidPasswordError(originalMessage)
-
-            // Repository errors
-            isRepositoryNotFoundError(originalMessage) -> createRepositoryNotFoundError(originalMessage)
-            isRepositoryCorruptedError(originalMessage) -> createRepositoryCorruptedError(originalMessage)
-
-            // Network errors
-            isNetworkError(originalMessage) -> createNetworkError(originalMessage)
-            isTimeoutError(originalMessage) -> createTimeoutError(originalMessage)
-
-            // Storage errors
-            isStorageFullError(originalMessage) -> createStorageFullError(originalMessage)
-
-            // Permission errors
-            isPermissionError(originalMessage) -> createPermissionError(originalMessage)
-
-            // Default fallback
-            else -> createGenericError(originalMessage)
+        // Use the companion object's categorization logic
+        val category = categorizeError(originalMessage)
+        return when (category) {
+            ErrorCategory.RCLONE_CONFIG -> createRcloneConfigError(sanitizedMessage)
+            ErrorCategory.RCLONE_REMOTE_NOT_FOUND -> createRcloneRemoteNotFoundError(extractRemoteNameFromError(originalMessage), sanitizedMessage)
+            ErrorCategory.AUTHENTICATION -> createAuthenticationError(sanitizedMessage)
+            ErrorCategory.INVALID_CREDENTIALS -> createInvalidPasswordError(sanitizedMessage)
+            ErrorCategory.REPOSITORY_NOT_FOUND -> createRepositoryNotFoundError(sanitizedMessage)
+            ErrorCategory.REPOSITORY_CORRUPTED -> createRepositoryCorruptedError(sanitizedMessage)
+            ErrorCategory.NETWORK -> createNetworkError(sanitizedMessage)
+            ErrorCategory.CONNECTION_TIMEOUT -> createTimeoutError(sanitizedMessage)
+            ErrorCategory.STORAGE_FULL -> createStorageFullError(sanitizedMessage)
+            ErrorCategory.PERMISSION -> createPermissionError(sanitizedMessage)
+            ErrorCategory.RCLONE_PASSWORD_OBFUSCATION -> createPasswordObscuringError(sanitizedMessage)
+            ErrorCategory.RCLONE_SSH_KEY_FILE -> createSSHKeyFileError(sanitizedMessage)
+            ErrorCategory.RCLONE_UNAUTHORIZED -> createUnauthorizedError(sanitizedMessage)
+            ErrorCategory.RCLONE_BAD_GATEWAY -> createBadGatewayError(sanitizedMessage)
+            ErrorCategory.CONFIGURATION -> createRcloneConfigError(sanitizedMessage) // Fallback
+            else -> createGenericError(sanitizedMessage)
         }
     }
 
-    private fun isRcloneConfigError(message: String): Boolean {
-        return message.contains("didn't find section in config file") ||
-               message.contains("failed to find generated linker configuration") ||
-               message.contains("rclone: WARNING: linker:") ||
-               message.contains("rclone: CRITICAL:")
+    // Method to get error category using the shared companion object logic
+    fun getErrorCategory(errorMessage: String): ErrorCategory {
+        return categorizeError(errorMessage)
     }
 
-    private fun isRcloneRemoteNotFoundError(message: String): Boolean {
-        return message.contains("didn't find section in config file")
+    // Sanitize rclone error messages by removing generic linker warnings
+    private fun sanitizeRcloneError(errorMessage: String): String {
+        return errorMessage.lines()
+            .filterNot { line ->
+                line.contains("WARNING: linker: Warning: failed to find generated linker configuration") ||
+                line.contains("rclone: WARNING: linker: Warning: failed to find generated linker configuration") ||
+                line.trim().isEmpty()
+            }
+            .joinToString("\n")
+            .trim()
     }
 
-    private fun isRcloneSectionNotFoundError(message: String): Boolean {
-        return message.contains("didn't find section in config file")
+    private fun isPasswordObscuringError(message: String): Boolean {
+        return message.contains("base64 decode failed when revealing password") ||
+               message.contains("is it obscured?: illegal base64 data")
     }
 
-    private fun isAuthenticationError(message: String): Boolean {
-        return message.contains("authentication failed") ||
-               message.contains("unauthorized") ||
-               message.contains("access denied")
+    private fun isSSHKeyFileError(message: String): Boolean {
+        return message.contains("failed to read private key file") ||
+               message.contains("no such file or directory") &&
+               (message.contains("ssh") || message.contains("private key"))
     }
 
-    private fun isInvalidPasswordError(message: String): Boolean {
-        return message.contains("wrong password") ||
-               message.contains("invalid password") ||
-               message.contains("password verification failed")
-    }
-
-    private fun isRepositoryNotFoundError(message: String): Boolean {
-        return message.contains("repository does not exist") ||
-               message.contains("repository not found") ||
-               message.contains("no such file or directory")
-    }
-
-    private fun isRepositoryCorruptedError(message: String): Boolean {
-        return message.contains("repository is corrupted") ||
-               message.contains("repository integrity check failed") ||
-               message.contains("repository format version")
-    }
-
-    private fun isNetworkError(message: String): Boolean {
-        return message.contains("network is unreachable") ||
-               message.contains("connection refused") ||
-               message.contains("connection reset") ||
-               message.contains("no route to host")
-    }
-
-    private fun isTimeoutError(message: String): Boolean {
-        return message.contains("timeout") ||
-               message.contains("connection timed out")
-    }
-
-    private fun isStorageFullError(message: String): Boolean {
-        return message.contains("no space left on device") ||
-               message.contains("disk full") ||
-               message.contains("insufficient storage")
-    }
-
-    private fun isPermissionError(message: String): Boolean {
-        return message.contains("permission denied") ||
-               message.contains("access denied") ||
-               message.contains("operation not permitted")
+    private fun isUnauthorizedError(message: String): Boolean {
+        return message.contains("401 Unauthorized") ||
+               message.contains("PasswordLoginForbidden") ||
+               (message.contains("unauthorized") && message.contains("rclone"))
     }
 
     private fun createRcloneConfigError(originalMessage: String): UserFriendlyError {
@@ -234,6 +319,46 @@ class ErrorHandler(private val context: Context) {
             title = context.getString(R.string.error_permission_title),
             message = context.getString(R.string.error_permission_message),
             suggestion = context.getString(R.string.error_permission_suggestion),
+            originalError = originalMessage
+        )
+    }
+
+    private fun createPasswordObscuringError(originalMessage: String): UserFriendlyError {
+        return UserFriendlyError(
+            category = ErrorCategory.RCLONE_PASSWORD_OBFUSCATION,
+            title = context.getString(R.string.error_rclone_password_obscuring_title),
+            message = context.getString(R.string.error_rclone_password_obscuring_message),
+            suggestion = context.getString(R.string.error_rclone_password_obscuring_suggestion),
+            originalError = originalMessage
+        )
+    }
+
+    private fun createSSHKeyFileError(originalMessage: String): UserFriendlyError {
+        return UserFriendlyError(
+            category = ErrorCategory.RCLONE_SSH_KEY_FILE,
+            title = context.getString(R.string.error_rclone_ssh_key_title),
+            message = context.getString(R.string.error_rclone_ssh_key_message),
+            suggestion = context.getString(R.string.error_rclone_ssh_key_suggestion),
+            originalError = originalMessage
+        )
+    }
+
+    private fun createUnauthorizedError(originalMessage: String): UserFriendlyError {
+        return UserFriendlyError(
+            category = ErrorCategory.RCLONE_UNAUTHORIZED,
+            title = context.getString(R.string.error_rclone_unauthorized_title),
+            message = context.getString(R.string.error_rclone_unauthorized_message),
+            suggestion = context.getString(R.string.error_rclone_unauthorized_suggestion),
+            originalError = originalMessage
+        )
+    }
+
+    private fun createBadGatewayError(originalMessage: String): UserFriendlyError {
+        return UserFriendlyError(
+            category = ErrorCategory.RCLONE_BAD_GATEWAY,
+            title = context.getString(R.string.error_rclone_bad_gateway_title),
+            message = context.getString(R.string.error_rclone_bad_gateway_message),
+            suggestion = context.getString(R.string.error_rclone_bad_gateway_suggestion),
             originalError = originalMessage
         )
     }

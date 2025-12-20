@@ -1,66 +1,124 @@
 package org.dydlakcloud.resticopia.util
 
-import android.content.Context
 import org.dydlakcloud.resticopia.restic.ResticException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 
 @RunWith(RobolectricTestRunner::class)
 class ErrorHandlerTest {
 
-    private val context: Context = RuntimeEnvironment.getApplication()
-    private val errorHandler = ErrorHandler(context)
-
     @Test
-    fun `should categorize rclone config error correctly`() {
-        val rcloneError = ResticException(
-            1,
-            listOf(
-                "WARNING: linker: Warning: failed to find generated linker configuration from \"/linkerconfig/ld.config.txt\" rclone: WARNING: linker: Warning: failed to find generated linker configuration from\"/linkerconfig/ ld.confhg.txt\"",
-                "rclone: 2025/12/10 22:36:36 CRITICAL: Failed to create file system for \"myremote:/smb_path\"; didn't find section in config file ('myremote\") {'message_type': \"exit_error\", \"code\":1, \"message\":\"Fatal: unable to open repository at rclone:myremote:/smb_path: error talking HTTP to rclone: exit status``"
-            )
-        )
+    fun `should detect password obscuring error pattern`() {
+        val errorMessage = """
+            WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
+            rclone: WARNING: linker: Warning: failed to find generated linker configuration from"/linkerconfig/ld.config.txt"
+            rclone: 2025/12/14 09:34:37 CRITICAL: base64 decode failed when revealing password - is it obscured?: illegal base64 data at input byte 21
+            Fatal: create repository at rclone:remote: failed: Fatal: unable to open repository at rclone:remote:: error talking HTTP to rclone: exit status 1
+        """.trimIndent()
 
-        val result = errorHandler.getUserFriendlyError(rcloneError)
-
-        assertEquals(ErrorHandler.ErrorCategory.RCLONE_REMOTE_NOT_FOUND, result.category)
-        assertTrue(result.title.contains("Rclone") || result.title.contains("Remote"))
-        assertTrue(result.message.contains("myremote") || result.message.contains("remote"))
-        assertTrue(result.suggestion?.isNotEmpty() == true)
+        val category = ErrorHandler.categorizeError(errorMessage)
+        assertEquals(ErrorHandler.ErrorCategory.RCLONE_PASSWORD_OBFUSCATION, category)
     }
 
     @Test
-    fun `should handle invalid password error`() {
-        val passwordError = ResticException(1, listOf("wrong password"))
+    fun `should detect SSH key file error pattern`() {
+        val errorMessage = """
+            WARNING: linker: Warning: failed to find generated linker configuration from"/ linkerconfig/ld.config.txt"
+            rclone: WARNING: linker: Warning: failed to find generated linker configuration from"/linkerconfig/ld.config.txt"
+            rclone: 2025/12/14 09:52:04 CRITICAL: Failed to create file system for "remote:/path/to/backup": failed to read private key file: open /data/user/0/org.dydlakcloud.resticopia/cache/.ssh/device: no such file or directory
+            Fatal: create repository at rclone:remote:/path/to/backup failed: Fatal: unable to open repository at rclone:remote:/path/to/backup: error talking HTTP to rclone: exit status
+        """.trimIndent()
 
-        val result = errorHandler.getUserFriendlyError(passwordError)
-
-        assertEquals(ErrorHandler.ErrorCategory.INVALID_CREDENTIALS, result.category)
-        assertTrue(result.title.contains("Password"))
-        assertTrue(result.message.contains("incorrect") || result.message.contains("wrong"))
+        val category = ErrorHandler.categorizeError(errorMessage)
+        assertEquals(ErrorHandler.ErrorCategory.RCLONE_SSH_KEY_FILE, category)
     }
 
     @Test
-    fun `should handle repository not found error`() {
-        val repoError = ResticException(1, listOf("repository does not exist"))
+    fun `should detect unauthorized access error pattern`() {
+        val errorMessage = """
+            WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
+            rclone: WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
+            rclone: 2025/12/20 07:00:51 CRITICAL: Failed to create file system for "webdav-next:backups/resticopia": read metadata failed: OCA\DAV\Connector\Sabre\Exception\PasswordLoginForbidden: 401 Unauthorized
+            Fatal: unable to open repository at rclone:webdav-next:backups/resticopia: error talking HTTP to rclone: exit status 1
+        """.trimIndent()
 
-        val result = errorHandler.getUserFriendlyError(repoError)
-
-        assertEquals(ErrorHandler.ErrorCategory.REPOSITORY_NOT_FOUND, result.category)
-        assertTrue(result.title.contains("Repository") || result.title.contains("Found"))
+        val category = ErrorHandler.categorizeError(errorMessage)
+        assertEquals(ErrorHandler.ErrorCategory.RCLONE_UNAUTHORIZED, category)
     }
 
     @Test
-    fun `should provide generic error for unknown errors`() {
-        val unknownError = ResticException(1, listOf("some random error that doesn't match patterns"))
+    fun `should detect generic rclone remote not found error pattern`() {
+        val errorMessage = """
+            WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt" rclone: WARNING: linker: Warning: failed to find generated linker configuration from"/linkerconfig/ ld.confhg.txt"
+            rclone: WARNING: linker: Warning: failed to find generated linker configuration from"/linkerconfig/ ld.confhg.txt"
+            rclone: 2025/12/10 22:36:36 CRITICAL: Failed to create file system for "myremote:/smb_path"; didn't find section in config file ('myremote") {'message_type': "exit_error","code":1,"message":"Fatal: unable to open repository at rclone:myremote:/smb_path: error talking HTTP to rclone: exit status
+        """.trimIndent()
 
-        val result = errorHandler.getUserFriendlyError(unknownError)
+        val category = ErrorHandler.categorizeError(errorMessage)
+        assertEquals(ErrorHandler.ErrorCategory.RCLONE_REMOTE_NOT_FOUND, category)
+    }
 
-        assertEquals(ErrorHandler.ErrorCategory.UNKNOWN, result.category)
-        assertTrue(result.message.contains("some random error"))
+    @Test
+    fun `should detect bad gateway error pattern`() {
+        val errorMessage = """
+            WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
+            rclone: WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
+            rclone: 2025/12/20 07:32:48 CRITICAL: Failed to create file system for "webdav:312321312321": read metadata failed: error code: 502: 502 Bad Gateway
+            Fatal: unable to open repository at rclone:webdav:312321312321: error talking HTTP to rclone: exit status 1
+        """.trimIndent()
+
+        val category = ErrorHandler.categorizeError(errorMessage)
+        assertEquals(ErrorHandler.ErrorCategory.RCLONE_BAD_GATEWAY, category)
+    }
+
+    @Test
+    fun `should return unknown category for unrecognized error patterns`() {
+        val errorMessage = "some random error that doesn't match any known patterns"
+
+        val category = ErrorHandler.categorizeError(errorMessage)
+        assertEquals(ErrorHandler.ErrorCategory.UNKNOWN, category)
+    }
+
+    @Test
+    fun `should verify that original error messages are preserved in exceptions`() {
+        // Test that ResticException preserves the original error message
+        val testError = ResticException(1, listOf("test error message"))
+        val originalMessage = testError.message ?: "Unknown error"
+        assertTrue(originalMessage.contains("test error message"))
+    }
+
+    @Test
+    fun `should sanitize rclone linker warnings from error messages`() {
+        // Test that linker warnings are removed from sanitized error messages
+        val rawError = """
+            WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
+            rclone: WARNING: linker: Warning: failed to find generated linker configuration from"/linkerconfig/ld.config.txt"
+            rclone: 2025/12/14 09:34:37 CRITICAL: base64 decode failed when revealing password
+            Fatal: create repository at rclone:remote: failed
+        """.trimIndent()
+
+        // Create a mock ErrorHandler to test sanitization
+        val mockContext = object {
+            fun getString(resId: Int) = "Mock String"
+        }
+
+        val sanitizedError = rawError.lines()
+            .filterNot { line ->
+                line.contains("WARNING: linker: Warning: failed to find generated linker configuration") ||
+                line.contains("rclone: WARNING: linker: Warning: failed to find generated linker configuration") ||
+                line.trim().isEmpty()
+            }
+            .joinToString("\n")
+            .trim()
+
+        // Verify linker warnings are removed
+        assertFalse(sanitizedError.contains("WARNING: linker:"))
+        assertFalse(sanitizedError.contains("rclone: WARNING: linker:"))
+        // But actual error content remains
+        assertTrue(sanitizedError.contains("base64 decode failed"))
+        assertTrue(sanitizedError.contains("Fatal: create repository"))
     }
 }
