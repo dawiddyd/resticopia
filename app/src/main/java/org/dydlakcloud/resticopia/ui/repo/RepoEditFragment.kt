@@ -310,24 +310,17 @@ class RepoEditFragment : Fragment() {
                                                     val userFriendlyError = errorHandler.getUserFriendlyError(throwable)
 
                                                     val errorMessage = buildString {
-                                                        append(requireContext().resources.getString(R.string.alert_save_repo_message))
-                                                        append("\n\n")
                                                         append(userFriendlyError.message)
                                                         if (userFriendlyError.suggestion != null) {
                                                             append("\n\n")
                                                             append(userFriendlyError.suggestion)
                                                         }
-                                                        append("\n\n")
-                                                        append(requireContext().resources.getString(R.string.alert_save_repo_question))
                                                     }
 
                                                     AlertDialog.Builder(requireActivity())
                                                         .setTitle(userFriendlyError.title)
                                                         .setMessage(errorMessage)
-                                                        .setPositiveButton(android.R.string.ok) { _, _ ->
-                                                            saveRepo()
-                                                        }
-                                                        .setNegativeButton(android.R.string.cancel) { _, _ -> }
+                                                        .setPositiveButton(android.R.string.ok, null) // Just close dialog
                                                         .setNeutralButton(R.string.error_show_technical_details) { _, _ ->
                                                             showTechnicalDetailsDialog(userFriendlyError)
                                                         }
@@ -336,7 +329,6 @@ class RepoEditFragment : Fragment() {
                                             }
                                         }
                                     }
-                                    .setNegativeButton(android.R.string.cancel) { _, _ -> }
                                     .show()
                             }
                         }

@@ -1,5 +1,6 @@
 package org.dydlakcloud.resticopia.util
 
+import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -16,6 +17,18 @@ class GitIgnorePatternMatcherTest {
     @Before
     fun setup() {
         tempRoot = File("/tmp/backup_root")
+        // Create test directory structure
+        tempRoot.mkdirs()
+        File(tempRoot, "temp").mkdirs()
+        File(tempRoot, "node_modules").mkdirs()
+        File(tempRoot, "build").mkdirs()
+        File(tempRoot, "src").mkdirs()
+        File(tempRoot, "node_modules/package.json").createNewFile()
+    }
+
+    @After
+    fun cleanup() {
+        tempRoot.deleteRecursively()
     }
     
     @Test
