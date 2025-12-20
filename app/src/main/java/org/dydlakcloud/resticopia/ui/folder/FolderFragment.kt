@@ -1,14 +1,19 @@
 package org.dydlakcloud.resticopia.ui.folder
 
 import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.Toast
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import org.dydlakcloud.resticopia.BackupManager
 import org.dydlakcloud.resticopia.R
+import org.dydlakcloud.resticopia.util.ErrorHandler
 import org.dydlakcloud.resticopia.config.FolderConfigId
 import org.dydlakcloud.resticopia.databinding.FragmentFolderBinding
 import org.dydlakcloud.resticopia.restic.ResticSnapshotId
@@ -122,8 +127,16 @@ class FolderFragment : Fragment() {
                                 if (throwable is CompletionException && throwable.cause != null) throwable.cause!!
                                 else throwable
 
-                            binding.textError.text = throwable.message
-                            binding.textError.visibility = VISIBLE
+                            val errorHandler = ErrorHandler(requireContext())
+                            val userFriendlyError = errorHandler.getUserFriendlyError(throwable)
+
+                            binding.textError.text = userFriendlyError.message
+                            binding.errorContainer.visibility = VISIBLE
+
+                            // Make the entire error container clickable to show technical details
+                            binding.errorContainer.setOnClickListener {
+                                showTechnicalDetailsDialog(userFriendlyError)
+                            }
                         }
                     }
                 }
@@ -176,17 +189,15 @@ class FolderFragment : Fragment() {
                         binding.backupStatusContainer.visibility = GONE
                         binding.buttonBackup.isEnabled = true
                         binding.progressBackup.setProgress(0, true)
-                        
-                        binding.textBackupError.text = backup.error
+
+                        // Use ErrorHandler to provide user-friendly error message
+                        val errorHandler = ErrorHandler(requireContext())
+                        val userFriendlyError = errorHandler.getUserFriendlyError(Exception(backup.error))
+
+                        binding.textBackupError.text = userFriendlyError.message
                         binding.textBackupError.visibility = VISIBLE
                         binding.textBackupError.setOnClickListener {
-                            AlertDialog.Builder(context)
-                                .setTitle("Backup Error")
-                                .setMessage(backup.error)
-                                .setPositiveButton("OK") { dialog, _ ->
-                                    dialog.cancel()
-                                }
-                                .show()
+                            showTechnicalDetailsDialog(userFriendlyError)
                         }
                     }
                     backup.summary != null && backup.progress != null -> {
@@ -293,6 +304,21 @@ class FolderFragment : Fragment() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+
+    private fun showTechnicalDetailsDialog(userFriendlyError: ErrorHandler.UserFriendlyError) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.error_show_technical_details))
+            .setMessage(userFriendlyError.originalError)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.button_copy) { _, _ ->
+                // Copy technical details to clipboard
+                val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Technical Error Details", userFriendlyError.originalError)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(requireContext(), "Technical details copied to clipboard", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

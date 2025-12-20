@@ -12,8 +12,11 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import android.content.ClipData
+import android.content.ClipboardManager
 import org.dydlakcloud.resticopia.BackupManager
 import org.dydlakcloud.resticopia.R
+import org.dydlakcloud.resticopia.util.ErrorHandler
 import org.dydlakcloud.resticopia.BackupPreferences
 import org.dydlakcloud.resticopia.BackupService
 import org.dydlakcloud.resticopia.config.Config
@@ -517,7 +520,9 @@ class SettingsFragment : Fragment() {
                 .show()
         } catch (e: Exception) {
             e.printStackTrace()
-            showToast(getString(R.string.toast_export_failed, e.message))
+            val errorHandler = ErrorHandler(requireContext())
+            val userFriendlyError = errorHandler.getUserFriendlyError(e)
+            showErrorDialog(userFriendlyError)
         }
     }
 
@@ -851,6 +856,32 @@ class SettingsFragment : Fragment() {
                 binding.textRcloneStatus.text = getString(R.string.settings_rclone_summary_not_configured)
             }
         }
+    }
+
+    private fun showErrorDialog(userFriendlyError: ErrorHandler.UserFriendlyError) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(userFriendlyError.title)
+            .setMessage(userFriendlyError.message)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.error_show_technical_details) { _, _ ->
+                showTechnicalDetailsDialog(userFriendlyError)
+            }
+            .show()
+    }
+
+    private fun showTechnicalDetailsDialog(userFriendlyError: ErrorHandler.UserFriendlyError) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.error_show_technical_details))
+            .setMessage(userFriendlyError.originalError)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.button_copy) { _, _ ->
+                // Copy technical details to clipboard
+                val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Technical Error Details", userFriendlyError.originalError)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(requireContext(), "Technical details copied to clipboard", Toast.LENGTH_SHORT).show()
+            }
+            .show()
     }
 
     override fun onDestroyView() {

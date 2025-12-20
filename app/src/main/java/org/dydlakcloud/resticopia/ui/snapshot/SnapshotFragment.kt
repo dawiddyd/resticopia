@@ -1,6 +1,8 @@
 package org.dydlakcloud.resticopia.ui.snapshot
 
 import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
@@ -18,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import org.dydlakcloud.resticopia.BackupManager
 import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.config.RepoConfigId
+import org.dydlakcloud.resticopia.util.ErrorHandler
 import org.dydlakcloud.resticopia.databinding.FragmentSnapshotBinding
 import org.dydlakcloud.resticopia.restic.ResticFile
 import org.dydlakcloud.resticopia.restic.ResticRepo
@@ -179,6 +182,32 @@ class SnapshotFragment : Fragment() {
         _resticRepo = null
     }
 
+    private fun showErrorDialog(userFriendlyError: ErrorHandler.UserFriendlyError) {
+        AlertDialog.Builder(context!!)
+            .setTitle(userFriendlyError.title)
+            .setMessage(userFriendlyError.message)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.error_show_technical_details) { _, _ ->
+                showTechnicalDetailsDialog(userFriendlyError)
+            }
+            .show()
+    }
+
+    private fun showTechnicalDetailsDialog(userFriendlyError: ErrorHandler.UserFriendlyError) {
+        AlertDialog.Builder(context!!)
+            .setTitle(context!!.getString(R.string.error_show_technical_details))
+            .setMessage(userFriendlyError.originalError)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.button_copy) { _, _ ->
+                // Copy technical details to clipboard
+                val clipboard = context!!.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Technical Error Details", userFriendlyError.originalError)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(context!!, "Technical details copied to clipboard", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
     private fun setupDownloadAllButton() {
         binding.buttonDownloadAll.setOnClickListener {
             val sharedPref = requireContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
@@ -243,10 +272,13 @@ class SnapshotFragment : Fragment() {
                     } catch (e: Exception) {
                         e.printStackTrace()
                         tempDir.deleteRecursively()
-                        
-                        val handler = Handler(requireContext().mainLooper)
+
+                        val context = requireContext()
+                        val handler = Handler(context.mainLooper)
                         handler.post {
-                            Toast.makeText(requireContext(), R.string.toast_download_all_failed, Toast.LENGTH_LONG).show()
+                            val errorHandler = ErrorHandler(context)
+                            val userFriendlyError = errorHandler.getUserFriendlyError(e)
+                            showErrorDialog(userFriendlyError)
                             binding.progressDl.visibility = GONE
                             binding.buttonDownloadAll.isEnabled = true
                         }
@@ -254,10 +286,13 @@ class SnapshotFragment : Fragment() {
                 } else {
                     throwable?.printStackTrace()
                     tempDir.deleteRecursively()
-                    
-                    val handler = Handler(requireContext().mainLooper)
+
+                    val context = requireContext()
+                    val handler = Handler(context.mainLooper)
                     handler.post {
-                        Toast.makeText(requireContext(), R.string.toast_download_all_failed, Toast.LENGTH_LONG).show()
+                        val errorHandler = ErrorHandler(context)
+                        val userFriendlyError = errorHandler.getUserFriendlyError(throwable ?: Exception("Unknown error"))
+                        showErrorDialog(userFriendlyError)
                         binding.progressDl.visibility = GONE
                         binding.buttonDownloadAll.isEnabled = true
                     }
@@ -398,7 +433,7 @@ class SnapshotFilesListAdapter(
                         throwable?.printStackTrace()
 
                         // Notify the user that an error occurred during download
-                        showToast("Failed to download")
+                        showToast("Failed to download file")
                     }
                     progressDl.visibility = GONE
                 }

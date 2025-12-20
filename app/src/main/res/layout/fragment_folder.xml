@@ -113,17 +113,43 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/text_snapshots" />
 
-                <TextView
-                    android:id="@+id/text_error"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/error_container"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="32dp"
                     android:layout_marginEnd="32dp"
-                    android:textColor="@color/design_default_color_error"
+                    android:padding="12dp"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/skeleton_folder_snapshots" />
+                    app:layout_constraintTop_toBottomOf="@+id/skeleton_folder_snapshots">
+
+                    <TextView
+                        android:id="@+id/text_error"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/design_default_color_error"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/icon_error_info"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/icon_error_info"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="8dp"
+                        android:src="@android:drawable/ic_menu_info_details"
+                        android:contentDescription="@string/error_show_technical_details"
+                        android:tint="@color/design_default_color_error"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <ListView
                     android:id="@+id/list_folder_snapshots"
@@ -134,7 +160,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/text_error" />
+                    app:layout_constraintTop_toBottomOf="@+id/error_container" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
