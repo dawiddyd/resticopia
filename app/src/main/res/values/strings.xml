@@ -248,9 +248,9 @@
     <string name="error_permission_message">You do not have permission to access this repository or perform this operation.</string>
     <string name="error_permission_suggestion">Check that you have the correct permissions and credentials for this repository.</string>
 
-    <string name="error_rclone_password_obscuring_title">Rclone Password Not Obfuscated</string>
-    <string name="error_rclone_password_obscuring_message">The rclone password is not properly obfuscated.</string>
-    <string name="error_rclone_password_obscuring_suggestion">Rclone requires passwords to be obscured for security. Use "rclone config" on your computer to set up the remote properly, or use rclone obscure to obfuscate your password.</string>
+    <string name="error_rclone_password_obscuring_title">Rclone Password Not Obscured</string>
+    <string name="error_rclone_password_obscuring_message">The rclone password is not properly obscured.</string>
+    <string name="error_rclone_password_obscuring_suggestion">Rclone requires passwords to be obscured for security. Use "rclone config" on your computer to set up the remote properly, or use rclone obscure to obscure your password. Please check rclone documentation for more details.</string>
 
     <string name="error_rclone_ssh_key_title">SSH Key File Not Found</string>
     <string name="error_rclone_ssh_key_message">Unable to read the SSH private key file.</string>

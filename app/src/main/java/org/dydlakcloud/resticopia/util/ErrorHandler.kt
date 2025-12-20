@@ -62,7 +62,8 @@ class ErrorHandler(private val context: Context) {
 
         private fun isPasswordObscuringError(message: String): Boolean {
             return message.contains("base64 decode failed when revealing password") ||
-                   message.contains("is it obscured?: illegal base64 data")
+                   message.contains("is it obscured?: illegal base64 data") ||
+                   message.contains("input too short when revealing password")
         }
 
         private fun isSSHKeyFileError(message: String): Boolean {
@@ -198,7 +199,8 @@ class ErrorHandler(private val context: Context) {
 
     private fun isPasswordObscuringError(message: String): Boolean {
         return message.contains("base64 decode failed when revealing password") ||
-               message.contains("is it obscured?: illegal base64 data")
+               message.contains("is it obscured?: illegal base64 data") ||
+               message.contains("input too short when revealing password")
     }
 
     private fun isSSHKeyFileError(message: String): Boolean {

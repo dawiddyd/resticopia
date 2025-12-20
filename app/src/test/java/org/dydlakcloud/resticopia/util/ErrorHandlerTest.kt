@@ -92,6 +92,24 @@ class ErrorHandlerTest {
     }
 
     @Test
+    fun `should detect password obscured error with input too short message`() {
+        val errorMessage = """
+            WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
+            rclone: WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
+            rclone: 2025/12/20 08:16:35 CRITICAL: Failed to create file system for "mac-sftp:31231232132131": input too short when revealing password - is it obscured?
+            {"message_type":"exit_error","code":1,"message":"Fatal: unable to open repository at rclone:mac-sftp:31231232132131: error talking HTTP to rclone: exit status 1"}
+        """.trimIndent()
+
+        // Debug: check if password error is detected
+        val hasPasswordError = errorMessage.contains("input too short when revealing password")
+        assertTrue("Error message should contain password error", hasPasswordError)
+
+        // Test categorization
+        val category = ErrorHandler.categorizeError(errorMessage)
+        assertEquals(ErrorHandler.ErrorCategory.RCLONE_PASSWORD_OBFUSCATION, category)
+    }
+
+    @Test
     fun `should sanitize rclone linker warnings from error messages`() {
         // Test that linker warnings are removed from sanitized error messages
         val rawError = """
