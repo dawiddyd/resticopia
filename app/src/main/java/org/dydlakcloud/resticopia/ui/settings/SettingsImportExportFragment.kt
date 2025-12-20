@@ -1,6 +1,8 @@
 package org.dydlakcloud.resticopia.ui.settings
 
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -17,6 +19,7 @@ import org.dydlakcloud.resticopia.BackupPreferences
 import org.dydlakcloud.resticopia.BackupService
 import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.config.Config
+import org.dydlakcloud.resticopia.util.ErrorHandler
 import org.dydlakcloud.resticopia.config.PortableConfig
 import org.dydlakcloud.resticopia.databinding.FragmentSettingsImportExportBinding
 import java.text.SimpleDateFormat
@@ -106,7 +109,9 @@ class SettingsImportExportFragment : Fragment() {
                 .show()
         } catch (e: Exception) {
             e.printStackTrace()
-            showToast(getString(R.string.toast_export_failed, e.message))
+            val errorHandler = ErrorHandler(requireContext())
+            val userFriendlyError = errorHandler.getUserFriendlyError(e)
+            showErrorDialog(userFriendlyError)
         }
     }
 
@@ -197,7 +202,9 @@ class SettingsImportExportFragment : Fragment() {
             importSettingsLauncher.launch(intent)
         } catch (e: Exception) {
             e.printStackTrace()
-            showToast(getString(R.string.toast_import_failed, e.message))
+            val errorHandler = ErrorHandler(requireContext())
+            val userFriendlyError = errorHandler.getUserFriendlyError(e)
+            showErrorDialog(userFriendlyError)
         }
     }
 
@@ -222,10 +229,12 @@ class SettingsImportExportFragment : Fragment() {
             }
             
             showPasswordDialog(portableConfig)
-            
+
         } catch (e: Exception) {
             e.printStackTrace()
-            showToast(getString(R.string.toast_import_failed, e.message))
+            val errorHandler = ErrorHandler(requireContext())
+            val userFriendlyError = errorHandler.getUserFriendlyError(e)
+            showErrorDialog(userFriendlyError)
         }
     }
 
@@ -263,7 +272,9 @@ class SettingsImportExportFragment : Fragment() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            showToast(getString(R.string.toast_import_failed, "Invalid password or corrupted file"))
+            val errorHandler = ErrorHandler(requireContext())
+            val userFriendlyError = errorHandler.getUserFriendlyError(e)
+            showErrorDialog(userFriendlyError)
         }
     }
 
@@ -368,7 +379,9 @@ class SettingsImportExportFragment : Fragment() {
             if (throwable != null) {
                 throwable.printStackTrace()
                 activity?.runOnUiThread {
-                    showToast(getString(R.string.toast_import_failed, throwable.message))
+                    val errorHandler = ErrorHandler(requireContext())
+                    val userFriendlyError = errorHandler.getUserFriendlyError(throwable)
+                    showErrorDialog(userFriendlyError)
                 }
             } else {
                 activity?.runOnUiThread {
@@ -399,6 +412,32 @@ class SettingsImportExportFragment : Fragment() {
         val summary: String,
         val details: List<String>
     )
+
+    private fun showErrorDialog(userFriendlyError: ErrorHandler.UserFriendlyError) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(userFriendlyError.title)
+            .setMessage(userFriendlyError.message)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.error_show_technical_details) { _, _ ->
+                showTechnicalDetailsDialog(userFriendlyError)
+            }
+            .show()
+    }
+
+    private fun showTechnicalDetailsDialog(userFriendlyError: ErrorHandler.UserFriendlyError) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.error_show_technical_details))
+            .setMessage(userFriendlyError.originalError)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.button_copy) { _, _ ->
+                // Copy technical details to clipboard
+                val clipboard = requireContext().getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                val clip = android.content.ClipData.newPlainText("Technical Error Details", userFriendlyError.originalError)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(requireContext(), "Technical details copied to clipboard", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -5,5 +5,8 @@
         <attr name="itemLayout" format="reference" />
         <attr name="itemCount" format="integer" />
     </declare-styleable>
+
+    <!-- Error tile theme attributes -->
+    <attr name="errorTileBackgroundColor" format="color" />
 </resources>
 

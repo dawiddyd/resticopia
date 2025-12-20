@@ -195,4 +195,72 @@
     <string name="ignore_patterns_discard_message">You have unsaved changes. Discard them?</string>
     <string name="action_help">Help</string>
     <string name="action_discard">Discard</string>
+    <string name="error_show_technical_details">Error Details</string>
+    <string name="error_hide_technical_details">Hide Technical Details</string>
+    <string name="button_copy">Copy</string>
+
+    <!-- Error Messages -->
+    <string name="error_generic_title">Operation Failed</string>
+    <string name="error_generic_message">An error occurred: %s</string>
+    <string name="error_generic_suggestion">Check your configuration and try again. If the problem persists, please check the logs for more details.</string>
+
+    <string name="error_rclone_config_title">Rclone Configuration Error</string>
+    <string name="error_rclone_config_message">There is an issue with your rclone configuration. This could be due to missing or invalid configuration.</string>
+    <string name="error_rclone_config_suggestion">Please check your rclone configuration in Settings and ensure all remotes are properly configured.</string>
+
+    <string name="error_rclone_remote_not_found_title">Rclone Remote Not Found</string>
+    <string name="error_rclone_remote_not_found_message">The rclone remote "%s" was not found in your configuration.</string>
+    <string name="error_rclone_remote_not_found_suggestion">Check that the remote name is spelled correctly and exists in your rclone configuration.</string>
+
+    <string name="error_rclone_section_not_found_title">Rclone Remote Not Configured</string>
+    <string name="error_rclone_section_not_found_message">The rclone remote "%s" is not properly configured or missing from your config file.</string>
+    <string name="error_rclone_section_not_found_suggestion">Go to Settings → Rclone Configuration and ensure the remote is properly defined.</string>
+
+    <string name="error_authentication_title">Authentication Failed</string>
+    <string name="error_authentication_message">Failed to authenticate with the storage service.</string>
+    <string name="error_authentication_suggestion">Check your credentials and ensure you have the correct permissions for this repository.</string>
+
+    <string name="error_invalid_password_title">Invalid Repository Password</string>
+    <string name="error_invalid_password_message">The repository password you entered is incorrect.</string>
+    <string name="error_invalid_password_suggestion">Please double-check your repository password. Make sure caps lock is off and there are no extra spaces.</string>
+
+    <string name="error_repository_not_found_title">Repository Not Found</string>
+    <string name="error_repository_not_found_message">The specified repository could not be found or accessed.</string>
+    <string name="error_repository_not_found_suggestion">Check that the repository path is correct and the repository exists at that location.</string>
+
+    <string name="error_repository_corrupted_title">Repository Corrupted</string>
+    <string name="error_repository_corrupted_message">The repository appears to be corrupted or has integrity issues.</string>
+    <string name="error_repository_corrupted_suggestion">Try repairing the repository or restore from a backup if available. Contact support if the problem persists.</string>
+
+    <string name="error_network_title">Network Connection Error</string>
+    <string name="error_network_message">Unable to connect to the remote storage service.</string>
+    <string name="error_network_suggestion">Check your internet connection and ensure the remote service is accessible.</string>
+
+    <string name="error_timeout_title">Connection Timeout</string>
+    <string name="error_timeout_message">The connection to the storage service timed out.</string>
+    <string name="error_timeout_suggestion">Check your network connection and try again. If using a slow connection, consider increasing timeout settings.</string>
+
+    <string name="error_storage_full_title">Storage Full</string>
+    <string name="error_storage_full_message">There is not enough storage space available.</string>
+    <string name="error_storage_full_suggestion">Free up some space on your device or storage service and try again.</string>
+
+    <string name="error_permission_title">Permission Denied</string>
+    <string name="error_permission_message">You do not have permission to access this repository or perform this operation.</string>
+    <string name="error_permission_suggestion">Check that you have the correct permissions and credentials for this repository.</string>
+
+    <string name="error_rclone_password_obscuring_title">Rclone Password Not Obscured</string>
+    <string name="error_rclone_password_obscuring_message">The rclone password is not properly obscured.</string>
+    <string name="error_rclone_password_obscuring_suggestion">Rclone requires passwords to be obscured for security. Use "rclone config" on your computer to set up the remote properly, or use rclone obscure to obscure your password. Please check rclone documentation for more details.</string>
+
+    <string name="error_rclone_ssh_key_title">SSH Key File Not Found</string>
+    <string name="error_rclone_ssh_key_message">Unable to read the SSH private key file.</string>
+    <string name="error_rclone_ssh_key_suggestion">The SSH key file could not be read. Try pasting the private key content directly in the key_pem field of your rclone configuration instead of using a file path.</string>
+
+    <string name="error_rclone_unauthorized_title">Unauthorized Access</string>
+    <string name="error_rclone_unauthorized_message">You are not authorized to access this remote storage.</string>
+    <string name="error_rclone_unauthorized_suggestion">Check your credentials and ensure you have the correct permissions for this remote storage location.</string>
+
+    <string name="error_rclone_bad_gateway_title">Server Gateway Error</string>
+    <string name="error_rclone_bad_gateway_message">The remote server returned a gateway error (502 Bad Gateway).</string>
+    <string name="error_rclone_bad_gateway_suggestion">This indicates a server-side issue. Try again later, or contact the server administrator if the problem persists.</string>
 </resources>

@@ -1,11 +1,16 @@
 package org.dydlakcloud.resticopia.ui.repo
 
 import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import org.dydlakcloud.resticopia.BackupManager
 import org.dydlakcloud.resticopia.R
@@ -13,6 +18,7 @@ import org.dydlakcloud.resticopia.config.RepoConfigId
 import org.dydlakcloud.resticopia.databinding.FragmentRepoBinding
 import org.dydlakcloud.resticopia.restic.ResticSnapshotId
 import org.dydlakcloud.resticopia.ui.snapshot.SnapshotActivity
+import org.dydlakcloud.resticopia.util.ErrorHandler
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.CompletionException
 
@@ -77,8 +83,23 @@ class RepoFragment : Fragment() {
                                 if (throwable is CompletionException && throwable.cause != null) throwable.cause!!
                                 else throwable
 
-                            binding.textError.text = throwable.message
-                            binding.textError.visibility = VISIBLE
+                            val errorHandler = ErrorHandler(requireContext())
+                            val userFriendlyError = errorHandler.getUserFriendlyError(throwable)
+
+                            // Show user-friendly error message, with suggestion if available
+                            val errorMessage = if (userFriendlyError.suggestion != null) {
+                                "${userFriendlyError.message}\n\n${userFriendlyError.suggestion}"
+                            } else {
+                                userFriendlyError.message
+                            }
+
+                            binding.textError.text = errorMessage
+                            binding.errorContainer.visibility = VISIBLE
+
+                            // Set up button click to show technical details
+                            binding.buttonErrorDetails.setOnClickListener {
+                                showTechnicalDetailsDialog(userFriendlyError)
+                            }
                         }
                     }
                 }
@@ -123,6 +144,21 @@ class RepoFragment : Fragment() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+
+    private fun showTechnicalDetailsDialog(userFriendlyError: ErrorHandler.UserFriendlyError) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.error_show_technical_details))
+            .setMessage(userFriendlyError.originalError)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.button_copy) { _, _ ->
+                // Copy technical details to clipboard
+                val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Technical Error Details", userFriendlyError.originalError)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(requireContext(), "Technical details copied to clipboard", Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

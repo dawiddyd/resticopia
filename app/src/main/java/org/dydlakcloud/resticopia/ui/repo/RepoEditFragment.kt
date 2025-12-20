@@ -2,6 +2,9 @@ package org.dydlakcloud.resticopia.ui.repo
 
 import android.app.Activity.RESULT_OK
 import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
@@ -17,6 +20,7 @@ import org.dydlakcloud.resticopia.BackupManager
 import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.config.*
 import org.dydlakcloud.resticopia.databinding.FragmentRepoEditBinding
+import org.dydlakcloud.resticopia.util.ErrorHandler
 import org.dydlakcloud.resticopia.util.DirectoryChooser
 import org.dydlakcloud.resticopia.util.RcloneConfigParser
 import java.io.File
@@ -255,9 +259,35 @@ class RepoEditFragment : Fragment() {
                                 item.isEnabled = true
                                 binding.progressRepoSave.visibility = INVISIBLE
 
-                                AlertDialog.Builder(requireActivity())
-                                    .setTitle(R.string.alert_init_repo_title)
-                                    .setMessage(R.string.alert_init_repo_message)
+                                val errorHandler = ErrorHandler(requireContext())
+                                val userFriendlyError = errorHandler.getUserFriendlyError(throwable)
+
+                                // For repository not found errors, offer to initialize
+                                val isRepositoryNotFound = userFriendlyError.category == ErrorHandler.ErrorCategory.REPOSITORY_NOT_FOUND
+
+                                if (isRepositoryNotFound) {
+                                    AlertDialog.Builder(requireActivity())
+                                        .setTitle(R.string.alert_init_repo_title)
+                                        .setMessage(R.string.alert_init_repo_message)
+                                } else {
+                                    // Use generic message for other errors
+                                    val errorMessage = buildString {
+                                        append(requireContext().resources.getString(R.string.alert_save_repo_message))
+                                        append("\n\n")
+                                        append(userFriendlyError.message)
+                                        if (userFriendlyError.suggestion != null) {
+                                            append("\n\n")
+                                            append(userFriendlyError.suggestion)
+                                        }
+                                    }
+
+                                    AlertDialog.Builder(requireActivity())
+                                        .setTitle(userFriendlyError.title)
+                                        .setMessage(errorMessage)
+                                        .setNeutralButton(R.string.error_show_technical_details) { _, _ ->
+                                            showTechnicalDetailsDialog(userFriendlyError)
+                                        }
+                                }
                                     .setPositiveButton(android.R.string.ok) { _, _ ->
                                         item.isEnabled = false
                                         binding.progressRepoSave.visibility = VISIBLE
@@ -276,29 +306,29 @@ class RepoEditFragment : Fragment() {
                                                     item.isEnabled = true
                                                     binding.progressRepoSave.visibility = INVISIBLE
 
-                                                    AlertDialog.Builder(requireActivity())
-                                                        .setTitle(R.string.alert_save_repo_title)
-                                                        .setMessage(
-                                                            "${
-                                                                requireContext().resources.getString(
-                                                                    R.string.alert_save_repo_message
-                                                                )
-                                                            }\n\n${throwable.message}\n\n${
-                                                                requireContext().resources.getString(
-                                                                    R.string.alert_save_repo_question
-                                                                )
-                                                            }"
-                                                        )
-                                                        .setPositiveButton(android.R.string.ok) { _, _ ->
-                                                            saveRepo()
+                                                    val errorHandler = ErrorHandler(requireContext())
+                                                    val userFriendlyError = errorHandler.getUserFriendlyError(throwable)
+
+                                                    val errorMessage = buildString {
+                                                        append(userFriendlyError.message)
+                                                        if (userFriendlyError.suggestion != null) {
+                                                            append("\n\n")
+                                                            append(userFriendlyError.suggestion)
                                                         }
-                                                        .setNegativeButton(android.R.string.cancel) { _, _ -> }
+                                                    }
+
+                                                    AlertDialog.Builder(requireActivity())
+                                                        .setTitle(userFriendlyError.title)
+                                                        .setMessage(errorMessage)
+                                                        .setPositiveButton(android.R.string.ok, null) // Just close dialog
+                                                        .setNeutralButton(R.string.error_show_technical_details) { _, _ ->
+                                                            showTechnicalDetailsDialog(userFriendlyError)
+                                                        }
                                                         .show()
                                                 }
                                             }
                                         }
                                     }
-                                    .setNegativeButton(android.R.string.cancel) { _, _ -> }
                                     .show()
                             }
                         }
@@ -476,6 +506,21 @@ class RepoEditFragment : Fragment() {
         if (_binding != null) {
             loadRcloneRemotes()
         }
+    }
+
+    private fun showTechnicalDetailsDialog(userFriendlyError: ErrorHandler.UserFriendlyError) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.error_show_technical_details))
+            .setMessage(userFriendlyError.originalError)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNeutralButton(R.string.button_copy) { _, _ ->
+                // Copy technical details to clipboard
+                val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Technical Error Details", userFriendlyError.originalError)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(requireContext(), "Technical details copied to clipboard", Toast.LENGTH_SHORT).show()
+            }
+            .show()
     }
 
     override fun onDestroyView() {

@@ -108,8 +108,16 @@ object GitIgnorePatternMatcher {
                 '*' -> {
                     // Check for ** (match any directories)
                     if (i + 1 < pattern.length && pattern[i + 1] == '*') {
-                        regex.append(".*")
-                        i++
+                        // Check if followed by /
+                        if (i + 2 < pattern.length && pattern[i + 2] == '/') {
+                            // **/ matches zero or more directories
+                            regex.append("(.*/)*")
+                            i += 2 // Skip both * and /
+                        } else {
+                            // ** not followed by /, treat as **
+                            regex.append(".*")
+                            i++
+                        }
                     } else {
                         // Single * matches anything except /
                         regex.append("[^/]*")
