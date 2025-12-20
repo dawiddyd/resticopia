@@ -364,12 +364,10 @@ class ErrorHandler(private val context: Context) {
     }
 
     private fun createGenericError(rawMessage: String): UserFriendlyError {
-        // For unknown errors, provide a sanitized version of the technical error
-        val sanitizedMessage = sanitizeErrorMessage(rawMessage)
         return UserFriendlyError(
             category = ErrorCategory.UNKNOWN,
             title = context.getString(R.string.error_generic_title),
-            message = context.getString(R.string.error_generic_message, sanitizedMessage),
+            message = context.getString(R.string.error_generic_message, rawMessage),
             suggestion = context.getString(R.string.error_generic_suggestion),
             originalError = rawMessage
         )
@@ -391,17 +389,5 @@ class ErrorHandler(private val context: Context) {
         }
 
         return "unknown remote"
-    }
-
-    private fun sanitizeErrorMessage(message: String): String {
-        // Remove excessive technical details and sensitive information
-        return message
-            .replace(Regex("rclone: WARNING:.*$"), "")  // Remove rclone warnings
-            .replace(Regex("WARNING:.*$"), "")  // Remove general warnings
-            .replace(Regex("CRITICAL:.*$"), "")  // Remove critical markers
-            .replace(Regex("\\s+"), " ")  // Normalize whitespace
-            .trim()
-            .take(200)  // Limit length
-            .ifEmpty { "An unexpected error occurred" }
     }
 }
