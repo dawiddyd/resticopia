@@ -195,7 +195,7 @@
     <string name="ignore_patterns_discard_message">You have unsaved changes. Discard them?</string>
     <string name="action_help">Help</string>
     <string name="action_discard">Discard</string>
-    <string name="error_show_technical_details">Show Technical Details</string>
+    <string name="error_show_technical_details">Error Details</string>
     <string name="error_hide_technical_details">Hide Technical Details</string>
     <string name="button_copy">Copy</string>
 
