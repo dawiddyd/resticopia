@@ -1,0 +1,3 @@
+Wersja 0.8.1
+
+- Naprawiono niewyświetlający się dialog inicjalizacji repozytorium

@@ -1,0 +1,3 @@
+Version 0.8.1
+
+- Fix initialize repo dialog not being displayed when no repo found at location
