@@ -29,21 +29,23 @@ class ErrorHandler(private val context: Context) {
         // Extract pattern matching logic to avoid code duplication in tests
         fun categorizeError(errorMessage: String): ErrorCategory {
             return when {
-                // Most specific rclone errors first
+                // Most specific errors first
                 isRcloneRemoteNotFoundError(errorMessage) -> ErrorCategory.RCLONE_REMOTE_NOT_FOUND
                 isPasswordObscuringError(errorMessage) -> ErrorCategory.RCLONE_PASSWORD_OBFUSCATION
                 isSSHKeyFileError(errorMessage) -> ErrorCategory.RCLONE_SSH_KEY_FILE
                 isUnauthorizedError(errorMessage) -> ErrorCategory.RCLONE_UNAUTHORIZED
                 isBadGatewayError(errorMessage) -> ErrorCategory.RCLONE_BAD_GATEWAY
+
+                // Repository errors - check after SSH/specific file errors
+                isRepositoryNotFoundError(errorMessage) -> ErrorCategory.REPOSITORY_NOT_FOUND
+                isRepositoryCorruptedError(errorMessage) -> ErrorCategory.REPOSITORY_CORRUPTED
+
+                // Rclone config errors
                 isRcloneConfigError(errorMessage) -> ErrorCategory.RCLONE_CONFIG
 
                 // Authentication errors
                 isAuthenticationError(errorMessage) -> ErrorCategory.AUTHENTICATION
                 isInvalidPasswordError(errorMessage) -> ErrorCategory.INVALID_CREDENTIALS
-
-                // Repository errors
-                isRepositoryNotFoundError(errorMessage) -> ErrorCategory.REPOSITORY_NOT_FOUND
-                isRepositoryCorruptedError(errorMessage) -> ErrorCategory.REPOSITORY_CORRUPTED
 
                 // Network errors
                 isNetworkError(errorMessage) -> ErrorCategory.NETWORK
@@ -84,7 +86,7 @@ class ErrorHandler(private val context: Context) {
         }
 
         private fun isRcloneConfigError(message: String): Boolean {
-            return message.contains("failed to find generated linker configuration")
+            return message.contains("rclone config") && message.contains("not found")
         }
 
         private fun isRcloneRemoteNotFoundError(message: String): Boolean {
@@ -106,7 +108,7 @@ class ErrorHandler(private val context: Context) {
         private fun isRepositoryNotFoundError(message: String): Boolean {
             return message.contains("repository does not exist") ||
                    message.contains("repository not found") ||
-                   message.contains("no such file or directory")
+                   (message.contains("no such file or directory") && message.contains("config"))
         }
 
         private fun isRepositoryCorruptedError(message: String): Boolean {
@@ -151,18 +153,22 @@ class ErrorHandler(private val context: Context) {
 
     fun getUserFriendlyError(throwable: Throwable): UserFriendlyError {
         val originalMessage = when (throwable) {
-            is ResticException -> throwable.message ?: "Unknown error"
+            is ResticException -> {
+                // Get the actual error lines from stderr, not the toString() representation
+                "Restic error ${throwable.exitCode}:\n${throwable.stderr.joinToString("\n")}"
+            }
             else -> throwable.message ?: "Unknown error"
         }
 
         // Sanitize the error message by removing generic linker warnings
         val sanitizedMessage = sanitizeRcloneError(originalMessage)
 
-        // Use the companion object's categorization logic
-        val category = categorizeError(originalMessage)
+        // Use the companion object's categorization logic on sanitized message
+        // This ensures linker warnings don't interfere with error detection
+        val category = categorizeError(sanitizedMessage)
         return when (category) {
             ErrorCategory.RCLONE_CONFIG -> createRcloneConfigError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.RCLONE_REMOTE_NOT_FOUND -> createRcloneRemoteNotFoundError(extractRemoteNameFromError(originalMessage), sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.RCLONE_REMOTE_NOT_FOUND -> createRcloneRemoteNotFoundError(extractRemoteNameFromError(sanitizedMessage), sanitizedMessage).copy(originalError = originalMessage)
             ErrorCategory.AUTHENTICATION -> createAuthenticationError(sanitizedMessage).copy(originalError = originalMessage)
             ErrorCategory.INVALID_CREDENTIALS -> createInvalidPasswordError(sanitizedMessage).copy(originalError = originalMessage)
             ErrorCategory.REPOSITORY_NOT_FOUND -> createRepositoryNotFoundError(sanitizedMessage).copy(originalError = originalMessage)

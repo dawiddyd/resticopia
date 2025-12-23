@@ -253,27 +253,74 @@ class RepoEditFragment : Fragment() {
                             if (throwable == null) {
                                 saveRepo()
                             } else {
+                                // Unwrap CompletionException to get the actual cause
+                                val actualThrowable =
+                                    if (throwable is CompletionException && throwable.cause != null) throwable.cause!!
+                                    else throwable
+
                                 System.err.println("Error saving repository!")
-                                throwable.printStackTrace()
+                                actualThrowable.printStackTrace()
 
                                 item.isEnabled = true
                                 binding.progressRepoSave.visibility = INVISIBLE
 
                                 val errorHandler = ErrorHandler(requireContext())
-                                val userFriendlyError = errorHandler.getUserFriendlyError(throwable)
+                                val userFriendlyError = errorHandler.getUserFriendlyError(actualThrowable)
 
                                 // For repository not found errors, offer to initialize
                                 val isRepositoryNotFound = userFriendlyError.category == ErrorHandler.ErrorCategory.REPOSITORY_NOT_FOUND
 
                                 if (isRepositoryNotFound) {
+                                    // Show initialization dialog with option to initialize repo
                                     AlertDialog.Builder(requireActivity())
                                         .setTitle(R.string.alert_init_repo_title)
                                         .setMessage(R.string.alert_init_repo_message)
+                                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                                            item.isEnabled = false
+                                            binding.progressRepoSave.visibility = VISIBLE
+
+                                            resticRepo.init().handle { _, throwable ->
+                                                requireActivity().runOnUiThread {
+                                                    if (throwable == null) {
+                                                        saveRepo()
+                                                    } else {
+                                                        val throwable =
+                                                            if (throwable is CompletionException && throwable.cause != null) throwable.cause!!
+                                                            else throwable
+
+                                                        throwable.printStackTrace()
+
+                                                        item.isEnabled = true
+                                                        binding.progressRepoSave.visibility = INVISIBLE
+
+                                                        val errorHandler = ErrorHandler(requireContext())
+                                                        val userFriendlyError = errorHandler.getUserFriendlyError(throwable)
+
+                                                        val errorMessage = buildString {
+                                                            append(userFriendlyError.message)
+                                                            if (userFriendlyError.suggestion != null) {
+                                                                append("\n\n")
+                                                                append(userFriendlyError.suggestion)
+                                                            }
+                                                        }
+
+                                                        AlertDialog.Builder(requireActivity())
+                                                            .setTitle(userFriendlyError.title)
+                                                            .setMessage(errorMessage)
+                                                            .setPositiveButton(android.R.string.ok, null) // Just close dialog
+                                                            .setNeutralButton(R.string.error_show_technical_details) { _, _ ->
+                                                                showTechnicalDetailsDialog(userFriendlyError)
+                                                            }
+                                                            .show()
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        .setNegativeButton(android.R.string.cancel) { _, _ -> }
+                                        .show()
                                 } else {
-                                    // Use generic message for other errors
+                                    // Show error dialog with technical details option
                                     val errorMessage = buildString {
-                                        append(requireContext().resources.getString(R.string.alert_save_repo_message))
-                                        append("\n\n")
                                         append(userFriendlyError.message)
                                         if (userFriendlyError.suggestion != null) {
                                             append("\n\n")
@@ -284,52 +331,12 @@ class RepoEditFragment : Fragment() {
                                     AlertDialog.Builder(requireActivity())
                                         .setTitle(userFriendlyError.title)
                                         .setMessage(errorMessage)
+                                        .setPositiveButton(android.R.string.ok, null) // Just close dialog
                                         .setNeutralButton(R.string.error_show_technical_details) { _, _ ->
                                             showTechnicalDetailsDialog(userFriendlyError)
                                         }
+                                        .show()
                                 }
-                                    .setPositiveButton(android.R.string.ok) { _, _ ->
-                                        item.isEnabled = false
-                                        binding.progressRepoSave.visibility = VISIBLE
-
-                                        resticRepo.init().handle { _, throwable ->
-                                            requireActivity().runOnUiThread {
-                                                if (throwable == null) {
-                                                    saveRepo()
-                                                } else {
-                                                    val throwable =
-                                                        if (throwable is CompletionException && throwable.cause != null) throwable.cause!!
-                                                        else throwable
-
-                                                    throwable.printStackTrace()
-
-                                                    item.isEnabled = true
-                                                    binding.progressRepoSave.visibility = INVISIBLE
-
-                                                    val errorHandler = ErrorHandler(requireContext())
-                                                    val userFriendlyError = errorHandler.getUserFriendlyError(throwable)
-
-                                                    val errorMessage = buildString {
-                                                        append(userFriendlyError.message)
-                                                        if (userFriendlyError.suggestion != null) {
-                                                            append("\n\n")
-                                                            append(userFriendlyError.suggestion)
-                                                        }
-                                                    }
-
-                                                    AlertDialog.Builder(requireActivity())
-                                                        .setTitle(userFriendlyError.title)
-                                                        .setMessage(errorMessage)
-                                                        .setPositiveButton(android.R.string.ok, null) // Just close dialog
-                                                        .setNeutralButton(R.string.error_show_technical_details) { _, _ ->
-                                                            showTechnicalDetailsDialog(userFriendlyError)
-                                                        }
-                                                        .show()
-                                                }
-                                            }
-                                        }
-                                    }
-                                    .show()
                             }
                         }
                     }

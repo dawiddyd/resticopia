@@ -88,7 +88,7 @@
             android:id="@+id/button_error_details"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="20dp"
             android:text="@string/error_show_technical_details"
             android:textColor="@android:color/white"
             android:background="@drawable/error_button_background"

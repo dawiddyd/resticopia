@@ -140,4 +140,15 @@ class ErrorHandlerTest {
         assertTrue(sanitizedError.contains("base64 decode failed"))
         assertTrue(sanitizedError.contains("Fatal: create repository"))
     }
+
+    @Test
+    fun `should detect repository not found error with linker warning`() {
+        val errorMessage = """
+            WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
+            {"message_type":"exit_error","code":10,"message":"Fatal: repository does not exist: unable to open config file: stat /storage/emulated/0/Pictures/config: no such file or directory\nIs there a repository at the following location?\n/storage/emulated/0/Pictures"}
+        """.trimIndent()
+
+        val category = ErrorHandler.categorizeError(errorMessage)
+        assertEquals(ErrorHandler.ErrorCategory.REPOSITORY_NOT_FOUND, category)
+    }
 }
