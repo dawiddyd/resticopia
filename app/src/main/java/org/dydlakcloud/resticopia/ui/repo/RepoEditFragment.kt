@@ -133,8 +133,8 @@ class RepoEditFragment : Fragment() {
             binding.editRepoLocalParameters.editLocalPath.setText(path)
         }
 
-        // Setup browse button click listener
-        binding.editRepoLocalParameters.buttonBrowseLocalPath.setOnClickListener {
+        // Setup browse end icon click listener
+        binding.editRepoLocalParameters.textInputLocalPath.setEndIconOnClickListener {
             directoryChooser.openDialog()
         }
         

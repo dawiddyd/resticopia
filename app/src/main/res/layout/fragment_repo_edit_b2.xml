@@ -8,38 +8,28 @@
     <androidx.constraintlayout.widget.Group
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="text_b2_uri, text_input_b2_uri, text_b2_account_id, text_input_b2_account_id, text_b2_account_key, text_input_b2_account_key"
+        app:constraint_referenced_ids="text_input_b2_uri, text_b2_account_id, text_input_b2_account_id, text_b2_account_key, text_input_b2_account_key"
         android:id="@+id/repo_edit_b2_group" />
-
-    <TextView
-        android:id="@+id/text_b2_uri"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/repo_edit_b2_uri_title"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/text_input_b2_uri"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_b2_uri">
+        app:layout_constraintTop_toTopOf="parent"
+        app:helperText="@string/repo_edit_b2_uri_hint">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_b2_uri"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/repo_edit_b2_uri_hint" />
+            android:hint="@string/repo_edit_b2_uri_title" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
@@ -70,6 +60,7 @@
         android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
