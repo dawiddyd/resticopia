@@ -5,12 +5,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 34
     buildToolsVersion "33.0.1"
     defaultConfig {
         applicationId "org.dydlakcloud.resticopia"
         minSdkVersion 24
-        targetSdkVersion 33
+        targetSdkVersion 34
         
         // Version information from gradle.properties
         // Build will fail if VERSION_CODE or VERSION_NAME are not defined
@@ -118,7 +118,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0"
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.6.0'
     implementation 'androidx.navigation:navigation-ui-ktx:2.6.0'

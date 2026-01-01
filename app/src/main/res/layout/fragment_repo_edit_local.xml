@@ -9,7 +9,7 @@
         android:id="@+id/repo_edit_local_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="text_local_path, edit_local_path, button_browse_local_path" />
+        app:constraint_referenced_ids="text_local_path, text_input_local_path, button_browse_local_path" />
 
     <TextView
         android:id="@+id/text_local_path"
@@ -23,19 +23,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/edit_local_path"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/text_input_local_path"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:ems="10"
-        android:hint="@string/repo_edit_local_path_hint"
-        android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_local_path" />
+        app:layout_constraintTop_toBottomOf="@+id/text_local_path">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_local_path"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/repo_edit_local_path_hint"
+            android:inputType="text" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/button_browse_local_path"
@@ -47,7 +53,7 @@
         android:text="@string/button_browse"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edit_local_path" />
+        app:layout_constraintTop_toBottomOf="@+id/text_input_local_path" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

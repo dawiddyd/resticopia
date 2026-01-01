@@ -7,17 +7,51 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    
-    <!-- Main purple color for FABs and accents -->
+
+    <!-- Material 3 Color System - Primary Colors -->
+    <color name="primary">#9322C8</color>
+    <color name="onPrimary">#FFFFFF</color>
+    <color name="primaryContainer">#F2DAFF</color>
+    <color name="onPrimaryContainer">#2B0053</color>
+
+    <!-- Material 3 Color System - Secondary Colors -->
+    <color name="secondary">#6B538C</color>
+    <color name="onSecondary">#FFFFFF</color>
+    <color name="secondaryContainer">#F0DBFF</color>
+    <color name="onSecondaryContainer">#241534</color>
+
+    <!-- Material 3 Color System - Tertiary Colors -->
+    <color name="tertiary">#7F5600</color>
+    <color name="onTertiary">#FFFFFF</color>
+    <color name="tertiaryContainer">#FFDF9E</color>
+    <color name="onTertiaryContainer">#271900</color>
+
+    <!-- Material 3 Color System - Surface Colors -->
+    <color name="surface">#FFFBFF</color>
+    <color name="onSurface">#1C1B1F</color>
+    <color name="surfaceVariant">#E7E0EC</color>
+    <color name="onSurfaceVariant">#49454F</color>
+
+    <!-- Material 3 Color System - Error Colors -->
+    <color name="error">#BA1A1A</color>
+    <color name="onError">#FFFFFF</color>
+    <color name="errorContainer">#FFDAD6</color>
+    <color name="onErrorContainer">#410002</color>
+
+    <!-- Material 3 Color System - Outline -->
+    <color name="outline">#79747E</color>
+    <color name="outlineVariant">#CAC4D0</color>
+
+    <!-- Legacy colors for backwards compatibility -->
     <color name="purple_main">#9322C8</color>
-    
+
     <!-- Backup status color -->
     <color name="backup_status_color">#938AA5</color>
-    
+
     <!-- Settings tile colors -->
     <color name="settings_tile_background">#E8E5EF</color>
     <color name="settings_tile_text">#35283C</color>
-    
+
     <!-- Caption text color - Black with 40% opacity -->
     <color name="caption_text_color">#66000000</color>
 </resources>

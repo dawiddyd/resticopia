@@ -25,19 +25,25 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <EditText
-            android:id="@+id/edit_repo_name"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/text_input_repo_name"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
-            android:ems="10"
-            android:hint="@string/repo_edit_name_hint"
-            android:inputType="text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_repo_name" />
+            app:layout_constraintTop_toBottomOf="@+id/text_repo_name">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_repo_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/repo_edit_name_hint"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:id="@+id/text_repo_password"
@@ -50,11 +56,11 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/edit_repo_name" />
+            app:layout_constraintTop_toBottomOf="@+id/text_input_repo_name" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/text_input_repo_password"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"

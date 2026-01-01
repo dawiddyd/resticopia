@@ -1,8 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Material 3 Dark Color System - Primary Colors -->
+    <color name="primary">#DEBCFF</color>
+    <color name="onPrimary">#4A007A</color>
+    <color name="primaryContainer">#6A009A</color>
+    <color name="onPrimaryContainer">#F2DAFF</color>
+
+    <!-- Material 3 Dark Color System - Secondary Colors -->
+    <color name="secondary">#DBC3FF</color>
+    <color name="onSecondary">#3B1F5C</color>
+    <color name="secondaryContainer">#523875</color>
+    <color name="onSecondaryContainer">#F0DBFF</color>
+
+    <!-- Material 3 Dark Color System - Tertiary Colors -->
+    <color name="tertiary">#FFBF45</color>
+    <color name="onTertiary">#402D00</color>
+    <color name="tertiaryContainer">#5D4200</color>
+    <color name="onTertiaryContainer">#FFDF9E</color>
+
+    <!-- Material 3 Dark Color System - Surface Colors -->
+    <color name="surface">#121316</color>
+    <color name="onSurface">#E5E1E6</color>
+    <color name="surfaceVariant">#49454F</color>
+    <color name="onSurfaceVariant">#CAC4D0</color>
+
+    <!-- Material 3 Dark Color System - Error Colors -->
+    <color name="error">#FFB4AB</color>
+    <color name="onError">#690005</color>
+    <color name="errorContainer">#93000A</color>
+    <color name="onErrorContainer">#FFDAD6</color>
+
+    <!-- Material 3 Dark Color System - Outline -->
+    <color name="outline">#938F99</color>
+    <color name="outlineVariant">#49454F</color>
+
     <!-- Caption text color - White with 40% opacity for dark mode -->
     <color name="caption_text_color">#66FFFFFF</color>
-    
+
     <!-- Settings tile colors - Darker for dark mode -->
     <color name="settings_tile_background">#2A2A2A</color>
     <color name="settings_tile_text">#E8E5EF</color>

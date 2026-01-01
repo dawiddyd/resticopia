@@ -8,7 +8,7 @@
     <androidx.constraintlayout.widget.Group
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="text_s3_uri, edit_s3_uri, text_access_key_id, text_input_s3_access_key_id, text_secret_access_key, text_input_s3_secret_access_key, text_s3_default_region, edit_s3_default_region"
+        app:constraint_referenced_ids="text_s3_uri, text_input_s3_uri, text_access_key_id, text_input_s3_access_key_id, text_secret_access_key, text_input_s3_secret_access_key, text_s3_default_region, text_input_s3_default_region"
         android:id="@+id/repo_edit_s3_group" />
 
     <TextView
@@ -23,18 +23,24 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/edit_s3_uri"
-        android:hint="@string/repo_edit_s3_uri_hint"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/text_input_s3_uri"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:ems="10"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_s3_uri" />
+        app:layout_constraintTop_toBottomOf="@+id/text_s3_uri">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_s3_uri"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/repo_edit_s3_uri_hint" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
         android:id="@+id/text_access_key_id"
@@ -47,11 +53,11 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edit_s3_uri" />
+        app:layout_constraintTop_toBottomOf="@+id/text_input_s3_uri" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/text_input_s3_access_key_id"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -87,7 +93,7 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/text_input_s3_secret_access_key"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -121,16 +127,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_input_s3_secret_access_key" />
 
-    <EditText
-        android:id="@+id/edit_s3_default_region"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/text_input_s3_default_region"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="16dp"
-        android:ems="10"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_s3_default_region" />
+        app:layout_constraintTop_toBottomOf="@+id/text_s3_default_region">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_s3_default_region"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.textfield.TextInputLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

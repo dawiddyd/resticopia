@@ -1,31 +1,43 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme - Dark Mode -->
-    <style name="Theme.ResticUI" parent="Theme.MaterialComponents.NoActionBar">
-        <!-- Primary brand color - Purple for buttons and checkboxes -->
-        <item name="colorPrimary">@color/purple_main</item>
-        <item name="colorPrimaryVariant">@color/purple_main</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color - Also purple for consistency -->
-        <item name="colorSecondary">@color/purple_main</item>
-        <item name="colorSecondaryVariant">@color/purple_main</item>
-        <item name="colorOnSecondary">@color/white</item>
-        <!-- Surface colors -->
-        <item name="colorSurface">@color/black</item>
-        <item name="colorOnSurface">@color/white</item>
-        <item name="android:colorBackground">@color/black</item>
+    <style name="Theme.ResticUI" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Material 3 Color System -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/onPrimary</item>
+        <item name="colorPrimaryContainer">@color/primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/onPrimaryContainer</item>
+
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/onSecondary</item>
+        <item name="colorSecondaryContainer">@color/secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/onSecondaryContainer</item>
+
+        <item name="colorTertiary">@color/tertiary</item>
+        <item name="colorOnTertiary">@color/onTertiary</item>
+        <item name="colorTertiaryContainer">@color/tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/onTertiaryContainer</item>
+
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/onError</item>
+        <item name="colorErrorContainer">@color/errorContainer</item>
+        <item name="colorOnErrorContainer">@color/onErrorContainer</item>
+
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/onSurface</item>
+        <item name="colorSurfaceVariant">@color/surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/onSurfaceVariant</item>
+
+        <item name="colorOutline">@color/outline</item>
+        <item name="colorOutlineVariant">@color/outlineVariant</item>
+
+        <item name="android:colorBackground">@color/surface</item>
+
         <!-- Status bar - dark -->
-        <item name="android:statusBarColor" tools:targetApi="l">@color/black</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/surface</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
         <!-- Default font family -->
         <item name="android:fontFamily">@font/plus_jakarta_sans</item>
         <item name="fontFamily">@font/plus_jakarta_sans</item>
-        <!-- Text appearances -->
-        <item name="textAppearanceHeadline1">@style/TextAppearance.App.Headline1</item>
-        <item name="textAppearanceHeadline2">@style/TextAppearance.App.Headline2</item>
-        <item name="textAppearanceHeadline3">@style/TextAppearance.App.Headline3</item>
-        <item name="textAppearanceHeadline4">@style/TextAppearance.App.Headline4</item>
-        <item name="textAppearanceHeadline5">@style/TextAppearance.App.Headline5</item>
-        <item name="textAppearanceHeadline6">@style/TextAppearance.App.Headline6</item>
         <!-- Button and checkbox styles -->
         <item name="materialButtonStyle">@style/Widget.App.Button</item>
         <item name="checkboxStyle">@style/Widget.App.CheckBox</item>
@@ -36,58 +48,58 @@
     </style>
 
     <!-- App Bar / Toolbar Style - Dark Mode -->
-    <style name="Widget.App.Toolbar" parent="Widget.MaterialComponents.Toolbar">
-        <item name="android:background">@color/black</item>
-        <item name="background">@color/black</item>
+    <style name="Widget.App.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="android:background">?attr/colorSurface</item>
+        <item name="background">?attr/colorSurface</item>
         <item name="titleTextAppearance">@style/TextAppearance.App.Toolbar.Title</item>
-        <item name="titleTextColor">@color/white</item>
-        <item name="navigationIconTint">@color/white</item>
+        <item name="titleTextColor">?attr/colorOnSurface</item>
+        <item name="navigationIconTint">?attr/colorOnSurface</item>
         <item name="android:elevation">0dp</item>
         <item name="elevation">0dp</item>
     </style>
 
     <!-- Toolbar Title - Bold -->
-    <style name="TextAppearance.App.Toolbar.Title" parent="TextAppearance.MaterialComponents.Headline6">
+    <style name="TextAppearance.App.Toolbar.Title" parent="TextAppearance.Material3.TitleMedium">
         <item name="android:fontFamily">@font/plus_jakarta_sans</item>
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">20sp</item>
-        <item name="android:textColor">@color/white</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
     <!-- Text Appearance Styles -->
-    <style name="TextAppearance.App.Headline1" parent="TextAppearance.MaterialComponents.Headline1">
+    <style name="TextAppearance.App.Headline1" parent="TextAppearance.Material3.DisplayLarge">
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="TextAppearance.App.Headline2" parent="TextAppearance.MaterialComponents.Headline2">
+    <style name="TextAppearance.App.Headline2" parent="TextAppearance.Material3.DisplayMedium">
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="TextAppearance.App.Headline3" parent="TextAppearance.MaterialComponents.Headline3">
+    <style name="TextAppearance.App.Headline3" parent="TextAppearance.Material3.DisplaySmall">
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="TextAppearance.App.Headline4" parent="TextAppearance.MaterialComponents.Headline4">
+    <style name="TextAppearance.App.Headline4" parent="TextAppearance.Material3.HeadlineLarge">
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="TextAppearance.App.Headline5" parent="TextAppearance.MaterialComponents.Headline5">
+    <style name="TextAppearance.App.Headline5" parent="TextAppearance.Material3.HeadlineMedium">
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="TextAppearance.App.Headline6" parent="TextAppearance.MaterialComponents.Headline6">
+    <style name="TextAppearance.App.Headline6" parent="TextAppearance.Material3.HeadlineSmall">
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textStyle">bold</item>
     </style>
 
     <!-- Title1 Style - Extra Bold, 34sp, Line Height 110%, Letter Spacing -0.5px -->
-    <style name="TextAppearance.App.Title1" parent="TextAppearance.MaterialComponents.Headline3">
+    <style name="TextAppearance.App.Title1" parent="TextAppearance.Material3.TitleLarge">
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">34sp</item>
@@ -97,7 +109,7 @@
     </style>
 
     <!-- Title2 Style - Bold, 22sp, Line Height 28sp, Letter Spacing 0px -->
-    <style name="TextAppearance.App.Title2" parent="TextAppearance.MaterialComponents.Headline5">
+    <style name="TextAppearance.App.Title2" parent="TextAppearance.Material3.TitleMedium">
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">22sp</item>
@@ -107,7 +119,7 @@
     </style>
 
     <!-- Body17 Style - Semibold, 17sp -->
-    <style name="TextAppearance.App.Body17" parent="TextAppearance.MaterialComponents.Body1">
+    <style name="TextAppearance.App.Body17" parent="TextAppearance.Material3.BodyLarge">
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">17sp</item>
@@ -115,7 +127,7 @@
     </style>
 
     <!-- CaptionReg Style - Medium, 13sp -->
-    <style name="TextAppearance.App.CaptionReg" parent="TextAppearance.MaterialComponents.Caption">
+    <style name="TextAppearance.App.CaptionReg" parent="TextAppearance.Material3.BodySmall">
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textStyle">normal</item>
         <item name="android:textSize">13sp</item>
@@ -123,7 +135,7 @@
     </style>
 
     <!-- Body15 Style - Semibold, 15sp, 130% line height -->
-    <style name="TextAppearance.App.Body15" parent="TextAppearance.MaterialComponents.Body2">
+    <style name="TextAppearance.App.Body15" parent="TextAppearance.Material3.BodyMedium">
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">15sp</item>
@@ -132,20 +144,20 @@
     </style>
 
     <!-- Button Style - Purple and Rounded -->
-    <style name="Widget.App.Button" parent="Widget.MaterialComponents.Button">
-        <item name="backgroundTint">@color/purple_main</item>
+    <style name="Widget.App.Button" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/primary</item>
         <item name="android:textStyle">bold</item>
         <item name="fontFamily">@font/plus_jakarta_sans</item>
         <item name="cornerRadius">24dp</item>
     </style>
 
     <!-- CheckBox Style - Purple -->
-    <style name="Widget.App.CheckBox" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
-        <item name="buttonTint">@color/purple_main</item>
+    <style name="Widget.App.CheckBox" parent="Widget.Material3.CompoundButton.CheckBox">
+        <item name="buttonTint">@color/primary</item>
     </style>
 
     <!-- Rounded corners for small components -->
-    <style name="ShapeAppearance.App.SmallComponent" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+    <style name="ShapeAppearance.App.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">24dp</item>
     </style>
