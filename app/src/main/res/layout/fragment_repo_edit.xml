@@ -68,22 +68,19 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/text_repo_password"
-            app:boxBackgroundMode="none"
             app:endIconMode="password_toggle">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/edit_repo_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="0dp"
-                android:paddingEnd="0dp"
-                android:ems="10"
                 android:hint="@string/repo_edit_password_hint"
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <Spinner
-            android:id="@+id/spinner_repo_type"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/text_input_repo_type"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
@@ -92,7 +89,15 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_repo_type" />
+            app:layout_constraintTop_toBottomOf="@+id/text_repo_type"
+            app:endIconMode="dropdown_menu">
+
+            <androidx.appcompat.widget.AppCompatAutoCompleteTextView
+                android:id="@+id/spinner_repo_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:id="@+id/text_repo_type"
@@ -116,7 +121,7 @@
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/spinner_repo_type"
+            app:layout_constraintTop_toBottomOf="@+id/text_input_repo_type"
             tools:visibility="gone" />
 
         <include
@@ -128,7 +133,7 @@
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/spinner_repo_type"
+            app:layout_constraintTop_toBottomOf="@+id/text_input_repo_type"
             tools:visibility="gone" />
 
         <include
@@ -140,7 +145,7 @@
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/spinner_repo_type"
+            app:layout_constraintTop_toBottomOf="@+id/text_input_repo_type"
             tools:visibility="gone" />
 
         <include
@@ -152,7 +157,7 @@
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/spinner_repo_type"
+            app:layout_constraintTop_toBottomOf="@+id/text_input_repo_type"
             tools:visibility="gone" />
 
         <include
@@ -164,7 +169,7 @@
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/spinner_repo_type"
+            app:layout_constraintTop_toBottomOf="@+id/text_input_repo_type"
             tools:visibility="gone" />
 
         <ProgressBar

@@ -66,30 +66,24 @@ class RepoEditFragment : Fragment() {
             requireContext(),
             RepoType.values()
         )
-        binding.spinnerRepoType.adapter = repoTypeAdapter
+        binding.spinnerRepoType.setAdapter(repoTypeAdapter)
 
         // define a listener to change the repo param view based on which repo type is selected in the drop down
-        binding.spinnerRepoType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
+        binding.spinnerRepoType.setOnItemClickListener { parent, view, position, id ->
+            val getRepoTypeBinding: (RepoType) -> ViewBinding = {
+                when (it) {
+                    RepoType.S3 -> binding.editRepoS3Parameters
+                    RepoType.Rest -> binding.editRepoRestParameters
+                    RepoType.B2 -> binding.editRepoB2Parameters
+                    RepoType.Local -> binding.editRepoLocalParameters
+                    RepoType.Rclone -> binding.editRepoRcloneParameters
+                }
             }
 
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val getRepoTypeBinding: (RepoType) -> ViewBinding = {
-                    when (it) {
-                        RepoType.S3 -> binding.editRepoS3Parameters
-                        RepoType.Rest -> binding.editRepoRestParameters
-                        RepoType.B2 -> binding.editRepoB2Parameters
-                        RepoType.Local -> binding.editRepoLocalParameters
-                        RepoType.Rclone -> binding.editRepoRcloneParameters
-                    }
-                }
-
-                val newRepoType = parent!!.getItemAtPosition(position) as RepoType
-                RepoType.values().forEach { repoType ->
-                    getRepoTypeBinding(repoType).root.visibility =
-                        if (repoType == newRepoType) VISIBLE else GONE
-                }
+            val newRepoType = parent!!.getItemAtPosition(position) as RepoType
+            RepoType.values().forEach { repoType ->
+                getRepoTypeBinding(repoType).root.visibility =
+                    if (repoType == newRepoType) VISIBLE else GONE
             }
         }
 
@@ -102,7 +96,7 @@ class RepoEditFragment : Fragment() {
             // prefill the view if the repo already exists and is going to be edited instead of created.
             binding.editRepoName.setText(repo.base.name)
             binding.editRepoPassword.setText(repo.base.password.secret)
-            binding.spinnerRepoType.setSelection(repoTypeAdapter.getPosition(repo.base.type))
+            binding.spinnerRepoType.setText(repo.base.type.toString(), false)
             when (repo.base.type) {
                 RepoType.S3 -> {
                     val s3RepoParams = repo.params as S3RepoParams
@@ -198,7 +192,7 @@ class RepoEditFragment : Fragment() {
         ).apply {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
-        binding.editRepoRcloneParameters.spinnerRcloneRemote.adapter = adapter
+        binding.editRepoRcloneParameters.spinnerRcloneRemote.setAdapter(adapter)
         binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = true
         
         // If editing an existing repo, try to find and select the remote from config
@@ -207,7 +201,7 @@ class RepoEditFragment : Fragment() {
             val remoteToSelect = (existingRepo.params as RcloneRepoParams).rcloneRemote
             val index = rcloneRemotes.indexOfFirst { it.name == remoteToSelect }
             if (index >= 0) {
-                binding.editRepoRcloneParameters.spinnerRcloneRemote.setSelection(index)
+                binding.editRepoRcloneParameters.spinnerRcloneRemote.setText(rcloneRemotes[index].name, false)
                 println("DEBUG: Found existing remote '$remoteToSelect' at index $index")
             } else {
                 // Remote not found in current config - show error
@@ -350,7 +344,8 @@ class RepoEditFragment : Fragment() {
         }
 
     private fun parseRepo(): Pair<Boolean, RepoConfig?> {
-        val repoType = binding.spinnerRepoType.selectedItem as RepoType
+        val repoTypeText = binding.spinnerRepoType.text.toString()
+        val repoType = RepoType.valueOf(repoTypeText)
         val valid = validateRepo(repoType)
 
         if (!valid) {
@@ -403,7 +398,8 @@ class RepoEditFragment : Fragment() {
                 )
             }
             RepoType.Rclone -> {
-                val selectedRemote = binding.editRepoRcloneParameters.spinnerRcloneRemote.selectedItem as? RcloneConfigParser.RcloneRemote
+                val selectedRemoteName = binding.editRepoRcloneParameters.spinnerRcloneRemote.text.toString()
+                val selectedRemote = rcloneRemotes.find { it.name == selectedRemoteName }
                 val pathText = binding.editRepoRcloneParameters.editRclonePath.text.toString()
                 RepoConfig(
                     baseConfig,
@@ -491,7 +487,7 @@ class RepoEditFragment : Fragment() {
                 )
             }
             RepoType.Rclone -> {
-                val hasRemote = binding.editRepoRcloneParameters.spinnerRcloneRemote.selectedItem != null
+                val hasRemote = binding.editRepoRcloneParameters.spinnerRcloneRemote.text.isNotEmpty()
                 if (!hasRemote) {
                     Toast.makeText(context, R.string.repo_edit_rclone_remote_error_mandatory, Toast.LENGTH_SHORT).show()
                 }

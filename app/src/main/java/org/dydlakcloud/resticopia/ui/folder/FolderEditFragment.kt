@@ -70,29 +70,29 @@ class FolderEditFragment : Fragment() {
         val folder = config.folders.find { it.id == folderId }
         val folderRepo = folder?.repo(config)
 
-        binding.spinnerRepo.adapter = ArrayAdapter(
+        binding.spinnerRepo.setAdapter(ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
+            android.R.layout.simple_dropdown_item_1line,
             backupManager.config.repos.map { it.base.name }
-        )
+        ))
 
-        binding.spinnerSchedule.adapter = ArrayAdapter(
+        binding.spinnerSchedule.setAdapter(ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
+            android.R.layout.simple_dropdown_item_1line,
             schedules.map { it.first }
-        )
-        binding.spinnerSchedule.setSelection(1)
+        ))
+        binding.spinnerSchedule.setText(schedules[1].first, false)
 
-        binding.spinnerRetainWithin.adapter = ArrayAdapter(
+        binding.spinnerRetainWithin.setAdapter(ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
+            android.R.layout.simple_dropdown_item_1line,
             retainProfiles.map { hours ->
                 if (hours == -1) "Always" else Formatters.durationDaysHours(
                     Duration.ofHours(hours.toLong())
                 )
             }
-        )
-        binding.spinnerRetainWithin.setSelection(0)
+        ))
+        binding.spinnerRetainWithin.setText("Always", false)
 
         val directoryChooser = DirectoryChooser.newInstance()
 
@@ -105,13 +105,18 @@ class FolderEditFragment : Fragment() {
         }
 
         if (folder != null && folderRepo != null) {
-            binding.spinnerRepo.setSelection(backupManager.config.repos.indexOfFirst { it.base.id == folderRepo.base.id })
+            binding.spinnerRepo.setText(folderRepo.base.name, false)
             binding.editFolder.setText(folder.path.path)
-            binding.spinnerSchedule.setSelection(schedules.indexOfFirst { it.first == folder.schedule })
+            val scheduleText = schedules.find { it.first == folder.schedule }?.first ?: schedules[1].first
+            binding.spinnerSchedule.setText(scheduleText, false)
             val scheduleIndex = retainProfiles.indexOfFirst {
                 it.toLong() == folder.keepWithin?.toHours()
             }
-            binding.spinnerRetainWithin.setSelection(if (scheduleIndex == -1) 0 else scheduleIndex)
+            val retainText = if (scheduleIndex == -1) "Always" else {
+                val hours = retainProfiles[scheduleIndex]
+                if (hours == -1) "Always" else Formatters.durationDaysHours(Duration.ofHours(hours.toLong()))
+            }
+            binding.spinnerRetainWithin.setText(retainText, false)
         }
 
         return root
@@ -125,15 +130,19 @@ class FolderEditFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             R.id.action_done -> {
-                val selectedRepoName = binding.spinnerRepo.selectedItem?.toString()
+                val selectedRepoName = binding.spinnerRepo.text.toString()
                 val repo =
-                    if (selectedRepoName == null) null
+                    if (selectedRepoName.isEmpty()) null
                     else backupManager.config.repos.find { it.base.name == selectedRepoName }
                 val path = binding.editFolder.text.toString()
-                val schedule = binding.spinnerSchedule.selectedItem?.toString()
+                val schedule = binding.spinnerSchedule.text.toString()
+                val retainText = binding.spinnerRetainWithin.text.toString()
+                val retainIndex = retainProfiles.map { hours ->
+                    if (hours == -1) "Always" else Formatters.durationDaysHours(Duration.ofHours(hours.toLong()))
+                }.indexOf(retainText)
                 val keepWithin =
-                    if (retainProfiles[binding.spinnerRetainWithin.selectedItemPosition] < 0) null
-                    else Duration.ofHours(retainProfiles[binding.spinnerRetainWithin.selectedItemPosition].toLong())
+                    if (retainIndex == -1 || retainProfiles[retainIndex] < 0) null
+                    else Duration.ofHours(retainProfiles[retainIndex].toLong())
 
                 if (
                     repo != null &&
