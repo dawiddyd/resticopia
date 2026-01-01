@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="48dp"
     android:orientation="horizontal"
-    android:padding="16dp"
-    android:gravity="center_vertical">
+    android:paddingStart="16dp"
+    android:paddingEnd="24dp"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground">
 
     <ImageView
         android:id="@+id/repo_type_icon"
@@ -12,13 +14,15 @@
         android:layout_height="24dp"
         android:layout_marginEnd="16dp"
         android:contentDescription="@string/repo_edit_type_title"
-        android:src="@drawable/outline_cloud_24" />
+        android:src="@drawable/outline_cloud_24"
+        android:alpha="0.87" />
 
     <TextView
         android:id="@+id/repo_type_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textColor="?attr/colorOnSurface"
         android:text="Repository Type" />
 
 </LinearLayout>

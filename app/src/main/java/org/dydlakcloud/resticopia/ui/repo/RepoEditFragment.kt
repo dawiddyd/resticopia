@@ -187,11 +187,9 @@ class RepoEditFragment : Fragment() {
         // Populate spinner with remotes
         val adapter = ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_spinner_item,
+            R.layout.material3_dropdown_item,
             rcloneRemotes
-        ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
+        )
         binding.editRepoRcloneParameters.spinnerRcloneRemote.setAdapter(adapter)
         binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = true
         

@@ -72,20 +72,20 @@ class FolderEditFragment : Fragment() {
 
         binding.spinnerRepo.setAdapter(ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_dropdown_item_1line,
+            R.layout.material3_dropdown_item,
             backupManager.config.repos.map { it.base.name }
         ))
 
         binding.spinnerSchedule.setAdapter(ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_dropdown_item_1line,
+            R.layout.material3_dropdown_item,
             schedules.map { it.first }
         ))
         binding.spinnerSchedule.setText(schedules[1].first, false)
 
         binding.spinnerRetainWithin.setAdapter(ArrayAdapter(
             requireContext(),
-            android.R.layout.simple_dropdown_item_1line,
+            R.layout.material3_dropdown_item,
             retainProfiles.map { hours ->
                 if (hours == -1) "Always" else Formatters.durationDaysHours(
                     Duration.ofHours(hours.toLong())
