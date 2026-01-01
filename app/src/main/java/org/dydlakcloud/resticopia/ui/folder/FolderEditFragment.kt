@@ -100,7 +100,7 @@ class FolderEditFragment : Fragment() {
             binding.editFolder.setText(path)
         }
 
-        binding.buttonFolderSelect.setOnClickListener {
+        binding.textInputFolder.setEndIconOnClickListener {
             directoryChooser.openDialog()
         }
 

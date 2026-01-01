@@ -5,74 +5,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/text_repo"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/text_repository"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/text_folder"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/text_folder"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_input_repo" />
-
-    <TextView
-        android:id="@+id/text_schedule"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/text_schedule"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_input_folder" />
-
-    <TextView
-        android:id="@+id/text_retain"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/text_retain"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_input_schedule" />
-
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/text_input_repo"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_repo"
+        app:layout_constraintTop_toTopOf="parent"
         app:endIconMode="dropdown_menu">
 
         <androidx.appcompat.widget.AppCompatAutoCompleteTextView
             android:id="@+id/spinner_repo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/text_repository"
             android:inputType="none" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -81,18 +31,20 @@
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_schedule"
+        app:layout_constraintTop_toBottomOf="@+id/text_input_folder"
         app:endIconMode="dropdown_menu">
 
         <androidx.appcompat.widget.AppCompatAutoCompleteTextView
             android:id="@+id/spinner_schedule"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/text_schedule"
             android:inputType="none" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -101,18 +53,20 @@
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_retain"
+        app:layout_constraintTop_toBottomOf="@+id/text_input_schedule"
         app:endIconMode="dropdown_menu">
 
         <androidx.appcompat.widget.AppCompatAutoCompleteTextView
             android:id="@+id/spinner_retain_within"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/text_retain"
             android:inputType="none" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -121,26 +75,23 @@
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintEnd_toStartOf="@+id/button_folder_select"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_folder">
+        app:layout_constraintTop_toBottomOf="@+id/text_input_repo"
+        app:endIconMode="custom"
+        app:endIconDrawable="@drawable/outline_folder_open_24"
+        app:endIconContentDescription="@string/button_browse">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_folder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="@string/text_folder"
             android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <Button
-        android:id="@+id/button_folder_select"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="32dp"
-        android:text="@string/button_browse"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_folder" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
