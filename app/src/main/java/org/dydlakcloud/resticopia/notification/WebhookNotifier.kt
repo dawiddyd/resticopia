@@ -1,5 +1,6 @@
 package org.dydlakcloud.resticopia.notification
 
+import timber.log.Timber
 import java.io.BufferedOutputStream
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -40,7 +41,7 @@ object WebhookNotifier {
                 .replace("{error}", errorString ?: "")
                 .replace("{duration}", durationString ?: "")
 
-            println("WebhookNotifier: Sending to URL: $processedUrl")
+            Timber.d("Sending to URL: $processedUrl")
 
             try {
                 val url = URL(processedUrl)
@@ -79,16 +80,15 @@ object WebhookNotifier {
 
                     val responseCode = connection.responseCode
                     if (responseCode !in 200..299) {
-                        println("WebhookNotifier: Webhook returned HTTP $responseCode")
+                        Timber.d("Webhook returned HTTP $responseCode")
                     } else {
-                        println("WebhookNotifier: Webhook sent successfully")
+                        Timber.d("Webhook sent successfully")
                     }
                 } finally {
                     connection.disconnect()
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
-                println("WebhookNotifier: Error sending webhook: ${e.message}")
+                Timber.e(e, "Error sending webhook: ${e.message}")
             }
         }
     }

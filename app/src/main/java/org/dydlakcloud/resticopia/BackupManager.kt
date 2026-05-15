@@ -16,6 +16,7 @@ import org.dydlakcloud.resticopia.restic.ResticNameServers
 import org.dydlakcloud.resticopia.restic.ResticStorage
 import org.dydlakcloud.resticopia.ui.folder.FolderActivity
 import org.dydlakcloud.resticopia.util.HostnameUtil
+import timber.log.Timber
 import java.time.Duration
 import java.time.ZonedDateTime
 import java.util.concurrent.CompletableFuture
@@ -87,8 +88,8 @@ class BackupManager private constructor(context: Context) {
     }
 
     fun updateRcloneConfig(context: Context) {
-        println("DEBUG: Updating Restic instance with new rclone config")
-        println("DEBUG: New rclone config length: ${config.rcloneConfig?.length ?: 0}")
+        Timber.d("Updating Restic instance with new rclone config")
+        Timber.d("New rclone config length: ${config.rcloneConfig?.length ?: 0}")
         _restic = Restic(
             _restic.storage,
             _restic.hostname,

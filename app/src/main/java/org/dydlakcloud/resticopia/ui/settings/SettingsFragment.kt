@@ -37,6 +37,7 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import org.dydlakcloud.resticopia.config.FolderConfig
 import org.dydlakcloud.resticopia.ui.folder.FolderEditFragment
+import timber.log.Timber
 import java.time.ZonedDateTime
 
 class SettingsFragment : Fragment() {
@@ -78,7 +79,7 @@ class SettingsFragment : Fragment() {
         if (result.resultCode == Activity.RESULT_OK) {
             val newConfig = result.data?.getStringExtra("config")
             newConfig?.let { configContent ->
-                println("DEBUG: Saving rclone config from SettingsFragment, length: ${configContent.length}")
+                Timber.d("Saving rclone config from SettingsFragment, length: ${configContent.length}")
                 // Validate and save - wait for completion before updating UI
                 backupManager.configure { config ->
                     config.copy(rcloneConfig = configContent)
@@ -115,9 +116,9 @@ class SettingsFragment : Fragment() {
                 resticRepo.unlock()
                     .handle { message, throwable ->
                         if (throwable != null) {
-                            throwable.printStackTrace()
+                            Timber.d(throwable, "Failed unlock result for repo ${repo.base.name}: message=$message")
                         } else {
-                            println(message)
+                            Timber.d("Unlock result for repo ${repo.base.name}: message=$message")
                         }
                     }
             }
@@ -127,9 +128,9 @@ class SettingsFragment : Fragment() {
             backupManager.restic.cleanCache()
                 .handle { message, throwable ->
                     if (throwable != null) {
-                        throwable.printStackTrace()
+                        Timber.d(throwable, "Failed cleanup result: message=$message")
                     } else {
-                        println(message)
+                        Timber.d("Cleanup result: message=$message")
                     }
                 }
         }

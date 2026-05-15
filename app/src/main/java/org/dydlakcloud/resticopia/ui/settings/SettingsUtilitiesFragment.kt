@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import org.dydlakcloud.resticopia.BackupManager
 import org.dydlakcloud.resticopia.databinding.FragmentSettingsUtilitiesBinding
 import org.dydlakcloud.resticopia.util.DirectoryChooser
+import timber.log.Timber
 
 /**
  * Utilities Settings Fragment
@@ -66,9 +67,9 @@ class SettingsUtilitiesFragment : Fragment() {
                 resticRepo.unlock()
                     .handle { message, throwable ->
                         if (throwable != null) {
-                            throwable.printStackTrace()
+                            Timber.d(throwable, "Failed unlock result for repo ${backupManager.restic}: $message")
                         } else {
-                            println(message)
+                            Timber.d("Unlock result for repo ${backupManager.restic}: $message")
                         }
                     }
             }
@@ -78,9 +79,9 @@ class SettingsUtilitiesFragment : Fragment() {
             backupManager.restic.cleanCache()
                 .handle { message, throwable ->
                     if (throwable != null) {
-                        throwable.printStackTrace()
+                        Timber.d(throwable, "Failed cleanup result for repo ${backupManager.restic}: $message")
                     } else {
-                        println(message)
+                        Timber.d("Cleanup result for repo ${backupManager.restic}: $message")
                     }
                 }
         }
