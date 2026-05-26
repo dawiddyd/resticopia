@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import org.dydlakcloud.resticopia.R
+import org.dydlakcloud.resticopia.ui.finishWithAnimation
 import org.dydlakcloud.resticopia.util.RcloneConfigParser
 
 class RcloneConfigEditorActivity : AppCompatActivity() {
@@ -93,8 +94,7 @@ class RcloneConfigEditorActivity : AppCompatActivity() {
         return when (item.itemId) {
             android.R.id.home -> {
                 // Back button pressed
-                finish()
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                finishWithAnimation(android.R.anim.fade_in, android.R.anim.fade_out)
                 true
             }
             R.id.action_save -> {
@@ -135,8 +135,7 @@ class RcloneConfigEditorActivity : AppCompatActivity() {
     private fun saveAndFinish(content: String) {
         val result = Intent().putExtra("config", content)
         setResult(RESULT_OK, result)
-        finish()
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        finishWithAnimation(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 }
 

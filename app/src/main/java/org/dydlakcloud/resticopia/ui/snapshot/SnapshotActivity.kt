@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import org.dydlakcloud.resticopia.config.RepoConfigId
 import org.dydlakcloud.resticopia.databinding.ActivitySnapshotBinding
 import org.dydlakcloud.resticopia.restic.ResticSnapshotId
+import org.dydlakcloud.resticopia.ui.onBackPressedFinish
 
 class SnapshotActivity : AppCompatActivity() {
     companion object {
@@ -38,7 +39,9 @@ class SnapshotActivity : AppCompatActivity() {
 
         // Setup Toolbar
         setSupportActionBar(binding.toolbar)
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        onBackPressedFinish()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
@@ -49,8 +52,4 @@ class SnapshotActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
-
-    override fun onBackPressed() {
-        finish()
-    }
 }

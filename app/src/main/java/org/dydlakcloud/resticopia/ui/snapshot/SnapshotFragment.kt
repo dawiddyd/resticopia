@@ -207,7 +207,7 @@ class SnapshotFragment : Fragment() {
     }
 
     private fun showErrorDialog(userFriendlyError: ErrorHandler.UserFriendlyError) {
-        AlertDialog.Builder(context!!)
+        AlertDialog.Builder(requireContext())
             .setTitle(userFriendlyError.title)
             .setMessage(userFriendlyError.message)
             .setPositiveButton(android.R.string.ok, null)
@@ -218,16 +218,16 @@ class SnapshotFragment : Fragment() {
     }
 
     private fun showTechnicalDetailsDialog(userFriendlyError: ErrorHandler.UserFriendlyError) {
-        AlertDialog.Builder(context!!)
-            .setTitle(context!!.getString(R.string.error_show_technical_details))
+        AlertDialog.Builder(requireContext())
+            .setTitle(resources.getString(R.string.error_show_technical_details))
             .setMessage(userFriendlyError.originalError)
             .setPositiveButton(android.R.string.ok, null)
             .setNeutralButton(R.string.button_copy) { _, _ ->
                 // Copy technical details to clipboard
-                val clipboard = context!!.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = ClipData.newPlainText("Technical Error Details", userFriendlyError.originalError)
                 clipboard.setPrimaryClip(clip)
-                Toast.makeText(context!!, "Technical details copied to clipboard", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Technical details copied to clipboard", Toast.LENGTH_SHORT).show()
             }
             .show()
     }

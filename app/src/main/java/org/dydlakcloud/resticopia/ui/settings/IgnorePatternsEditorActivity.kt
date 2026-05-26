@@ -14,7 +14,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePaddingRelative
 import org.dydlakcloud.resticopia.R
+import org.dydlakcloud.resticopia.ui.finishWithAnimation
+import org.dydlakcloud.resticopia.ui.onBackPressedFinish
 
 /**
  * Editor Activity for GitIgnore-style patterns.
@@ -84,7 +89,13 @@ class IgnorePatternsEditorActivity : AppCompatActivity() {
                 1f
             ))
         }
-        
+
+        ViewCompat.setOnApplyWindowInsetsListener(toolbar) { view, insets ->
+            val topInset = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
+            view.updatePaddingRelative(top = topInset)
+            insets
+        }
+
         setContentView(rootContainer)
         
         // Setup toolbar as action bar
@@ -94,6 +105,7 @@ class IgnorePatternsEditorActivity : AppCompatActivity() {
             setDisplayShowHomeEnabled(true)
             title = getString(R.string.ignore_patterns_editor_title)
         }
+        onBackPressedFinish { saveOrDiscardAndFinish() }
     }
     
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -104,16 +116,7 @@ class IgnorePatternsEditorActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
-                // Back button pressed - show discard confirmation if changed
-                val currentContent = intent.getStringExtra("patterns") ?: ""
-                val newContent = editor.text.toString()
-                
-                if (currentContent != newContent) {
-                    showDiscardChangesDialog()
-                } else {
-                    finish()
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-                }
+                saveOrDiscardAndFinish()
                 true
             }
             R.id.action_save -> {
@@ -123,32 +126,31 @@ class IgnorePatternsEditorActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
-    
-    override fun onBackPressed() {
-        // Handle back button same as home button
-        val currentContent = intent.getStringExtra("patterns") ?: ""
-        val newContent = editor.text.toString()
-        
-        if (currentContent != newContent) {
-            showDiscardChangesDialog()
-        } else {
-            super.onBackPressed()
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-        }
-    }
+
     
     private fun showDiscardChangesDialog() {
         AlertDialog.Builder(this)
             .setTitle(R.string.ignore_patterns_discard_title)
             .setMessage(R.string.ignore_patterns_discard_message)
-            .setPositiveButton(R.string.action_discard) { _, _ -> 
-                finish()
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            .setPositiveButton(R.string.action_discard) { _, _ ->
+                finishWithAnimation(android.R.anim.fade_in, android.R.anim.fade_out)
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
-    
+
+    private fun saveOrDiscardAndFinish() {
+        // Back button pressed - show discard confirmation if changed
+        val currentContent = intent.getStringExtra("patterns") ?: ""
+        val newContent = editor.text.toString()
+
+        if (currentContent != newContent) {
+            showDiscardChangesDialog()
+        } else {
+            finishWithAnimation(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
+    }
+
     private fun saveAndFinish() {
         val content = editor.text.toString().trim()
         
@@ -156,8 +158,7 @@ class IgnorePatternsEditorActivity : AppCompatActivity() {
             putExtra("patterns", content)
         }
         setResult(RESULT_OK, resultIntent)
-        finish()
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        finishWithAnimation(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 }
 

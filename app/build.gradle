@@ -6,12 +6,12 @@ plugins {
 android {
     namespace 'org.dydlakcloud.resticopia'
 
-    compileSdkVersion 37
+    compileSdkVersion 36
 
     defaultConfig {
         applicationId namespace
         minSdkVersion 24
-        targetSdkVersion 37
+        targetSdkVersion 36
         
         // Version information from gradle.properties
         // Build will fail if VERSION_CODE or VERSION_NAME are not defined

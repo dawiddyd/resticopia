@@ -11,6 +11,7 @@ import androidx.navigation.findNavController
 import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.config.FolderConfigId
 import org.dydlakcloud.resticopia.databinding.ActivityFolderBinding
+import org.dydlakcloud.resticopia.ui.onBackPressedFinish
 
 class FolderActivity : AppCompatActivity() {
     companion object {
@@ -41,25 +42,21 @@ class FolderActivity : AppCompatActivity() {
 
         // Setup Toolbar
         setSupportActionBar(binding.toolbar)
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         if (edit) {
             val navController = findNavController(R.id.nav_host_fragment_activity_folder)
             navController.navigate(R.id.navigation_folder_edit)
         }
+        onBackPressedFinish()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.getItemId()) {
+        when (item.itemId) {
             android.R.id.home -> {
                 finish()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-        finish()
-    }
 }
