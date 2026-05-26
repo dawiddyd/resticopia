@@ -13,6 +13,7 @@ data class ResticBackupSummary(
     val data_blobs: Long,
     val tree_blobs: Long,
     val data_added: Long,
+    val data_added_packed: Long,
     val total_files_processed: Long,
     val total_bytes_processed: Long,
     val total_duration: Double,

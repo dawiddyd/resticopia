@@ -1,0 +1,4 @@
+Version 0.8.6
+
+- Fixed security and privacy concern where sensitive credentials (username and password) within the rest restic URL were being displayed in plain text on the UI.
+- Update source code link

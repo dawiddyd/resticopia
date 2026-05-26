@@ -18,6 +18,7 @@ import java.util.List;
 // https://stackoverflow.com/a/36162691/4380671
 public final class FileUtil {
     private static final String PRIMARY_VOLUME_NAME = "primary";
+    private static final String[] SIZE_UNITS = {"KiB", "MiB", "GiB", "TiB", "PiB"};
 
     @Nullable
     public static String getFullPathFromTreeUri(Context context, @Nullable final Uri treeUri) {
@@ -119,5 +120,26 @@ public final class FileUtil {
         final String[] split = docId.split(":");
         if ((split.length >= 2) && (split[1] != null)) return split[1];
         else return File.separator;
+    }
+
+    /**
+     * Get a human-readable string representing the size of a file in binary prefixes (e.g., KiB, MiB, GiB).
+     * @param bytes - the size of the file in bytes
+     * @return a formatted string with the size in binary prefixes
+     */
+    public static String formatFileSize(long bytes) {
+        if (bytes < 1024) {
+            return bytes + " B";
+        }
+
+        double value = bytes;
+        int unitIndex = -1;
+
+        while (value >= 1024 && unitIndex < SIZE_UNITS.length - 1) {
+            value /= 1024;
+            unitIndex++;
+        }
+
+        return String.format("%.2f %s", value, SIZE_UNITS[unitIndex]);
     }
 }

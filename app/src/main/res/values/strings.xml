@@ -15,7 +15,8 @@
     <string name="settings_utilities">Utilities</string>
     <string name="text_about">About</string>
     <string name="buy_me_coffee">Buy me a coffee</string>
-    <string name="text_snapshots">Snapshots</string>
+    <string name="text_snapshots">Snapshots …</string>
+    <string name="text_snapshots_with_counts">Snapshots: %d</string>
     <string name="text_snapshot">Snapshot</string>
     <string name="text_snapshot_details">%s, tags: %s</string>
     <string name="text_snapshot_tags">tags: %s</string>
@@ -276,4 +277,8 @@
     <string name="error_rclone_bad_gateway_title">Server Gateway Error</string>
     <string name="error_rclone_bad_gateway_message">The remote server returned a gateway error (502 Bad Gateway).</string>
     <string name="error_rclone_bad_gateway_suggestion">This indicates a server-side issue. Try again later, or contact the server administrator if the problem persists.</string>
+    <string name="time_newest_first">Time: Newest First</string>
+    <string name="time_oldest_first">Time: Oldest First</string>
+    <string name="size_largest_first">Size: Largest First</string>
+    <string name="size_smallest_first">Size: Smallest First</string>
 </resources>

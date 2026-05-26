@@ -1,0 +1,4 @@
+Wersja 0.8.7
+
+- Powiadomienie o wszystkich zasobach z kopii zapasowej restic za pośrednictwem webhooka (autor: @Redwid)
+- Dodanie nazwy hosta i ścieżek do polecenia restic.forget() (autor: @Redwid)

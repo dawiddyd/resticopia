@@ -9,12 +9,12 @@ import android.os.Handler
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.widget.AdapterView
 import android.widget.BaseAdapter
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import org.dydlakcloud.resticopia.BackupManager
@@ -53,6 +53,8 @@ class SnapshotFragment : Fragment() {
 
     private var _resticRepo: ResticRepo? = null
     private val resticRepo: ResticRepo? get() = _resticRepo
+
+    private var chosenMenuSortTypeId = R.id.sort_time_desc
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -112,20 +114,17 @@ class SnapshotFragment : Fragment() {
                                 requireActivity().runOnUiThread {
                                     binding.skeletonSnapshotFiles.visibility = GONE
                                     binding.textFiles.text = resources.getString(R.string.text_files_with_count, filesArrayList.size)
-                                    binding.listFilesSnapshot.adapter = SnapshotFilesListAdapter(
+                                    val adapter = SnapshotFilesListAdapter(
                                             requireContext(),
                                             filesArrayList,
                                             resticRepo,
                                             snapshotId,
                                             snapshotRootPath,
                                             binding.progressDl)
-
-                                    binding.listFilesSnapshot.onItemClickListener =
-                                        AdapterView.OnItemClickListener { _, _, _, _ ->
-                                            (binding.listFilesSnapshot.adapter as SnapshotFilesListAdapter).triggerSort(
-                                                    binding.listFilesSnapshot
-                                                )
-                                        }
+                                    adapter.triggerDefaultSort()
+                                    binding.listFilesSnapshot.adapter = adapter
+                                    binding.imageButtonSort.visibility = VISIBLE
+                                    binding.imageButtonSort.setOnClickListener { view -> showSortMenu(adapter, view) }
                                 }
                             } else {
                                 throwable?.printStackTrace()
@@ -139,6 +138,25 @@ class SnapshotFragment : Fragment() {
         }
 
         return root
+    }
+
+    private fun showSortMenu(adapter: SnapshotFilesListAdapter, view: View) {
+        val popup = PopupMenu(requireContext(), view)
+        popup.menuInflater.inflate(R.menu.sort_menu, popup.menu)
+        popup.menu.findItem(chosenMenuSortTypeId)?.isChecked = true
+        popup.setOnMenuItemClickListener { menuItem ->
+            chosenMenuSortTypeId = menuItem.itemId
+            val chosenSortType: SnapshotFilesListAdapter.SortOrder = when (chosenMenuSortTypeId) {
+                R.id.sort_time_desc -> SnapshotFilesListAdapter.SortOrder.ByTime(isDescending = true)
+                R.id.sort_time_asc  -> SnapshotFilesListAdapter.SortOrder.ByTime(isDescending = false)
+                R.id.sort_size_desc -> SnapshotFilesListAdapter.SortOrder.BySize(isDescending = true)
+                R.id.sort_size_asc  -> SnapshotFilesListAdapter.SortOrder.BySize(isDescending = false)
+                else -> return@setOnMenuItemClickListener false
+            }
+            adapter.triggerSort(chosenSortType, binding.listFilesSnapshot)
+            true
+        }
+        popup.show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -333,31 +351,45 @@ class SnapshotFilesListAdapter(
     private val rootPath: File,
     private val progressDl: ProgressBar
 ) : BaseAdapter() {
+
+    sealed class SortOrder(val isDescending: Boolean) {
+        // Subclass for sorting by time
+        class ByTime(isDescending: Boolean = true) : SortOrder(isDescending)
+
+        // Subclass for sorting by file size
+        class BySize(isDescending: Boolean = true) : SortOrder(isDescending)
+    }
+
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val pathNameText: TextView = view.findViewById(R.id.pathname)
         val fileDateText: TextView = view.findViewById(R.id.filedate)
+        val fileSizeText: TextView = view.findViewById(R.id.filesize)
     }
 
-    private var sortOrderDesc: Boolean? = null
+    private var sortOrder: SortOrder = SortOrder.ByTime(isDescending = true)
     private var sortedFiles: ArrayList<ResticFile> = ArrayList(files)
 
-    fun triggerSort(listFilesSnapshot: ListView) {
-        sortOrderDesc = when (sortOrderDesc) {
-            null -> {
+    fun triggerDefaultSort() {
+        triggerSort(sortOrder, null)
+    }
+
+    fun triggerSort(newSortOrder: SortOrder, listFilesSnapshot: ListView?) {
+        if(newSortOrder is SortOrder.ByTime) {
+            if(newSortOrder.isDescending) {
                 sortedFiles.sortByDescending { it.mtime }
-                true
-            }
-            true -> {
+            } else {
                 sortedFiles.sortBy { it.mtime }
-                false
             }
-            false -> {
-                sortedFiles = ArrayList(files)
-                null
+        } else if(newSortOrder is SortOrder.BySize) {
+            if(newSortOrder.isDescending) {
+                sortedFiles.sortByDescending { it.size }
+            } else {
+                sortedFiles.sortBy { it.size }
             }
         }
+        sortOrder = newSortOrder
 
-        listFilesSnapshot.invalidateViews()
+        listFilesSnapshot?.invalidateViews()
     }
 
     override fun getCount(): Int = sortedFiles.size
@@ -392,6 +424,11 @@ class SnapshotFilesListAdapter(
         } else {
             holder.fileDateText.visibility = VISIBLE
             holder.fileDateText.text = relativePath
+        }
+        if(file.size != 0L) {
+            holder.fileSizeText.text = file.humanReadableSize
+        } else {
+            holder.fileSizeText.text = ""
         }
 
         // Add a click listener to initiate download

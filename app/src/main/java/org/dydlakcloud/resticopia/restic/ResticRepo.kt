@@ -1,6 +1,5 @@
 package org.dydlakcloud.resticopia.restic
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.time.Duration
@@ -85,7 +84,17 @@ abstract class ResticRepo(
             out.joinToString("\n")
         }
 
+    /**
+     * Forget snapshots based on retention policies
+     *
+     * @param paths The paths to consider for forgetting snapshots.
+     * @param keepLast The number of most recent snapshots to keep (optional).
+     * @param keepWithin The duration within which to keep snapshots (optional).
+     * @param prune Whether to prune the repository after forgetting (default: false).
+     * @return A future containing the list of snapshots that were removed.
+     */
     fun forget(
+        paths: List<File>,
         keepLast: Int?,
         keepWithin: Duration?,
         prune: Boolean
@@ -102,6 +111,10 @@ abstract class ResticRepo(
                     val hours = keepWithin.toHours()
                     listOf("--keep-within", "${hours / 24}d${hours % 24}h")
                 } else emptyList()
+            ).plus (
+                listOf("--host", restic.hostname)
+            ).plus(
+                paths.flatMap { listOf("--path", it.absolutePath) }
             )
         ).thenApply { (out, _) ->
             val json = out.joinToString("\n")
@@ -115,7 +128,7 @@ abstract class ResticRepo(
 
     fun ls(snapshotId: ResticSnapshotId): CompletableFuture<Pair<ResticSnapshot, List<ResticFile>>> =
         restic(
-            listOf("--json", "ls", snapshotId.id)
+            listOf("--json", "ls", snapshotId.id, "--long")
         ).thenApply { (out, _) ->
             val snapshotJson = out[0]
             val filesJson = out.drop(1)

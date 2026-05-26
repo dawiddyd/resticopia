@@ -1,0 +1,4 @@
+Wersja 0.8.6
+
+- Usunięto lukę w zabezpieczeniach i naruszenie prywatności, w wyniku których poufne dane logowania (nazwa użytkownika i hasło) zawarte w adresie URL Restic były wyświetlane w interfejsie użytkownika w postaci zwykłego tekstu.
+- Zaktualizowano link do kodu źródłowego

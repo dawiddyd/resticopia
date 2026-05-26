@@ -14,6 +14,15 @@ data class ResticBackupProgress(
 ) {
     companion object {
         fun zero() = ResticBackupProgress(percent_done = 0.0)
+
+        fun formatBytes(bytes: Long?) =
+            when {
+                bytes == null -> null
+                bytes >= 1_000_000_000 -> "${"%.3f".format(bytes / 10_000_000 / 100.0)}GB"
+                bytes >= 1_000_000 -> "${"%.2f".format(bytes / 10_000 / 100.0)}MB"
+                bytes >= 1_000 -> "${"%d".format(bytes / 10 / 100)}KB"
+                else -> "$bytes B"
+            }
     }
 
     fun percentDone100() = percent_done * 100
@@ -25,15 +34,6 @@ data class ResticBackupProgress(
             percentDone100() < 1 -> "%.2f".format(percentDone100())
             else -> percentDone100().roundToInt().toString()
         }) + "%"
-
-    private fun formatBytes(bytes: Long?) =
-        when {
-            bytes == null -> null
-            bytes >= 1_000_000_000 -> "${"%.3f".format(bytes / 10_000_000 / 100.0)}GB"
-            bytes >= 1_000_000 -> "${"%.2f".format(bytes / 10_000 / 100.0)}MB"
-            bytes >= 1_000 -> "${"%d".format(bytes / 10 / 100)}KB"
-            else -> "$bytes B"
-        }
 
     fun totalBytesString() = formatBytes(total_bytes)
     fun bytesDoneString() = formatBytes(bytes_done)

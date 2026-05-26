@@ -2,6 +2,7 @@ package org.dydlakcloud.resticopia.restic
 
 import android.system.Os
 import android.util.Base64
+import android.util.Log
 import java.io.File
 import java.io.InputStream
 import java.net.InetAddress
@@ -182,6 +183,7 @@ class Restic(
                 val certificatesFile = certificatesFile()
                 tempFileBind(certificatesFile) { certificatesBind ->
                     CompletableFuture.supplyAsync {
+                        Log.d(Restic::class.simpleName, "Executing command: " + listOf(restic.absolutePath).plus(args).joinToString(" "))
                         Runtime.getRuntime().exec(
                             withProot(
                                 listOf(

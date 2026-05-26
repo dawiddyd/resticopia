@@ -1,0 +1,4 @@
+Version 0.8.7
+
+- Notify all properties from restic backup into webhook by @Redwid
+- Add hostname and paths to restic.forget() command by @Redwid

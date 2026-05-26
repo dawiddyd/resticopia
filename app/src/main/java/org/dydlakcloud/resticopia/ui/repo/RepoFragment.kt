@@ -9,7 +9,6 @@ import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.View
-import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import org.dydlakcloud.resticopia.BackupManager
@@ -19,7 +18,7 @@ import org.dydlakcloud.resticopia.databinding.FragmentRepoBinding
 import org.dydlakcloud.resticopia.restic.ResticSnapshotId
 import org.dydlakcloud.resticopia.ui.snapshot.SnapshotActivity
 import org.dydlakcloud.resticopia.util.ErrorHandler
-import java.time.format.DateTimeFormatter
+import org.dydlakcloud.resticopia.util.UrlUtils
 import java.util.concurrent.CompletionException
 
 class RepoFragment : Fragment() {
@@ -57,10 +56,10 @@ class RepoFragment : Fragment() {
 
             val resticRepo = repo.repo(backupManager.restic)
 
-            binding.textRepoUrl.text = resticRepo.repository()
+            binding.textRepoUrl.text = UrlUtils.sanitizeRepoUrl(resticRepo)
 
             backupManager.observeConfig(viewLifecycleOwner) { _ ->
-                resticRepo.snapshots(latest = 100).handle { snapshots, throwable ->
+                resticRepo.snapshots(hostname = resticRepo.restic.hostname, latest = 100).handle { snapshots, throwable ->
                     requireActivity().runOnUiThread {
                         binding.skeletonRepoSnapshots.visibility = GONE
 
@@ -71,7 +70,8 @@ class RepoFragment : Fragment() {
                             requireContext(),
                             snapshots
                         )
-                        
+                        binding.textSnapshots.text = resources.getString(R.string.text_snapshots_with_counts, snapshots.size)
+
                         // Hide divider if there's only one snapshot
                         if (snapshots.size <= 1) {
                             binding.listRepoSnapshots.divider = null
