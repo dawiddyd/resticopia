@@ -38,7 +38,7 @@ class SettingsRcloneFragment : Fragment() {
                     config.copy(rcloneConfig = newConfig)
                 }.handle { _, throwable ->
                     if (throwable != null) {
-                        throwable.printStackTrace()
+                        Timber.e(throwable, "Failed to configure rclone")
                     } else {
                         // Update the Restic instance with the new rclone config
                         backupManager.updateRcloneConfig(requireContext())

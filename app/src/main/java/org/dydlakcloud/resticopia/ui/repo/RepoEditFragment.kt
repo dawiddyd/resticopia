@@ -268,8 +268,7 @@ class RepoEditFragment : Fragment() {
                                     if (throwable is CompletionException && throwable.cause != null) throwable.cause!!
                                     else throwable
 
-                                Timber.d("Error saving repository!")
-                                actualThrowable.printStackTrace()
+                                Timber.e(actualThrowable, "Error saving repository!")
 
                                 item.isEnabled = true
                                 binding.progressRepoSave.visibility = INVISIBLE
@@ -298,7 +297,7 @@ class RepoEditFragment : Fragment() {
                                                             if (throwable is CompletionException && throwable.cause != null) throwable.cause!!
                                                             else throwable
 
-                                                        throwable.printStackTrace()
+                                                        Timber.e(throwable, "Failed to init repository!")
 
                                                         item.isEnabled = true
                                                         binding.progressRepoSave.visibility = INVISIBLE

@@ -2,7 +2,7 @@ package org.dydlakcloud.resticopia.restic
 
 import android.system.Os
 import android.util.Base64
-import android.util.Log
+import timber.log.Timber
 import java.io.File
 import java.io.InputStream
 import java.net.InetAddress
@@ -145,10 +145,10 @@ class Restic(
                         emptyList()
                 }
             } catch (e: KeyStoreException) {
-                e.printStackTrace()
+                Timber.e(e, "Failed to load cert file")
                 emptyList()
             } catch (e: NoSuchAlgorithmException) {
-                e.printStackTrace()
+                Timber.e(e, "Failed to load cert file")
                 emptyList()
             } else {
                 emptyList()
@@ -183,7 +183,7 @@ class Restic(
                 val certificatesFile = certificatesFile()
                 tempFileBind(certificatesFile) { certificatesBind ->
                     CompletableFuture.supplyAsync {
-                        Log.d(Restic::class.simpleName, "Executing command: " + listOf(restic.absolutePath).plus(args).joinToString(" "))
+                        Timber.d("Executing command: %s", listOf(restic.absolutePath).plus(args).joinToString(" "))
                         Runtime.getRuntime().exec(
                             withProot(
                                 listOf(

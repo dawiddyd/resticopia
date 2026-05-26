@@ -26,6 +26,7 @@ import org.dydlakcloud.resticopia.restic.ResticFile
 import org.dydlakcloud.resticopia.restic.ResticRepo
 import org.dydlakcloud.resticopia.restic.ResticSnapshotId
 import org.dydlakcloud.resticopia.ui.Formatters
+import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -127,11 +128,11 @@ class SnapshotFragment : Fragment() {
                                     binding.imageButtonSort.setOnClickListener { view -> showSortMenu(adapter, view) }
                                 }
                             } else {
-                                throwable?.printStackTrace()
+                                Timber.e(throwable, "Failed to ls snapshot")
                             }
                         }
                     } else {
-                        throwable?.printStackTrace()
+                        Timber.e(throwable, "Failed to cat snapshot")
                     }
                 }
             }
@@ -186,7 +187,7 @@ class SnapshotFragment : Fragment() {
                                         }
                                         requireActivity().finish()
                                     } else {
-                                        throwable.printStackTrace()
+                                        Timber.e(throwable, "Failed to forget snapshots")
                                     }
                                 }
                         }
@@ -294,7 +295,7 @@ class SnapshotFragment : Fragment() {
                             binding.buttonDownloadAll.isEnabled = true
                         }
                     } catch (e: Exception) {
-                        e.printStackTrace()
+                        Timber.e(e, "Failed to restore all files")
                         tempDir.deleteRecursively()
 
                         val context = requireContext()
@@ -308,7 +309,7 @@ class SnapshotFragment : Fragment() {
                         }
                     }
                 } else {
-                    throwable?.printStackTrace()
+                    Timber.e(throwable, "Failed to download all files")
                     tempDir.deleteRecursively()
 
                     val context = requireContext()
@@ -473,7 +474,7 @@ class SnapshotFilesListAdapter(
                         // You can use a Toast or other UI element to display this message
                         showToast("File downloaded")
                     } else {
-                        throwable?.printStackTrace()
+                        Timber.e(throwable, "Failed to download file: %s", file)
 
                         // Notify the user that an error occurred during download
                         showToast("Failed to download file")
