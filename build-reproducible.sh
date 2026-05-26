@@ -106,18 +106,18 @@ cp build.gradle build.gradle.orig
 sed -i.bak "s/include 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'/include 'arm64-v8a'/" build.gradle
 cd ..
 
-# Set build-tools version to match AGP 8.4.x defaults (34.0.0)
+# Set build-tools version to match AGP 9.2.x defaults (37.0.0)
 echo ""
-echo "Ensuring Android SDK build-tools 34.0.0 is installed..."
+echo "Ensuring Android SDK build-tools 37.0.0 is installed..."
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/Library/Android/sdk}"
 
-if [ -d "$ANDROID_SDK_ROOT/build-tools/34.0.0" ]; then
-    echo "✓ build-tools 34.0.0 already installed"
+if [ -d "$ANDROID_SDK_ROOT/build-tools/37.0.0" ]; then
+    echo "✓ build-tools 37.0.0 already installed"
 else
-    echo "Warning: build-tools 34.0.0 not found"
+    echo "Warning: build-tools 37.0.0 not found"
     echo "Gradle will auto-download it, but it's better to install manually:"
-    echo "Or via Android Studio: Tools -> SDK Manager -> SDK Tools -> Show Package Details -> Android SDK Build-Tools 34.0.0"
+    echo "Or via Android Studio: Tools -> SDK Manager -> SDK Tools -> Show Package Details -> Android SDK Build-Tools 37.0.0"
 fi
 
 # Clean previous builds

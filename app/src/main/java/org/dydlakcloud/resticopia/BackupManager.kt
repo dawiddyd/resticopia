@@ -223,12 +223,12 @@ class BackupManager private constructor(context: Context) {
         initRestic(context)
     }
 
-    private val activeBackupsLock = Object()
+    private val activeBackupsLock = Any()
     private var _activeBackups: Map<FolderConfigId, MutableLiveData<ActiveBackup>> = emptyMap()
 
     fun currentlyActiveBackups(): List<ActiveBackup> =
         synchronized(activeBackupsLock) {
-            _activeBackups.values.map { it.value }.filterNotNull()
+            _activeBackups.values.mapNotNull { it.value }
         }
 
     fun activeBackup(folderId: FolderConfigId): MutableLiveData<ActiveBackup> =
