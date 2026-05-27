@@ -571,12 +571,14 @@ class SettingsFragment : Fragment() {
             // Read backup constraints from SharedPreferences
             val requiresCharging = BackupPreferences.requiresCharging(requireContext())
             val allowsCellular = BackupPreferences.allowsCellular(requireContext())
-            
+            val requiresTag = BackupPreferences.requiresTag(requireContext())
+
             val portableConfig = PortableConfig.fromConfig(
                 config, 
                 password, 
                 requiresCharging, 
-                allowsCellular
+                allowsCellular,
+                requiresTag
             )
             val jsonString = portableConfig.toJsonString()
             
@@ -791,7 +793,8 @@ class SettingsFragment : Fragment() {
         // Apply backup constraints to SharedPreferences
         BackupPreferences.setRequiresCharging(requireContext(), portableConfig.requiresCharging)
         BackupPreferences.setAllowsCellular(requireContext(), portableConfig.allowsCellular)
-        
+        BackupPreferences.setAddTag(requireContext(), portableConfig.requiresTag)
+
         // Update checkbox UI immediately
         activity?.runOnUiThread {
             binding.checkboxRequireCharging.isChecked = portableConfig.requiresCharging

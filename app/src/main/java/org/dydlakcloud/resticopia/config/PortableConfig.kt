@@ -31,6 +31,7 @@ data class PortableConfig(
     val ntfyUrl: String? = null,
     val requiresCharging: Boolean = false,
     val allowsCellular: Boolean = false,
+    val requiresTag: Boolean = false,
     val rcloneConfig: String? = null, // Global rclone configuration
     val ignorePatterns: String? = null, // GitIgnore-style patterns for file exclusion
     val encrypted: Boolean = false,
@@ -56,7 +57,8 @@ data class PortableConfig(
             config: Config, 
             exportPassword: String, 
             requiresCharging: Boolean = false, 
-            allowsCellular: Boolean = false
+            allowsCellular: Boolean = false,
+            requiresTag: Boolean = false,
         ): PortableConfig {
             require(exportPassword.isNotEmpty()) { "Export password is required" }
             val portableRepos = config.repos.map { repo ->
@@ -117,6 +119,7 @@ data class PortableConfig(
                 ntfyUrl = config.ntfyUrl,
                 requiresCharging = requiresCharging,
                 allowsCellular = allowsCellular,
+                requiresTag = requiresTag,
                 rcloneConfig = config.rcloneConfig, // Include global rclone config
                 ignorePatterns = config.ignorePatterns, // Include ignore patterns
                 encrypted = false,

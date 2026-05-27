@@ -158,12 +158,14 @@ class SettingsImportExportFragment : Fragment() {
             
             val requiresCharging = BackupPreferences.requiresCharging(requireContext())
             val allowsCellular = BackupPreferences.allowsCellular(requireContext())
+            val requiresTag = BackupPreferences.requiresTag(requireContext())
             
             val portableConfig = PortableConfig.fromConfig(
                 config, 
                 password, 
                 requiresCharging, 
-                allowsCellular
+                allowsCellular,
+                requiresTag
             )
             val jsonString = portableConfig.toJsonString()
             
@@ -370,6 +372,7 @@ class SettingsImportExportFragment : Fragment() {
         
         BackupPreferences.setRequiresCharging(requireContext(), portableConfig.requiresCharging)
         BackupPreferences.setAllowsCellular(requireContext(), portableConfig.allowsCellular)
+        BackupPreferences.setAddTag(requireContext(), portableConfig.requiresTag)
         
         BackupService.reschedule(requireContext())
         
