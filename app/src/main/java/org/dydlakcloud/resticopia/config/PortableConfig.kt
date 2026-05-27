@@ -104,7 +104,8 @@ data class PortableConfig(
                     schedule = folder.schedule,
                     keepLast = folder.keepLast,
                     keepWithinHours = folder.keepWithin?.toHours(),
-                    history = folder.history
+                    history = folder.history,
+                    tags = folder.tags
                 )
             }
 
@@ -187,7 +188,8 @@ data class PortableConfig(
                 schedule = portableFolder.schedule,
                 keepLast = portableFolder.keepLast,
                 keepWithin = portableFolder.keepWithinHours?.let { Duration.ofHours(it) },
-                history = portableFolder.history
+                history = portableFolder.history,
+                tags = portableFolder.tags
             )
         }
 
@@ -335,6 +337,7 @@ data class PortableFolderConfig(
     val schedule: String,
     val keepLast: Int? = null,
     val keepWithinHours: Long? = null,
-    val history: List<BackupHistoryEntry> = emptyList()
+    val history: List<BackupHistoryEntry> = emptyList(),
+    val tags: List<String> = emptyList()
 )
 
