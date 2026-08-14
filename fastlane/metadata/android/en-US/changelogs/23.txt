@@ -1,0 +1,5 @@
+Version 0.8.8
+
+- Updated Rclone to version 1.75.0
+- Ability to add custom tags to backups
+- Replaced println calls with the Timber library
