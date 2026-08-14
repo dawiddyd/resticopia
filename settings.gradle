@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Restic UI 2"
+rootProject.name = 'Resticopia'
 include ':app'
