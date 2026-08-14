@@ -111,34 +111,40 @@ class ErrorHandlerTest {
 
     @Test
     fun `should sanitize rclone linker warnings from error messages`() {
-        // Test that linker warnings are removed from sanitized error messages
+        // Real Android linker warnings that appear on their own lines and inline
+        // with genuine error content must be stripped from everything the user sees.
         val rawError = """
             WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
-            rclone: WARNING: linker: Warning: failed to find generated linker configuration from"/linkerconfig/ld.config.txt"
+            rclone: WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
             rclone: 2025/12/14 09:34:37 CRITICAL: base64 decode failed when revealing password
             Fatal: create repository at rclone:remote: failed
         """.trimIndent()
 
-        // Create a mock ErrorHandler to test sanitization
-        val mockContext = object {
-            fun getString(resId: Int) = "Mock String"
-        }
-
-        val sanitizedError = rawError.lines()
-            .filterNot { line ->
-                line.contains("WARNING: linker: Warning: failed to find generated linker configuration") ||
-                line.contains("rclone: WARNING: linker: Warning: failed to find generated linker configuration") ||
-                line.trim().isEmpty()
-            }
-            .joinToString("\n")
-            .trim()
+        val sanitizedError = ErrorHandler.sanitizeRcloneErrorStatic(rawError)
 
         // Verify linker warnings are removed
         assertFalse(sanitizedError.contains("WARNING: linker:"))
         assertFalse(sanitizedError.contains("rclone: WARNING: linker:"))
+        assertFalse(sanitizedError.contains("ld.config.txt"))
         // But actual error content remains
         assertTrue(sanitizedError.contains("base64 decode failed"))
         assertTrue(sanitizedError.contains("Fatal: create repository"))
+    }
+
+    @Test
+    fun `should strip linker warnings embedded inline with real error content`() {
+        // Some outputs put the linker warning on the same line as a real error.
+        // The real error content on that line must survive while the warning is removed.
+        val rawError = """
+            WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt" rclone: WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"
+            rclone: 2025/12/10 22:36:36 CRITICAL: didn't find section in config file
+        """.trimIndent()
+
+        val sanitizedError = ErrorHandler.sanitizeRcloneErrorStatic(rawError)
+
+        assertFalse(sanitizedError.contains("WARNING: linker:"))
+        assertFalse(sanitizedError.contains("ld.config.txt"))
+        assertTrue(sanitizedError.contains("didn't find section in config file"))
     }
 
     @Test

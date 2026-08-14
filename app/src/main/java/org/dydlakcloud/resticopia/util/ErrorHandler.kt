@@ -141,6 +141,22 @@ class ErrorHandler(private val context: Context) {
                    message.contains("operation not permitted")
         }
 
+        // Static implementation of sanitizeRcloneError so it can be unit-tested in
+        // isolation without needing Android resources (which Robolectric does not
+        // load for every test class). The instance method delegates here.
+        internal fun sanitizeRcloneErrorStatic(errorMessage: String): String {
+            // Match the linker warning with any leading "rclone: " prefix and tolerate
+            // optional spacing before the quoted path. Non-greedy up to the end quote.
+            val linkerWarningRegex = Regex(
+                "(?:rclone:\\s*)?WARNING:\\s*linker:\\s*Warning:\\s*failed to find generated linker configuration from\\s*\"[^\"]*\""
+            )
+            return errorMessage.lines()
+                .map { line -> linkerWarningRegex.replace(line, "") }
+                .filterNot { line -> line.trim().isEmpty() }
+                .joinToString("\n")
+                .trim()
+        }
+
     }
 
     data class UserFriendlyError(
@@ -160,29 +176,32 @@ class ErrorHandler(private val context: Context) {
             else -> throwable.message ?: "Unknown error"
         }
 
-        // Sanitize the error message by removing generic linker warnings
+        // Sanitize the error message by removing generic linker warnings.
+        // This is applied to both the message used for categorization/display
+        // and the originalError shown in the "Technical Details" dialog, so the
+        // noisy Android linker warnings never reach the user.
         val sanitizedMessage = sanitizeRcloneError(originalMessage)
 
         // Use the companion object's categorization logic on sanitized message
         // This ensures linker warnings don't interfere with error detection
         val category = categorizeError(sanitizedMessage)
         return when (category) {
-            ErrorCategory.RCLONE_CONFIG -> createRcloneConfigError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.RCLONE_REMOTE_NOT_FOUND -> createRcloneRemoteNotFoundError(extractRemoteNameFromError(sanitizedMessage), sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.AUTHENTICATION -> createAuthenticationError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.INVALID_CREDENTIALS -> createInvalidPasswordError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.REPOSITORY_NOT_FOUND -> createRepositoryNotFoundError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.REPOSITORY_CORRUPTED -> createRepositoryCorruptedError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.NETWORK -> createNetworkError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.CONNECTION_TIMEOUT -> createTimeoutError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.STORAGE_FULL -> createStorageFullError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.PERMISSION -> createPermissionError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.RCLONE_PASSWORD_OBFUSCATION -> createPasswordObscuringError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.RCLONE_SSH_KEY_FILE -> createSSHKeyFileError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.RCLONE_UNAUTHORIZED -> createUnauthorizedError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.RCLONE_BAD_GATEWAY -> createBadGatewayError(sanitizedMessage).copy(originalError = originalMessage)
-            ErrorCategory.CONFIGURATION -> createRcloneConfigError(sanitizedMessage).copy(originalError = originalMessage) // Fallback
-            else -> createGenericError(sanitizedMessage).copy(originalError = originalMessage)
+            ErrorCategory.RCLONE_CONFIG -> createRcloneConfigError(sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.RCLONE_REMOTE_NOT_FOUND -> createRcloneRemoteNotFoundError(extractRemoteNameFromError(sanitizedMessage), sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.AUTHENTICATION -> createAuthenticationError(sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.INVALID_CREDENTIALS -> createInvalidPasswordError(sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.REPOSITORY_NOT_FOUND -> createRepositoryNotFoundError(sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.REPOSITORY_CORRUPTED -> createRepositoryCorruptedError(sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.NETWORK -> createNetworkError(sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.CONNECTION_TIMEOUT -> createTimeoutError(sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.STORAGE_FULL -> createStorageFullError(sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.PERMISSION -> createPermissionError(sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.RCLONE_PASSWORD_OBFUSCATION -> createPasswordObscuringError(sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.RCLONE_SSH_KEY_FILE -> createSSHKeyFileError(sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.RCLONE_UNAUTHORIZED -> createUnauthorizedError(sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.RCLONE_BAD_GATEWAY -> createBadGatewayError(sanitizedMessage).copy(originalError = sanitizedMessage)
+            ErrorCategory.CONFIGURATION -> createRcloneConfigError(sanitizedMessage).copy(originalError = sanitizedMessage) // Fallback
+            else -> createGenericError(sanitizedMessage).copy(originalError = sanitizedMessage)
         }
     }
 
@@ -191,16 +210,12 @@ class ErrorHandler(private val context: Context) {
         return categorizeError(errorMessage)
     }
 
-    // Sanitize rclone error messages by removing generic linker warnings
+    // Sanitize rclone error messages by removing generic Android linker warnings.
+    // The warnings can appear on their own line or inline with real error content,
+    // so we strip the warning substrings from each line (rather than dropping whole
+    // lines) and then remove any lines that are left empty.
     private fun sanitizeRcloneError(errorMessage: String): String {
-        return errorMessage.lines()
-            .filterNot { line ->
-                line.contains("WARNING: linker: Warning: failed to find generated linker configuration") ||
-                line.contains("rclone: WARNING: linker: Warning: failed to find generated linker configuration") ||
-                line.trim().isEmpty()
-            }
-            .joinToString("\n")
-            .trim()
+        return sanitizeRcloneErrorStatic(errorMessage)
     }
 
     private fun isPasswordObscuringError(message: String): Boolean {
