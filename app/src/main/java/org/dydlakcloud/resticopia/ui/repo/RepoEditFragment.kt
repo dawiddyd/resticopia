@@ -422,8 +422,20 @@ class RepoEditFragment : Fragment() {
                 )
             }
             RepoType.Rclone -> {
-                val selectedRemoteName = binding.editRepoRcloneParameters.spinnerRcloneRemote.text.toString()
-                val selectedRemote = rcloneRemotes.find { it.name == selectedRemoteName }
+                val spinnerText = binding.editRepoRcloneParameters.spinnerRcloneRemote.text.toString()
+                // The dropdown displays remotes via RcloneRemote.toString() as "name (type)".
+                // Extract the bare remote name so we can match it against RcloneRemote.name,
+                // which is what gets passed to restic/rclone. Fall back to the raw text in
+                // case the spinner only contains the bare name.
+                val selectedRemoteName = spinnerText.substringBeforeLast(" (").trim()
+                val selectedRemote = rcloneRemotes.find { remote ->
+                    remote.name == selectedRemoteName ||
+                        remote.name == spinnerText ||
+                        remote.toString() == spinnerText
+                }
+                if (selectedRemote == null) {
+                    Timber.e("Could not resolve rclone remote from spinner text: '$spinnerText' (parsed name: '$selectedRemoteName')")
+                }
                 val pathText = binding.editRepoRcloneParameters.editRclonePath.text.toString()
                 RepoConfig(
                     baseConfig,
@@ -511,13 +523,27 @@ class RepoEditFragment : Fragment() {
                 )
             }
             RepoType.Rclone -> {
-                val hasRemote = binding.editRepoRcloneParameters.spinnerRcloneRemote.text.isNotEmpty()
+                val spinnerText = binding.editRepoRcloneParameters.spinnerRcloneRemote.text.toString()
+                val hasRemote = spinnerText.isNotEmpty()
                 if (!hasRemote) {
+                    Toast.makeText(context, R.string.repo_edit_rclone_remote_error_mandatory, Toast.LENGTH_SHORT).show()
+                }
+                // The dropdown shows "name (type)"; extract the bare name and confirm it
+                // actually resolves to a configured remote. This prevents a silently-empty
+                // rcloneRemote from being saved and later producing "rclone::/path".
+                val parsedRemoteName = spinnerText.substringBeforeLast(" (").trim()
+                val remoteResolves = rcloneRemotes.any { remote ->
+                    remote.name == parsedRemoteName ||
+                        remote.name == spinnerText ||
+                        remote.toString() == spinnerText
+                }
+                val remoteValid = hasRemote && (remoteResolves || rcloneRemotes.isEmpty())
+                if (hasRemote && !remoteResolves && rcloneRemotes.isNotEmpty()) {
                     Toast.makeText(context, R.string.repo_edit_rclone_remote_error_mandatory, Toast.LENGTH_SHORT).show()
                 }
                 baseValidatorResults.plus(
                     listOf(
-                        hasRemote
+                        remoteValid
                         // rclone path is now optional - empty path means root directory
                     )
                 )

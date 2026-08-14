@@ -604,5 +604,75 @@ class RcloneConfigParserTest {
         // Then: Returns false (no valid remotes = invalid)
         assertThat(isValid).isFalse()
     }
+    // Regression tests for matching a spinner's formatted display text back to a remote.
+    // The repo-edit dropdown shows remotes via RcloneRemote.toString() as "name (type)".
+    // The save logic must extract the bare name from that display string to resolve the
+    // remote; otherwise rcloneRemote ends up empty and restic receives "rclone::/path".
+
+    @Test
+    fun `formatted display string resolves to remote by extracting name`() {
+        // Given: A remote parsed from config and the spinner display text
+        val remotes = RcloneConfigParser.parseConfigContent("""
+            [MyServer]
+            type = sftp
+            host = example.com
+        """.trimIndent())
+        val spinnerText = remotes[0].toString() // "MyServer (sftp)"
+
+        // When: Resolving the remote the way RepoEditFragment.parseRepo does
+        val parsedRemoteName = spinnerText.substringBeforeLast(" (").trim()
+        val selectedRemote = remotes.find { remote ->
+            remote.name == parsedRemoteName ||
+                remote.name == spinnerText ||
+                remote.toString() == spinnerText
+        }
+
+        // Then: The remote resolves and its bare name is used (not empty)
+        assertThat(selectedRemote).isNotNull()
+        assertThat(selectedRemote!!.name).isEqualTo("MyServer")
+    }
+
+    @Test
+    fun `bare remote name in spinner still resolves`() {
+        // Given: A remote and a spinner that only contains the bare name
+        val remotes = RcloneConfigParser.parseConfigContent("""
+            [MyServer]
+            type = sftp
+        """.trimIndent())
+        val spinnerText = "MyServer"
+
+        // When: Resolving the remote
+        val parsedRemoteName = spinnerText.substringBeforeLast(" (").trim()
+        val selectedRemote = remotes.find { remote ->
+            remote.name == parsedRemoteName ||
+                remote.name == spinnerText ||
+                remote.toString() == spinnerText
+        }
+
+        // Then: The remote still resolves
+        assertThat(selectedRemote).isNotNull()
+        assertThat(selectedRemote!!.name).isEqualTo("MyServer")
+    }
+
+    @Test
+    fun `unresolvable spinner text does not resolve to a remote`() {
+        // Given: A remote and a spinner text that doesn't match anything
+        val remotes = RcloneConfigParser.parseConfigContent("""
+            [MyServer]
+            type = sftp
+        """.trimIndent())
+        val spinnerText = "SomeOtherRemote (s3)"
+
+        // When: Resolving the remote
+        val parsedRemoteName = spinnerText.substringBeforeLast(" (").trim()
+        val selectedRemote = remotes.find { remote ->
+            remote.name == parsedRemoteName ||
+                remote.name == spinnerText ||
+                remote.toString() == spinnerText
+        }
+
+        // Then: No remote resolves (selectedRemote == null -> rcloneRemote would be "")
+        assertThat(selectedRemote).isNull()
+    }
 }
 
