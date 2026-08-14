@@ -23,6 +23,7 @@ import org.dydlakcloud.resticopia.databinding.FragmentSettingsBackupRulesBinding
 import org.dydlakcloud.resticopia.ui.Formatters
 import org.dydlakcloud.resticopia.ui.folder.FolderEditFragment
 import org.dydlakcloud.resticopia.util.GitIgnorePatternMatcher
+import timber.log.Timber
 import java.time.ZonedDateTime
 
 /**
@@ -51,7 +52,7 @@ class SettingsBackupRulesFragment : Fragment() {
                     config.copy(ignorePatterns = newPatterns.ifEmpty { null })
                 }.handle { _, throwable ->
                     if (throwable != null) {
-                        throwable.printStackTrace()
+                        Timber.e(throwable, "Failed to config")
                     }
                     activity?.runOnUiThread {
                         updateIgnorePatternsStatus()

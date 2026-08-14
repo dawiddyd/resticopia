@@ -22,6 +22,7 @@ import org.dydlakcloud.resticopia.config.Config
 import org.dydlakcloud.resticopia.util.ErrorHandler
 import org.dydlakcloud.resticopia.config.PortableConfig
 import org.dydlakcloud.resticopia.databinding.FragmentSettingsImportExportBinding
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -108,7 +109,7 @@ class SettingsImportExportFragment : Fragment() {
                 .setNegativeButton(R.string.button_cancel, null)
                 .show()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to export settings")
             val errorHandler = ErrorHandler(requireContext())
             val userFriendlyError = errorHandler.getUserFriendlyError(e)
             showErrorDialog(userFriendlyError)
@@ -144,7 +145,7 @@ class SettingsImportExportFragment : Fragment() {
             
             exportSettingsLauncher.launch(intent)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to export settings with password")
             showToast(getString(R.string.toast_export_failed, e.message))
         }
     }
@@ -176,7 +177,7 @@ class SettingsImportExportFragment : Fragment() {
             
             showToast(getString(R.string.toast_export_success))
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to export settings to Uri")
             showToast(getString(R.string.toast_export_failed, e.message))
         }
     }
@@ -201,7 +202,7 @@ class SettingsImportExportFragment : Fragment() {
             
             importSettingsLauncher.launch(intent)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to import settings")
             val errorHandler = ErrorHandler(requireContext())
             val userFriendlyError = errorHandler.getUserFriendlyError(e)
             showErrorDialog(userFriendlyError)
@@ -231,7 +232,7 @@ class SettingsImportExportFragment : Fragment() {
             showPasswordDialog(portableConfig)
 
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to import settings from Uri")
             val errorHandler = ErrorHandler(requireContext())
             val userFriendlyError = errorHandler.getUserFriendlyError(e)
             showErrorDialog(userFriendlyError)
@@ -271,7 +272,7 @@ class SettingsImportExportFragment : Fragment() {
                 performImport(config, portableConfig)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to decrypt and import settings")
             val errorHandler = ErrorHandler(requireContext())
             val userFriendlyError = errorHandler.getUserFriendlyError(e)
             showErrorDialog(userFriendlyError)
@@ -365,7 +366,7 @@ class SettingsImportExportFragment : Fragment() {
             val backupFile = requireContext().filesDir.resolve("config.backup.json")
             backupFile.writeText(backupJson, Charsets.UTF_8)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to perform import settings")
         }
         
         BackupPreferences.setRequiresCharging(requireContext(), portableConfig.requiresCharging)
@@ -377,7 +378,7 @@ class SettingsImportExportFragment : Fragment() {
             config
         }.handle { _, throwable ->
             if (throwable != null) {
-                throwable.printStackTrace()
+                Timber.e(throwable, "Failed to configure settings")
                 activity?.runOnUiThread {
                     val errorHandler = ErrorHandler(requireContext())
                     val userFriendlyError = errorHandler.getUserFriendlyError(throwable)

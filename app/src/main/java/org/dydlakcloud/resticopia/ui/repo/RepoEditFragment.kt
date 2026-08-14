@@ -23,7 +23,7 @@ import org.dydlakcloud.resticopia.databinding.FragmentRepoEditBinding
 import org.dydlakcloud.resticopia.util.ErrorHandler
 import org.dydlakcloud.resticopia.util.DirectoryChooser
 import org.dydlakcloud.resticopia.util.RcloneConfigParser
-import java.io.File
+import timber.log.Timber
 import java.net.URI
 import java.util.concurrent.CompletionException
 
@@ -177,8 +177,8 @@ class RepoEditFragment : Fragment() {
         }
 
         // Debug logging
-        println("DEBUG: Global rclone config length: ${globalConfig.length}")
-        println("DEBUG: Global rclone config preview: ${globalConfig.take(200)}")
+        Timber.d("Global rclone config length: ${globalConfig.length}")
+        Timber.d("Global rclone config preview: ${globalConfig.take(200)}")
 
         
         // Parse the global config
@@ -218,13 +218,13 @@ class RepoEditFragment : Fragment() {
             val index = rcloneRemotes.indexOfFirst { it.name == remoteToSelect }
             if (index >= 0) {
                 binding.editRepoRcloneParameters.spinnerRcloneRemote.setText(rcloneRemotes[index].name, false)
-                println("DEBUG: Found existing remote '$remoteToSelect' at index $index")
+                Timber.d("Found existing remote '$remoteToSelect' at index $index")
             } else {
                 // Remote not found in current config - show error
                 binding.editRepoRcloneParameters.textRcloneConfigStatus.text =
                     getString(R.string.repo_edit_rclone_remote_not_found, remoteToSelect)
                 binding.editRepoRcloneParameters.spinnerRcloneRemote.isEnabled = false
-                println("DEBUG: Remote '$remoteToSelect' not found in current config")
+                Timber.d("Remote '$remoteToSelect' not found in current config")
             }
         }
     }
@@ -268,8 +268,7 @@ class RepoEditFragment : Fragment() {
                                     if (throwable is CompletionException && throwable.cause != null) throwable.cause!!
                                     else throwable
 
-                                System.err.println("Error saving repository!")
-                                actualThrowable.printStackTrace()
+                                Timber.e(actualThrowable, "Error saving repository!")
 
                                 item.isEnabled = true
                                 binding.progressRepoSave.visibility = INVISIBLE
@@ -298,7 +297,7 @@ class RepoEditFragment : Fragment() {
                                                             if (throwable is CompletionException && throwable.cause != null) throwable.cause!!
                                                             else throwable
 
-                                                        throwable.printStackTrace()
+                                                        Timber.e(throwable, "Failed to init repository!")
 
                                                         item.isEnabled = true
                                                         binding.progressRepoSave.visibility = INVISIBLE

@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import org.dydlakcloud.resticopia.BackupManager
 import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.databinding.FragmentSettingsRcloneBinding
+import timber.log.Timber
 
 /**
  * Rclone Configuration Settings Fragment
@@ -32,12 +33,12 @@ class SettingsRcloneFragment : Fragment() {
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.getStringExtra("config")?.let { newConfig ->
-                println("DEBUG: Saving rclone config, length: ${newConfig.length}")
+                Timber.d("Saving rclone config, length: ${newConfig.length}")
                 backupManager.configure { config ->
                     config.copy(rcloneConfig = newConfig)
                 }.handle { _, throwable ->
                     if (throwable != null) {
-                        throwable.printStackTrace()
+                        Timber.e(throwable, "Failed to configure rclone")
                     } else {
                         // Update the Restic instance with the new rclone config
                         backupManager.updateRcloneConfig(requireContext())

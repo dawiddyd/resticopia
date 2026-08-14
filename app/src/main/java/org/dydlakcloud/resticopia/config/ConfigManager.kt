@@ -3,6 +3,7 @@ package org.dydlakcloud.resticopia.config
 import android.content.Context
 import androidx.security.crypto.EncryptedFile
 import androidx.security.crypto.MasterKey
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -69,7 +70,7 @@ class ConfigManager(
             try {
                 return readConfigFile(configFile)
             } catch (e: Exception) {
-                e.printStackTrace()
+                Timber.e(e, "Failed to read config file")
                 backupConfigFile(configFile)
             }
         }
@@ -80,7 +81,7 @@ class ConfigManager(
                 configFileTmp.renameTo(configFile)
                 return readConfigFile(configFile)
             } catch (e: Exception) {
-                e.printStackTrace()
+                Timber.e(e, "Failed to read config file")
                 backupConfigFile(configFile)
             }
         }
@@ -90,7 +91,7 @@ class ConfigManager(
             try {
                 return readEncryptedConfig(context, encryptedConfigFile)
             } catch (e: Exception) {
-                e.printStackTrace()
+                Timber.e(e, "Failed to read encrypted config file")
                 backupConfigFile(encryptedConfigFile)
             }
         }

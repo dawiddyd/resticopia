@@ -2,6 +2,7 @@ package org.dydlakcloud.resticopia.notification
 
 import org.dydlakcloud.resticopia.restic.ResticBackupProgress
 import org.dydlakcloud.resticopia.restic.ResticBackupSummary
+import timber.log.Timber
 import java.io.BufferedOutputStream
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -43,7 +44,7 @@ object WebhookNotifier {
                 .replace("{error}", errorString ?: "")
                 .replace("{duration}", durationString ?: "")
 
-            println("WebhookNotifier: Sending to URL: $processedUrl")
+            Timber.d("Sending to URL: $processedUrl")
 
             try {
                 val connection = getConnection(processedUrl)
@@ -88,7 +89,7 @@ object WebhookNotifier {
                         append("}")
                     }
 
-                    println("WebhookNotifier: JSON Body: $jsonBody")
+                    Timber.d("JSON Body: %s", jsonBody)
                     BufferedOutputStream(connection.outputStream).use { outputStream ->
                         OutputStreamWriter(outputStream, StandardCharsets.UTF_8).use { writer ->
                             writer.write(jsonBody)
@@ -98,16 +99,15 @@ object WebhookNotifier {
 
                     val responseCode = connection.responseCode
                     if (responseCode !in 200..299) {
-                        println("WebhookNotifier: Webhook returned HTTP $responseCode")
+                        Timber.d("Webhook returned HTTP $responseCode")
                     } else {
-                        println("WebhookNotifier: Webhook sent successfully")
+                        Timber.d("Webhook sent successfully")
                     }
                 } finally {
                     connection.disconnect()
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
-                println("WebhookNotifier: Error sending webhook: ${e.message}")
+                Timber.e(e, "Error sending webhook: ${e.message}")
             }
         }
     }

@@ -11,6 +11,7 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.security.SecureRandom
@@ -40,7 +41,7 @@ data class Secret(val secret: String) {
                 val encodedKeyIv: ByteArray = readEncryptedFile(context, masterKey, keyFile)
                 key = AesKeyIv.fromByteArray(encodedKeyIv)
             } catch (e: Exception) {
-                e.printStackTrace()
+                Timber.e(e, "Failed to read encrypted file")
             }
 
             if (key == null) {
@@ -151,7 +152,7 @@ object SecretSerializer : KSerializer<Secret> {
             val bytes = Base64.decode(decoder.decodeString(), Base64.DEFAULT)
             Secret(String(Secret.key().decrypt(bytes), Charsets.UTF_8))
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to deserialize")
             Secret("")
         }
     }

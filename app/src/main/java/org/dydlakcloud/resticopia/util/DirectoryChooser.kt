@@ -6,6 +6,7 @@ import android.provider.DocumentsContract
 import androidx.activity.result.ActivityResultCaller
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import timber.log.Timber
 
 abstract class DirectoryChooser {
     abstract fun register(
@@ -31,7 +32,7 @@ abstract class DirectoryChooser {
                     activityResultCaller.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                         val uri = result.data?.data
                         if (uri != null) {
-                            println("Selected directory: $uri")
+                            Timber.d("Selected directory: $uri")
 
                             val path =
                                 FileUtil.getFullPathFromTreeUri(
