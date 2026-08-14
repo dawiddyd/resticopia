@@ -82,6 +82,50 @@ class MainActivity : AppCompatActivity() {
         }
 
         BackupService.schedule(applicationContext)
+
+        // On first app start, ask the user to grant the notification
+        // permission so backup progress/success/failure notifications work.
+        maybeRequestNotificationPermissionOnFirstStart()
+    }
+
+    private companion object {
+        private const val NOTIF_PERMISSION_ASKED_KEY = "notif_permission_asked"
+    }
+
+    private fun maybeRequestNotificationPermissionOnFirstStart() {
+        // Notification permission is only a runtime concept on API 33+.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+
+        val prefs = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        if (prefs.getBoolean(NOTIF_PERMISSION_ASKED_KEY, false)) return
+
+        // Mark as asked regardless of the outcome so we never re-prompt.
+        prefs.edit().putBoolean(NOTIF_PERMISSION_ASKED_KEY, true).apply()
+
+        // If the permission is already granted (e.g. restored from a backup),
+        // there is nothing to do.
+        if (PermissionManager.instance.hasNotificationPermission(this)) return
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.dialog_notification_permission_title)
+            .setMessage(R.string.dialog_notification_permission_message)
+            .setCancelable(false)
+            .setPositiveButton(R.string.button_allow) { dialog, _ ->
+                dialog.dismiss()
+                PermissionManager.instance.requestNotificationPermission(this)
+                    .thenApply { granted ->
+                        if (!granted) {
+                            Toast.makeText(
+                                this,
+                                getString(R.string.dialog_notification_permission_message),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        null
+                    }
+            }
+            .setNegativeButton(R.string.button_later, null)
+            .show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import timber.log.Timber
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -32,6 +33,52 @@ abstract class PermissionManager {
         requestStoragePermissionInternal(activity, write).thenApply {
             hasStoragePermission(activity, write)
         }
+
+    /**
+     * Checks whether the app is allowed to post notifications.
+     *
+     * On Android 13 (API 33) and above this reflects the runtime
+     * POST_NOTIFICATIONS permission. On older versions notifications are
+     * granted by default on install, so this returns true.
+     */
+    fun hasNotificationPermission(context: Context): Boolean =
+        androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled()
+
+    /**
+     * Launches the system request for the POST_NOTIFICATIONS runtime
+     * permission (only effective on API 33+). The returned future completes
+     * with `true` when the permission has been granted.
+     */
+    fun requestNotificationPermission(
+        activity: ComponentActivity
+    ): CompletableFuture<Boolean> {
+        val future = CompletableFuture<Boolean>()
+
+        // On API < 33 notifications are enabled by default, nothing to request.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            future.complete(true)
+            return future
+        }
+
+        if (hasNotificationPermission(activity)) {
+            future.complete(true)
+            return future
+        }
+
+        val resultLauncher =
+            activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                future.complete(granted)
+            }
+
+        try {
+            resultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to launch POST_NOTIFICATIONS permission request")
+            future.complete(false)
+        }
+
+        return future
+    }
 
     open fun onRequestPermissionsResult(requestCode: Int) {}
 

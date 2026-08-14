@@ -37,6 +37,10 @@
     <string name="button_ok">OK</string>
     <string name="button_cancel">Cancel</string>
     <string name="button_refresh">Refresh</string>
+    <string name="button_allow">Allow</string>
+    <string name="button_later">Later</string>
+    <string name="dialog_notification_permission_title">Allow Notifications</string>
+    <string name="dialog_notification_permission_message">Resticopia uses notifications to keep you informed about backup progress, completion and failures. Allow notifications so you don\'t miss important backup status updates?</string>
     <string name="alert_delete_repo_title">Delete Repository Configuration</string>
     <string name="alert_delete_repo_message">Do you want to delete this Repository configuration?</string>
     <string name="alert_init_repo_title">Initialize Repository</string>
