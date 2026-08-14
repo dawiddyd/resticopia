@@ -1,6 +1,6 @@
 package org.dydlakcloud.resticopia.restic
 
-import android.content.Context
+import timber.log.Timber
 import java.io.File
 
 class ResticRepoRclone(
@@ -15,8 +15,8 @@ class ResticRepoRclone(
 ) {
     override fun repository(): String {
         val repo = "rclone:$rcloneRemote:$rclonePath"
-        println("DEBUG: Repository string: $repo")
-        println("DEBUG: rcloneRemote: '$rcloneRemote', rclonePath: '$rclonePath'")
+        Timber.d("Repository string: $repo")
+        Timber.d("rcloneRemote: '$rcloneRemote', rclonePath: '$rclonePath'")
         return repo
     }
 
@@ -28,16 +28,16 @@ class ResticRepoRclone(
         try {
             configFile.writeText(rcloneConfig)
             // Debug logging
-            println("DEBUG: Writing rclone config to ${configFile.absolutePath}")
-            println("DEBUG: Config content length: ${rcloneConfig.length}")
-            println("DEBUG: Config content preview: ${rcloneConfig.take(200)}")
-            println("DEBUG: Config file exists: ${configFile.exists()}")
-            println("DEBUG: Config file readable: ${configFile.canRead()}")
+            Timber.d("Writing rclone config to ${configFile.absolutePath}")
+            Timber.d("Config content length: ${rcloneConfig.length}")
+            Timber.d("Config content preview: ${rcloneConfig.take(200)}")
+            Timber.d("Config file exists: ${configFile.exists()}")
+            Timber.d("Config file readable: ${configFile.canRead()}")
             if (configFile.exists()) {
-                println("DEBUG: Config file size: ${configFile.length()}")
+                Timber.d("Config file size: ${configFile.length()}")
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Error writing rclone config to file: ${e.message}")
         }
 
         // Point rclone to the temp config file

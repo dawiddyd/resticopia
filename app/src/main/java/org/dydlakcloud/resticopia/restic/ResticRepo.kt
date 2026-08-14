@@ -1,6 +1,7 @@
 package org.dydlakcloud.resticopia.restic
 
 import kotlinx.serialization.json.Json
+import timber.log.Timber
 import java.io.File
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -156,7 +157,7 @@ abstract class ResticRepo(
                     deleteOnExit()
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Timber.e(e, "Failed to create temp file")
                 null
             }
         } else {

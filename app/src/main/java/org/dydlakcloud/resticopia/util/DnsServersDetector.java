@@ -10,7 +10,6 @@ import android.net.Network;
 import android.net.NetworkInfo;
 import android.net.RouteInfo;
 import android.os.Build;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -22,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import timber.log.Timber;
 
 /**
  * https://stackoverflow.com/a/48973823/4380671
@@ -47,8 +48,6 @@ import java.util.Set;
  */
 
 public class DnsServersDetector {
-
-    private static final String TAG = "DnsServersDetector";
 
     /**
      * Holds some default DNS servers used in case all DNS servers detection methods fail.
@@ -197,7 +196,7 @@ public class DnsServersDetector {
 
             } catch (Exception ex) {
 
-                Log.d(TAG, "Exception detecting DNS servers using ConnectivityManager method", ex);
+                Timber.e(ex, "Exception detecting DNS servers using ConnectivityManager method");
 
             }
 
@@ -256,7 +255,7 @@ public class DnsServersDetector {
 
             } catch (Exception ex) {
 
-                Log.d(TAG, "Exception detecting DNS servers using SystemProperties method", ex);
+                Timber.d(ex, "Exception detecting DNS servers using SystemProperties method");
 
             }
 
@@ -295,7 +294,7 @@ public class DnsServersDetector {
 
             } catch (Exception ex) {
 
-                Log.d(TAG, "Exception in getServersMethodExec", ex);
+                Timber.e(ex, "Exception in getServersMethodExec");
 
             }
 
@@ -331,7 +330,7 @@ public class DnsServersDetector {
 
                 // This can happen if a newline sneaks in as the first character of the property value. For example
                 // "[propName]: [\n…]".
-                Log.d(TAG, "Malformed property detected: \"" + line + '"');
+                Timber.d("Malformed property detected: \"%s\"", line);
                 continue;
 
             }

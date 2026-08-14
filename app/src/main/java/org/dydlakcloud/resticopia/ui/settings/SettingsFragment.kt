@@ -38,6 +38,7 @@ import android.os.Build
 import org.dydlakcloud.resticopia.config.FolderConfig
 import org.dydlakcloud.resticopia.ui.folder.FolderEditFragment
 import org.dydlakcloud.resticopia.ui.overrideActivityTransition
+import timber.log.Timber
 import java.time.ZonedDateTime
 
 class SettingsFragment : Fragment() {
@@ -79,7 +80,7 @@ class SettingsFragment : Fragment() {
         if (result.resultCode == Activity.RESULT_OK) {
             val newConfig = result.data?.getStringExtra("config")
             newConfig?.let { configContent ->
-                println("DEBUG: Saving rclone config from SettingsFragment, length: ${configContent.length}")
+                Timber.d("Saving rclone config from SettingsFragment, length: ${configContent.length}")
                 // Validate and save - wait for completion before updating UI
                 backupManager.configure { config ->
                     config.copy(rcloneConfig = configContent)
@@ -116,9 +117,9 @@ class SettingsFragment : Fragment() {
                 resticRepo.unlock()
                     .handle { message, throwable ->
                         if (throwable != null) {
-                            throwable.printStackTrace()
+                            Timber.d(throwable, "Failed unlock result for repo ${repo.base.name}: message=$message")
                         } else {
-                            println(message)
+                            Timber.d("Unlock result for repo ${repo.base.name}: message=$message")
                         }
                     }
             }
@@ -128,9 +129,9 @@ class SettingsFragment : Fragment() {
             backupManager.restic.cleanCache()
                 .handle { message, throwable ->
                     if (throwable != null) {
-                        throwable.printStackTrace()
+                        Timber.d(throwable, "Failed cleanup result: message=$message")
                     } else {
-                        println(message)
+                        Timber.d("Cleanup result: message=$message")
                     }
                 }
         }
@@ -520,7 +521,7 @@ class SettingsFragment : Fragment() {
                 .setNegativeButton(R.string.button_cancel, null)
                 .show()
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to export settings")
             val errorHandler = ErrorHandler(requireContext())
             val userFriendlyError = errorHandler.getUserFriendlyError(e)
             showErrorDialog(userFriendlyError)
@@ -557,7 +558,7 @@ class SettingsFragment : Fragment() {
             
             exportSettingsLauncher.launch(intent)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to export settings with password")
             showToast(getString(R.string.toast_export_failed, e.message))
         }
     }
@@ -572,12 +573,14 @@ class SettingsFragment : Fragment() {
             // Read backup constraints from SharedPreferences
             val requiresCharging = BackupPreferences.requiresCharging(requireContext())
             val allowsCellular = BackupPreferences.allowsCellular(requireContext())
-            
+            val requiresTag = BackupPreferences.requiresTag(requireContext())
+
             val portableConfig = PortableConfig.fromConfig(
                 config, 
                 password, 
                 requiresCharging, 
-                allowsCellular
+                allowsCellular,
+                requiresTag
             )
             val jsonString = portableConfig.toJsonString()
             
@@ -591,7 +594,7 @@ class SettingsFragment : Fragment() {
             
             showToast(getString(R.string.toast_export_success))
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to export settings")
             showToast(getString(R.string.toast_export_failed, e.message))
         }
     }
@@ -616,7 +619,7 @@ class SettingsFragment : Fragment() {
             
             importSettingsLauncher.launch(intent)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to import settings")
             showToast(getString(R.string.toast_import_failed, e.message))
         }
     }
@@ -648,7 +651,7 @@ class SettingsFragment : Fragment() {
             showPasswordDialog(portableConfig)
             
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to import settings from Uri")
             showToast(getString(R.string.toast_import_failed, e.message))
         }
     }
@@ -687,7 +690,7 @@ class SettingsFragment : Fragment() {
                 performImport(config, portableConfig)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to import settings")
             showToast(getString(R.string.toast_import_failed, "Invalid password or corrupted file"))
         }
     }
@@ -785,14 +788,15 @@ class SettingsFragment : Fragment() {
             val backupFile = requireContext().filesDir.resolve("config.backup.json")
             backupFile.writeText(backupJson, Charsets.UTF_8)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Timber.e(e, "Failed to perform import")
             // Continue even if backup fails
         }
         
         // Apply backup constraints to SharedPreferences
         BackupPreferences.setRequiresCharging(requireContext(), portableConfig.requiresCharging)
         BackupPreferences.setAllowsCellular(requireContext(), portableConfig.allowsCellular)
-        
+        BackupPreferences.setAddTag(requireContext(), portableConfig.requiresTag)
+
         // Update checkbox UI immediately
         activity?.runOnUiThread {
             binding.checkboxRequireCharging.isChecked = portableConfig.requiresCharging
@@ -807,7 +811,7 @@ class SettingsFragment : Fragment() {
             config
         }.handle { _, throwable ->
             if (throwable != null) {
-                throwable.printStackTrace()
+                Timber.e(throwable, "Failed to import settings")
                 activity?.runOnUiThread {
                     showToast(getString(R.string.toast_import_failed, throwable.message))
                 }

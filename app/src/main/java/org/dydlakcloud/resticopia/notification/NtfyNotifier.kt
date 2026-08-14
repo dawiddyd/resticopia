@@ -1,5 +1,6 @@
 package org.dydlakcloud.resticopia.notification
 
+import timber.log.Timber
 import java.io.BufferedOutputStream
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -49,15 +50,14 @@ object NtfyNotifier {
                     // Check response code
                     val responseCode = connection.responseCode
                     if (responseCode !in 200..299) {
-                        println("NtfyNotifier: Failed to send notification. HTTP $responseCode")
+                        Timber.d("Failed to send notification. HTTP $responseCode")
                     }
                 } finally {
                     connection.disconnect()
                 }
             } catch (e: Exception) {
                 // Log error but don't fail the backup
-                e.printStackTrace()
-                println("NtfyNotifier: Error sending notification: ${e.message}")
+                Timber.e(e,"Error sending notification: ${e.message}")
             }
         }
     }
