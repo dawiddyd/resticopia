@@ -31,6 +31,7 @@ data class PortableConfig(
     val ntfyUrl: String? = null,
     val requiresCharging: Boolean = false,
     val allowsCellular: Boolean = false,
+    val requiresTag: Boolean = false,
     val rcloneConfig: String? = null, // Global rclone configuration
     val ignorePatterns: String? = null, // GitIgnore-style patterns for file exclusion
     val encrypted: Boolean = false,
@@ -56,7 +57,8 @@ data class PortableConfig(
             config: Config, 
             exportPassword: String, 
             requiresCharging: Boolean = false, 
-            allowsCellular: Boolean = false
+            allowsCellular: Boolean = false,
+            requiresTag: Boolean = false,
         ): PortableConfig {
             require(exportPassword.isNotEmpty()) { "Export password is required" }
             val portableRepos = config.repos.map { repo ->
@@ -104,7 +106,8 @@ data class PortableConfig(
                     schedule = folder.schedule,
                     keepLast = folder.keepLast,
                     keepWithinHours = folder.keepWithin?.toHours(),
-                    history = folder.history
+                    history = folder.history,
+                    tags = folder.tags
                 )
             }
 
@@ -116,6 +119,7 @@ data class PortableConfig(
                 ntfyUrl = config.ntfyUrl,
                 requiresCharging = requiresCharging,
                 allowsCellular = allowsCellular,
+                requiresTag = requiresTag,
                 rcloneConfig = config.rcloneConfig, // Include global rclone config
                 ignorePatterns = config.ignorePatterns, // Include ignore patterns
                 encrypted = false,
@@ -187,7 +191,8 @@ data class PortableConfig(
                 schedule = portableFolder.schedule,
                 keepLast = portableFolder.keepLast,
                 keepWithin = portableFolder.keepWithinHours?.let { Duration.ofHours(it) },
-                history = portableFolder.history
+                history = portableFolder.history,
+                tags = portableFolder.tags
             )
         }
 
@@ -335,6 +340,7 @@ data class PortableFolderConfig(
     val schedule: String,
     val keepLast: Int? = null,
     val keepWithinHours: Long? = null,
-    val history: List<BackupHistoryEntry> = emptyList()
+    val history: List<BackupHistoryEntry> = emptyList(),
+    val tags: List<String> = emptyList()
 )
 
