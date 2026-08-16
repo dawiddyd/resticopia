@@ -20,6 +20,7 @@ import org.dydlakcloud.resticopia.BackupManager
 import org.dydlakcloud.resticopia.R
 import org.dydlakcloud.resticopia.config.*
 import org.dydlakcloud.resticopia.databinding.FragmentRepoEditBinding
+import org.dydlakcloud.resticopia.util.ArgsParser
 import org.dydlakcloud.resticopia.util.ErrorHandler
 import org.dydlakcloud.resticopia.util.DirectoryChooser
 import org.dydlakcloud.resticopia.util.RcloneConfigParser
@@ -132,6 +133,10 @@ class RepoEditFragment : Fragment() {
             binding.checkboxWebhookOnSuccess.isChecked = repo.base.webhookOnSuccess
             binding.checkboxWebhookOnFailure.isChecked = repo.base.webhookOnFailure
             binding.editWebhookHeaders.setText(repo.base.webhookBearerToken)
+
+            // Load advanced configuration
+            binding.editBackupArgs.setText(repo.base.extraBackupArgs)
+            binding.editPruneArgs.setText(repo.base.extraPruneArgs)
         }
 
         // Setup directory chooser for local repository
@@ -153,6 +158,18 @@ class RepoEditFragment : Fragment() {
             } else {
                 binding.webhookSectionContent.visibility = android.view.View.VISIBLE
                 binding.webhookExpandIcon.setImageResource(R.drawable.ic_expand_less)
+            }
+        }
+
+        // Setup advanced section expand/collapse
+        binding.advancedSectionHeader.setOnClickListener {
+            val isExpanded = binding.advancedSectionContent.visibility == android.view.View.VISIBLE
+            if (isExpanded) {
+                binding.advancedSectionContent.visibility = android.view.View.GONE
+                binding.advancedExpandIcon.setImageResource(R.drawable.ic_expand_more)
+            } else {
+                binding.advancedSectionContent.visibility = android.view.View.VISIBLE
+                binding.advancedExpandIcon.setImageResource(R.drawable.ic_expand_less)
             }
         }
         
@@ -360,6 +377,7 @@ class RepoEditFragment : Fragment() {
 
     private fun parseRepo(): Pair<Boolean, RepoConfig?> {
         val repoTypeText = binding.spinnerRepoType.text.toString()
+        if (repoTypeText.isEmpty()) return false to null
         val repoType = RepoType.valueOf(repoTypeText)
         val valid = validateRepo(repoType)
 
@@ -372,6 +390,9 @@ class RepoEditFragment : Fragment() {
         val webhookOnFailure = binding.checkboxWebhookOnFailure.isChecked
         val webhookBearerToken = binding.editWebhookHeaders.text.toString().ifBlank { null }
 
+        val extraBackupArgs = binding.editBackupArgs.text.toString()
+        val extraPruneArgs = binding.editPruneArgs.text.toString()
+
         val baseConfig = RepoBaseConfig(
             id = repoId,
             name = binding.editRepoName.text.toString(),
@@ -380,7 +401,9 @@ class RepoEditFragment : Fragment() {
             webhookUrl = webhookUrl,
             webhookOnSuccess = webhookOnSuccess,
             webhookOnFailure = webhookOnFailure,
-            webhookBearerToken = webhookBearerToken
+            webhookBearerToken = webhookBearerToken,
+            extraBackupArgs = extraBackupArgs,
+            extraPruneArgs = extraPruneArgs
         )
 
         return true to when (repoType) {
@@ -563,7 +586,20 @@ class RepoEditFragment : Fragment() {
             true
         }
 
-        return validatorResults.all { result -> result } && webhookValidation
+        fun advancedError(error: ArgsParser.Error?): String? = when (error) {
+            ArgsParser.Error.BACKSLASH -> getString(R.string.advanced_invalid_backslash)
+            ArgsParser.Error.SINGLE_QUOTE -> getString(R.string.advanced_invalid_single_quote)
+            ArgsParser.Error.DOUBLE_QUOTE -> getString(R.string.advanced_invalid_double_quote)
+            null -> null
+        }
+
+        val backupArgsError = ArgsParser.validate(binding.editBackupArgs.text.toString())
+        binding.editBackupArgs.error = advancedError(backupArgsError)
+        val pruneArgsError = ArgsParser.validate(binding.editPruneArgs.text.toString())
+        binding.editPruneArgs.error = advancedError(pruneArgsError)
+        val advancedValidation = backupArgsError == null && pruneArgsError == null
+
+        return validatorResults.all { result -> result } && webhookValidation && advancedValidation
     }
 
     override fun onResume() {

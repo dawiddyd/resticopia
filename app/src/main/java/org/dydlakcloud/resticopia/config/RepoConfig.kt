@@ -57,7 +57,9 @@ data class RepoBaseConfig(
     val webhookUrl: String? = null,
     val webhookOnSuccess: Boolean = false,
     val webhookOnFailure: Boolean = false,
-    val webhookBearerToken: String? = null
+    val webhookBearerToken: String? = null,
+    val extraBackupArgs: String = "",
+    val extraPruneArgs: String = ""
 ) {
     companion object {
         fun create(

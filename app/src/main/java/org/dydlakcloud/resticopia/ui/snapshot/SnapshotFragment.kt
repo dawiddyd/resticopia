@@ -179,7 +179,7 @@ class SnapshotFragment : Fragment() {
                             item.isEnabled = false
                             binding.progressSnapshotDelete.visibility = VISIBLE
 
-                            resticRepo.forget(listOf(snapshotId), prune = true)
+                            resticRepo.forget(listOf(snapshotId), prune = true, repo.base.extraPruneArgs)
                                 .handle { _, throwable ->
                                     if (throwable == null) {
                                         backupManager.configure { config ->

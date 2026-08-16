@@ -128,6 +128,12 @@
     <string name="webhook_on_failure">Call webhook on failed backup</string>
     <string name="webhook_headers_hint">Bearer token (optional)</string>
     <string name="webhook_url_error_protocol">URL must start with http:// or https://</string>
+    <string name="advanced_section_title">Advanced Restic Settings</string>
+    <string name="advanced_backup_args">Extra Backup Arguments</string>
+    <string name="advanced_prune_args">Extra Prune Arguments</string>
+    <string name="advanced_invalid_backslash">Missing character after final backslash</string>
+    <string name="advanced_invalid_single_quote">Unterminated single quote</string>
+    <string name="advanced_invalid_double_quote">Unterminated double quote</string>
     <string name="expand_collapse">Expand/Collapse</string>
     <string name="toast_rclone_not_configured">Rclone not configured. Please configure it in Settings first.</string>
     <string name="toast_rclone_config_error">Error loading rclone config</string>
