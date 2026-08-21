@@ -29,7 +29,19 @@ mkdir -p "$BUILD_DIR" "$SOURCE_DIR" "$OUTPUT_DIR"
 # -------------------------------
 #  Go setup
 # -------------------------------
-export PATH=$PATH:/usr/local/go/bin
+export PATH=/usr/local/go/bin:$PATH
+
+# Pin the Go toolchain to the one already installed (the Docker image installs a
+# specific version). Setting GOTOOLCHAIN=local prevents Go from auto-downloading
+# a different toolchain when a module's go.mod requires a newer Go version.
+# This is critical for reproducible builds: if rclone's go.mod says "go 1.25.0"
+# but we build with a pinned 1.25.8, Go would otherwise silently download a
+# different toolchain, producing non-reproducible .so binaries that won't match
+# the F-Droid reference APK.
+# See: https://codeberg.org/dawdyd/resticopia/issues/89
+export GOTOOLCHAIN="${GOTOOLCHAIN:-local}"
+
+echo "Using Go: $(go version 2>/dev/null || echo 'Go not found in PATH')"
 
 # -------------------------------
 #  Reproducible build setup
@@ -38,8 +50,11 @@ export PATH=$PATH:/usr/local/go/bin
 export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-$(date +%s)}"
 echo "Using SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH ($(date -r $SOURCE_DATE_EPOCH 2>/dev/null || date -d @$SOURCE_DATE_EPOCH))"
 
-# Set Go build environment for reproducible builds
-export GOFLAGS="-trimpath -ldflags=-buildid="
+# Set Go build environment for reproducible builds.
+# -buildvcs=false: do NOT embed VCS info (sources are tarballs, not git clones;
+#   also matches the F-Droid recipe's GOFLAGS exactly).
+# -trimpath -ldflags=-buildid=: strip file paths and build IDs for reproducibility.
+export GOFLAGS="-buildvcs=false -trimpath -ldflags=-buildid="
 export CGO_CFLAGS="-g0 -O2"
 export CGO_LDFLAGS="-s -w"
 

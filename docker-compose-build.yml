@@ -9,6 +9,12 @@ services:
       DEBIAN_FRONTEND: noninteractive
       ANDROID_NDK_HOME: /opt/android-ndk
       PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      # Pin the Go toolchain version to match the F-Droid srclibs pin
+      # (metadata/org.dydlakcloud.resticopia.yml -> srclibs: go@goX.Y.Z).
+      # This MUST stay in sync with that pin for reproducible builds.
+      # See: https://codeberg.org/dawdyd/resticopia/issues/89
+      GO_VERSION: "1.25.8"
+      GOTOOLCHAIN: "local"
       SOURCE_DATE_EPOCH: ${SOURCE_DATE_EPOCH:-0}
       TZ: UTC
     volumes:
@@ -27,14 +33,28 @@ services:
         apt-get install -y -qq --no-install-recommends libarchive-dev uthash-dev swig xsltproc strace
         echo '✅ Development libraries installed'
 
-        echo '📦 Setting up Debian backports...'
-        echo 'deb http://deb.debian.org/debian bookworm-backports main' > /etc/apt/sources.list.d/backports.list
-        apt-get update -qq
-        echo '✅ Debian backports configured'
-
-        echo '📦 Installing Go from Debian backports...'
-        apt-get install -y -qq --no-install-recommends -t bookworm-backports golang-go
-        echo '✅ Go installed from Debian backports'
+        echo '📦 Installing pinned Go toolchain (must match F-Droid srclibs pin for reproducible builds)...'
+        # IMPORTANT: This version MUST match the `srclibs: go@goX.Y.Z` pin in the
+        # F-Droid metadata YAML (metadata/org.dydlakcloud.resticopia.yml).
+        # F-Droid compiles this exact Go version from source via `./make.bash`,
+        # so we must use the identical version here or the compiled .so binaries
+        # (libdata_restic.so, libdata_rclone.so) will differ and the F-Droid
+        # reproducible-build verification will fail.
+        # See: https://codeberg.org/dawdyd/resticopia/issues/89
+        export GO_VERSION="${GO_VERSION:-1.25.8}"
+        export GOTOOLCHAIN="local"
+        if ! command -v go >/dev/null 2>&1 || [ "$(go version 2>/dev/null | grep -c "go${GO_VERSION}")" -eq 0 ]; then
+          echo "Installing Go ${GO_VERSION} from official tarball..."
+          curl -sSfL "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -o /tmp/go.tar.gz
+          rm -rf /usr/local/go
+          tar -C /usr/local -xzf /tmp/go.tar.gz
+          rm -f /tmp/go.tar.gz
+        else
+          echo "✅ Go ${GO_VERSION} already installed"
+        fi
+        export PATH="/usr/local/go/bin:$PATH"
+        echo "Using Go: $(go version)"
+        echo '✅ Pinned Go toolchain installed'
 
         echo '📦 Installing Android NDK...'
         if [ ! -d "/opt/android-ndk" ]; then
