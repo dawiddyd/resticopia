@@ -34,26 +34,24 @@ services:
         echo '✅ Development libraries installed'
 
         echo '📦 Installing pinned Go toolchain (must match F-Droid srclibs pin for reproducible builds)...'
-        # IMPORTANT: This version MUST match the `srclibs: go@goX.Y.Z` pin in the
-        # F-Droid metadata YAML (metadata/org.dydlakcloud.resticopia.yml).
-        # F-Droid compiles this exact Go version from source via `./make.bash`,
-        # so we must use the identical version here or the compiled .so binaries
-        # (libdata_restic.so, libdata_rclone.so) will differ and the F-Droid
-        # reproducible-build verification will fail.
+        # IMPORTANT: The Go version below (1.25.8) MUST match the srclibs
+        # go@go1.25.8 pin in the F-Droid metadata YAML. F-Droid compiles that
+        # exact Go version from source, so we must use the identical version
+        # here or the compiled .so binaries (libdata_restic.so, libdata_rclone.so)
+        # will differ and the F-Droid reproducible-build verification will fail.
         # See: https://codeberg.org/dawdyd/resticopia/issues/89
-        export GO_VERSION="${GO_VERSION:-1.25.8}"
-        export GOTOOLCHAIN="local"
-        if ! command -v go >/dev/null 2>&1 || [ "$(go version 2>/dev/null | grep -c "go${GO_VERSION}")" -eq 0 ]; then
-          echo "Installing Go ${GO_VERSION} from official tarball..."
-          curl -sSfL "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -o /tmp/go.tar.gz
+        if ! go version 2>/dev/null | grep -q go1.25.8; then
+          echo 'Installing Go 1.25.8 from official tarball...'
+          curl -sSfL https://go.dev/dl/go1.25.8.linux-amd64.tar.gz -o /tmp/go.tar.gz
           rm -rf /usr/local/go
           tar -C /usr/local -xzf /tmp/go.tar.gz
           rm -f /tmp/go.tar.gz
         else
-          echo "✅ Go ${GO_VERSION} already installed"
+          echo 'Go 1.25.8 already installed'
         fi
-        export PATH="/usr/local/go/bin:$PATH"
-        echo "Using Go: $(go version)"
+        export PATH=/usr/local/go/bin:$$PATH
+        echo 'Using Go:'
+        go version
         echo '✅ Pinned Go toolchain installed'
 
         echo '📦 Installing Android NDK...'
