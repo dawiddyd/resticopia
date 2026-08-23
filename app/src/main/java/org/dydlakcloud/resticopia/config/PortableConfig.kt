@@ -96,7 +96,8 @@ data class PortableConfig(
                     webhookOnFailure = repo.base.webhookOnFailure,
                     webhookBearerToken = repo.base.webhookBearerToken,
                     extraBackupArgs = repo.base.extraBackupArgs,
-                    extraPruneArgs = repo.base.extraPruneArgs
+                    extraPruneArgs = repo.base.extraPruneArgs,
+                    pruneOnForget = repo.base.pruneOnForget
                 )
             }
 
@@ -181,7 +182,8 @@ data class PortableConfig(
                 webhookOnFailure = portableRepo.webhookOnFailure,
                 webhookBearerToken = portableRepo.webhookBearerToken,
                 extraBackupArgs = portableRepo.extraBackupArgs,
-                extraPruneArgs = portableRepo.extraPruneArgs
+                extraPruneArgs = portableRepo.extraPruneArgs,
+                pruneOnForget = portableRepo.pruneOnForget
             )
 
             RepoConfig(baseConfig, params)
@@ -301,7 +303,8 @@ data class PortableRepoConfig(
     val webhookOnFailure: Boolean = false,
     val webhookBearerToken: String? = null,
     val extraBackupArgs: String = "",
-    val extraPruneArgs: String = ""
+    val extraPruneArgs: String = "",
+    val pruneOnForget: Boolean = true
 )
 
 @Serializable

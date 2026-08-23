@@ -351,7 +351,7 @@ class BackupManager private constructor(context: Context) {
                     resticRepo.forget(listOf(folder.path),
                         folder.keepLast,
                         folder.keepWithin,
-                        prune = true,
+                        repo.base.pruneOnForget,
                         repo.base.extraPruneArgs
                     ).handle { _, _ ->
                         callback()

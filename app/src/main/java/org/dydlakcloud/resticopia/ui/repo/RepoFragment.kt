@@ -19,6 +19,7 @@ import org.dydlakcloud.resticopia.restic.ResticSnapshotId
 import org.dydlakcloud.resticopia.ui.snapshot.SnapshotActivity
 import org.dydlakcloud.resticopia.util.ErrorHandler
 import org.dydlakcloud.resticopia.util.UrlUtils
+import timber.log.Timber
 import java.util.concurrent.CompletionException
 
 class RepoFragment : Fragment() {
@@ -116,7 +117,7 @@ class RepoFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.nav_menu_entry, menu)
+        inflater.inflate(R.menu.nav_menu_entry_repo, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
@@ -140,6 +141,38 @@ class RepoFragment : Fragment() {
                 RepoActivity.start(this, true, repoId)
 
                 requireActivity().finish()
+                true
+            }
+            R.id.action_prune -> {
+                AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.alert_prune_repo_title)
+                    .setMessage(R.string.alert_prune_repo_message)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        val repo = backupManager.config.repos.find { it.base.id == repoId }
+                        if (repo != null) {
+                            val resticRepo = repo.repo(backupManager.restic)
+
+                            resticRepo.prune(repo.base.extraPruneArgs)
+                                .handle { _, throwable ->
+                                    if (throwable == null) {
+                                        Toast.makeText(
+                                            context,
+                                            getString(R.string.toast_prune_repo_done),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        Timber.e(throwable, "Failed to prune repo")
+                                        Toast.makeText(
+                                            context,
+                                            getString(R.string.toast_prune_repo_error),
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+                        }
+                    }
+                    .setNegativeButton(android.R.string.cancel) { _, _ -> }
+                    .show()
                 true
             }
             else -> super.onOptionsItemSelected(item)

@@ -129,6 +129,15 @@ abstract class ResticRepo(
             format.decodeFromString<List<ResticForgetResult>>(json).flatMap { it.remove }
         }
 
+    fun prune(
+        extraPruneArgs: String = ""
+    ): CompletableFuture<String> =
+        restic(
+            listOf("prune").plus(ArgsParser.parse(extraPruneArgs))
+        ).thenApply { (out, _) ->
+            out.joinToString("\n")
+        }
+
     fun unlock(): CompletableFuture<String> =
         restic(listOf("unlock")).thenApply { (out, _) ->
             out.joinToString("\n")

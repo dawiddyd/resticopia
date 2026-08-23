@@ -39,6 +39,9 @@
     <string name="button_refresh">Refresh</string>
     <string name="button_allow">Allow</string>
     <string name="button_later">Later</string>
+    <string name="button_delete_no_prune">Delete without Prune</string>
+    <string name="button_delete_force_prune">Delete with Prune</string>
+    <string name="button_prune_repo">Prune Repository</string>
     <string name="dialog_notification_permission_title">Allow Notifications</string>
     <string name="dialog_notification_permission_message">Resticopia uses notifications to keep you informed about backup progress, completion and failures. Allow notifications so you don\'t miss important backup status updates?</string>
     <string name="alert_delete_repo_title">Delete Repository Configuration</string>
@@ -48,6 +51,10 @@
     <string name="alert_save_repo_title">Failed to initialize Repository</string>
     <string name="alert_save_repo_message">Failed to initialize Repository!</string>
     <string name="alert_save_repo_question">Do you want to save anyway?</string>
+    <string name="alert_prune_repo_title">Prune Repository</string>
+    <string name="alert_prune_repo_message">Do you want to prune unused data from this Repository?</string>
+    <string name="toast_prune_repo_done">Prune Complete</string>
+    <string name="toast_prune_repo_error">Error Pruning Repo</string>
     <string name="alert_delete_folder_title">Delete Folder Configuration</string>
     <string name="alert_delete_folder_message">Do you want to delete this Folder configuration?</string>
     <string name="alert_backup_cancel_title">Cancel Backup</string>
@@ -134,6 +141,7 @@
     <string name="advanced_invalid_backslash">Missing character after final backslash</string>
     <string name="advanced_invalid_single_quote">Unterminated single quote</string>
     <string name="advanced_invalid_double_quote">Unterminated double quote</string>
+    <string name="advanced_prune_on_forget">Automatically prune after deleting snapshots</string>
     <string name="expand_collapse">Expand/Collapse</string>
     <string name="toast_rclone_not_configured">Rclone not configured. Please configure it in Settings first.</string>
     <string name="toast_rclone_config_error">Error loading rclone config</string>

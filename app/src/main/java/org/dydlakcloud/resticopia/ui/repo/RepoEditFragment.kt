@@ -137,6 +137,7 @@ class RepoEditFragment : Fragment() {
             // Load advanced configuration
             binding.editBackupArgs.setText(repo.base.extraBackupArgs)
             binding.editPruneArgs.setText(repo.base.extraPruneArgs)
+            binding.checkboxPruneOnForget.isChecked = repo.base.pruneOnForget
         }
 
         // Setup directory chooser for local repository
@@ -392,6 +393,7 @@ class RepoEditFragment : Fragment() {
 
         val extraBackupArgs = binding.editBackupArgs.text.toString()
         val extraPruneArgs = binding.editPruneArgs.text.toString()
+        val pruneOnForget = binding.checkboxPruneOnForget.isChecked
 
         val baseConfig = RepoBaseConfig(
             id = repoId,
@@ -403,7 +405,8 @@ class RepoEditFragment : Fragment() {
             webhookOnFailure = webhookOnFailure,
             webhookBearerToken = webhookBearerToken,
             extraBackupArgs = extraBackupArgs,
-            extraPruneArgs = extraPruneArgs
+            extraPruneArgs = extraPruneArgs,
+            pruneOnForget = pruneOnForget
         )
 
         return true to when (repoType) {

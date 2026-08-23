@@ -59,7 +59,8 @@ data class RepoBaseConfig(
     val webhookOnFailure: Boolean = false,
     val webhookBearerToken: String? = null,
     val extraBackupArgs: String = "",
-    val extraPruneArgs: String = ""
+    val extraPruneArgs: String = "",
+    val pruneOnForget: Boolean = true
 ) {
     companion object {
         fun create(
