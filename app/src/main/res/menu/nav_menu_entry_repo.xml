@@ -12,4 +12,10 @@
         android:orderInCategory="100"
         android:title="@string/button_edit"
         hmkcode:showAsAction="always" />
+    <item
+        android:id="@+id/action_prune"
+        android:icon="@drawable/outline_delete_24"
+        android:orderInCategory="100"
+        android:title="@string/button_prune_repo"
+        hmkcode:showAsAction="never" />
 </menu>

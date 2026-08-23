@@ -277,7 +277,8 @@ class BackupManager private constructor(context: Context) {
                 updateNotification(context, folder.id, activeBackupProgress)
             },
             activeBackup.cancelFuture,
-            config.ignorePatterns // Pass ignore patterns from config
+            config.ignorePatterns, // Pass ignore patterns from config
+            repo.base.extraBackupArgs
         ).handle { summary, throwable ->
             val throwable =
                 if (throwable == null) null
@@ -325,23 +326,21 @@ class BackupManager private constructor(context: Context) {
             }
 
             // Send webhook notification
-            val repo = folder.repo(config)
-            val webhookConfig = repo?.base
-            if (!cancelled && webhookConfig != null) {
+            if (!cancelled) {
                 val isSuccess = errorMessage == null && summary != null
                 val duration = Duration.ofMillis(
                     afterBackup.toInstant().toEpochMilli() - beforeBackup.toInstant().toEpochMilli()
                 )
                 WebhookNotifier.sendWebhook(
-                    webhookUrl = webhookConfig.webhookUrl,
-                    onSuccess = webhookConfig.webhookOnSuccess,
-                    onFailure = webhookConfig.webhookOnFailure,
+                    webhookUrl = repo.base.webhookUrl,
+                    onSuccess = repo.base.webhookOnSuccess,
+                    onFailure = repo.base.webhookOnFailure,
                     isSuccess = isSuccess,
                     hostname = config.hostname,
                     folderPath = folder.path.absolutePath,
                     folderName = folder.path.name,
                     errorMessage = errorMessage,
-                    bearerToken = webhookConfig.webhookBearerToken,
+                    bearerToken = repo.base.webhookBearerToken,
                     duration = duration,
                     backupSummary = finishedActiveBackup.summary
                 )
@@ -352,7 +351,8 @@ class BackupManager private constructor(context: Context) {
                     resticRepo.forget(listOf(folder.path),
                         folder.keepLast,
                         folder.keepWithin,
-                        prune = true
+                        repo.base.pruneOnForget,
+                        repo.base.extraPruneArgs
                     ).handle { _, _ ->
                         callback()
                     }

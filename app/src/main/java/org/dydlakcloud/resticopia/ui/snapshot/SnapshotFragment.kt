@@ -162,12 +162,12 @@ class SnapshotFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.nav_menu_entry_delete, menu)
+        inflater.inflate(R.menu.nav_menu_entry_snapshot, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
-            R.id.action_delete -> {
+            R.id.action_delete, R.id.action_delete_no_prune, R.id.action_delete_force_prune -> {
                 AlertDialog.Builder(requireContext())
                     .setTitle(R.string.alert_delete_snapshot_title)
                     .setMessage(R.string.alert_delete_snapshot_message)
@@ -175,11 +175,16 @@ class SnapshotFragment : Fragment() {
                         val repo = backupManager.config.repos.find { it.base.id == repoId }
                         if (repo != null) {
                             val resticRepo = repo.repo(backupManager.restic)
+                            val prune = when (item.itemId) {
+                                R.id.action_delete_no_prune -> false
+                                R.id.action_delete_force_prune -> true
+                                else -> repo.base.pruneOnForget
+                            }
 
                             item.isEnabled = false
                             binding.progressSnapshotDelete.visibility = VISIBLE
 
-                            resticRepo.forget(listOf(snapshotId), prune = true)
+                            resticRepo.forget(listOf(snapshotId), prune, repo.base.extraPruneArgs)
                                 .handle { _, throwable ->
                                     if (throwable == null) {
                                         backupManager.configure { config ->

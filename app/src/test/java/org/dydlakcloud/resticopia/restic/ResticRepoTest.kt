@@ -168,7 +168,7 @@ class ResticRepoTest {
         val paths = listOf(file0, file1)
         var forgetResult: List<ResticSnapshot>? = null
         var forgetException: Throwable? = null
-        resticRepo.forget(paths, 1, Duration.ZERO, true).handle { result, exception ->
+        resticRepo.forget(paths, 1, Duration.ZERO, true, "").handle { result, exception ->
             forgetResult = result
             forgetException = exception
         }.join()

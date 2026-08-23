@@ -1,0 +1,21 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:hmkcode="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_delete"
+        android:icon="@drawable/outline_delete_24"
+        android:orderInCategory="100"
+        android:title="@string/button_delete"
+        hmkcode:showAsAction="always" />
+    <item
+        android:id="@+id/action_delete_no_prune"
+        android:icon="@drawable/outline_delete_24"
+        android:orderInCategory="100"
+        android:title="@string/button_delete_no_prune"
+        hmkcode:showAsAction="never" />
+    <item
+        android:id="@+id/action_delete_force_prune"
+        android:icon="@drawable/outline_delete_24"
+        android:orderInCategory="100"
+        android:title="@string/button_delete_force_prune"
+        hmkcode:showAsAction="never" />
+</menu>

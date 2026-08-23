@@ -1,6 +1,7 @@
 package org.dydlakcloud.resticopia.restic
 
 import kotlinx.serialization.json.Json
+import org.dydlakcloud.resticopia.util.ArgsParser
 import timber.log.Timber
 import java.io.File
 import java.time.Duration
@@ -75,10 +76,14 @@ abstract class ResticRepo(
             format.decodeFromString<ResticSnapshot>(json)
         }
 
-    fun forget(snapshotIds: List<ResticSnapshotId>, prune: Boolean): CompletableFuture<String> =
+    fun forget(
+        snapshotIds: List<ResticSnapshotId>,
+        prune: Boolean = false,
+        extraPruneArgs: String = ""
+    ): CompletableFuture<String> =
         restic(
             listOf("forget").plus(
-                if (prune) listOf("--prune")
+                if (prune) listOf("--prune").plus(ArgsParser.parse(extraPruneArgs))
                 else emptyList()
             ).plus(snapshotIds.map { it.id })
         ).thenApply { (out, _) ->
@@ -92,17 +97,19 @@ abstract class ResticRepo(
      * @param keepLast The number of most recent snapshots to keep (optional).
      * @param keepWithin The duration within which to keep snapshots (optional).
      * @param prune Whether to prune the repository after forgetting (default: false).
+     * @param extraPruneArgs Any extra arguments to pass to prune command (default: "").
      * @return A future containing the list of snapshots that were removed.
      */
     fun forget(
         paths: List<File>,
         keepLast: Int?,
         keepWithin: Duration?,
-        prune: Boolean
+        prune: Boolean = false,
+        extraPruneArgs: String = ""
     ): CompletableFuture<List<ResticSnapshot>> =
         restic(
             listOf("forget").plus(
-                if (prune) listOf("--prune")
+                if (prune) listOf("--prune").plus(ArgsParser.parse(extraPruneArgs))
                 else emptyList()
             ).plus(
                 if (keepLast != null) listOf("--keep-last", keepLast.toString())
@@ -120,6 +127,15 @@ abstract class ResticRepo(
         ).thenApply { (out, _) ->
             val json = out.joinToString("\n")
             format.decodeFromString<List<ResticForgetResult>>(json).flatMap { it.remove }
+        }
+
+    fun prune(
+        extraPruneArgs: String = ""
+    ): CompletableFuture<String> =
+        restic(
+            listOf("prune").plus(ArgsParser.parse(extraPruneArgs))
+        ).thenApply { (out, _) ->
+            out.joinToString("\n")
         }
 
     fun unlock(): CompletableFuture<String> =
@@ -145,7 +161,8 @@ abstract class ResticRepo(
         scheduled: Boolean?,
         onProgress: (ResticBackupProgress) -> Unit,
         cancel: CompletableFuture<Unit>? = null,
-        ignorePatterns: String? = null
+        ignorePatterns: String? = null,
+        extraBackupArgs: String = ""
     ): CompletableFuture<ResticBackupSummary> {
         require(paths.isNotEmpty())
         
@@ -193,6 +210,8 @@ abstract class ResticRepo(
                 backupArgs.add("manual")
             }
         }
+
+        backupArgs.addAll(ArgsParser.parse(extraBackupArgs))
         
         // Add paths to backup
         backupArgs.addAll(paths.map { it.absolutePath })
