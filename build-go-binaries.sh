@@ -139,8 +139,8 @@ build_go_binary() {
   fi
 
   case "$name" in
-    restic) go build -trimpath -ldflags="$ldflags" -o "$out_dir/$out" ./cmd/restic ;;
-    rclone) go build -trimpath -ldflags="$ldflags" -o "$out_dir/$out" . ;;
+    restic) go build -buildvcs=false -trimpath -ldflags="$ldflags" -o "$out_dir/$out" ./cmd/restic ;;
+    rclone) go build -buildvcs=false -trimpath -ldflags="$ldflags" -o "$out_dir/$out" . ;;
   esac
   popd >/dev/null
   [ -f "$out_dir/$out" ] || { echo "✗ Failed to build $name ($arch)"; exit 1; }

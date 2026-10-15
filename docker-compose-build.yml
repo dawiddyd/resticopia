@@ -58,9 +58,9 @@ services:
         if [ ! -d "/opt/android-ndk" ]; then
           mkdir -p /opt
           cd /opt
-          curl -L -o ndk.zip https://dl.google.com/android/repository/android-ndk-r26b-linux.zip
+          curl -L -o ndk.zip https://dl.google.com/android/repository/android-ndk-r28-linux.zip
           unzip -q ndk.zip
-          mv android-ndk-r26b android-ndk
+          mv android-ndk-r28 android-ndk
           rm ndk.zip
           echo '✅ Android NDK installed'
         else

@@ -37,6 +37,7 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import org.dydlakcloud.resticopia.config.FolderConfig
 import org.dydlakcloud.resticopia.ui.folder.FolderEditFragment
+import org.dydlakcloud.resticopia.ui.overrideActivityTransition
 import timber.log.Timber
 import java.time.ZonedDateTime
 
@@ -292,7 +293,7 @@ class SettingsFragment : Fragment() {
             val intent = Intent(requireContext(), RcloneConfigEditorActivity::class.java)
             intent.putExtra("config", backupManager.config.rcloneConfig ?: "")
             rcloneConfigEditorLauncher.launch(intent)
-            requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            requireActivity().overrideActivityTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
         // Handle utilities expand/collapse

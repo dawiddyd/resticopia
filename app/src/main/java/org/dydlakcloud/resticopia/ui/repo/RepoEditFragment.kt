@@ -104,7 +104,7 @@ class RepoEditFragment : Fragment() {
                     binding.editRepoS3Parameters.editS3Uri.setText(s3RepoParams.s3Url.toString())
                     binding.editRepoS3Parameters.editS3AccessKeyId.setText(s3RepoParams.accessKeyId)
                     binding.editRepoS3Parameters.editS3SecretAccessKey.setText(s3RepoParams.secretAccessKey.secret)
-                    binding.editRepoS3Parameters.editS3DefaultRegion.setText(s3RepoParams.s3DefaultRegion.toString())
+                    binding.editRepoS3Parameters.editS3DefaultRegion.setText(s3RepoParams.s3DefaultRegion)
                 }
                 RepoType.Rest -> {
                     val restRepoParams = repo.params as RestRepoParams
@@ -232,7 +232,7 @@ class RepoEditFragment : Fragment() {
         // If editing an existing repo, try to find and select the remote from config
         val existingRepo = backupManager.config.repos.find { it.base.id == repoId }
         if (existingRepo?.params is RcloneRepoParams) {
-            val remoteToSelect = (existingRepo.params as RcloneRepoParams).rcloneRemote
+            val remoteToSelect = (existingRepo.params).rcloneRemote
             val index = rcloneRemotes.indexOfFirst { it.name == remoteToSelect }
             if (index >= 0) {
                 binding.editRepoRcloneParameters.spinnerRcloneRemote.setText(rcloneRemotes[index].name, false)
